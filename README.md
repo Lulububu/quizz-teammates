@@ -15,14 +15,18 @@ npm run dev
 
 Le proxy Angular redirige `/api` et `/socket.io` vers le serveur local.
 
-## Authentification admin
+## Firebase
 
-Les createurs de quiz se connectent avec le bouton Google. Le serveur verifie les ID tokens Google avec `GOOGLE_CLIENT_ID`.
+Les createurs de quiz se connectent avec Firebase Auth + Google. Le serveur verifie les ID tokens avec Firebase Admin et stocke les donnees dans Firestore.
 
 Les joueurs n'ont pas besoin de compte : ils rejoignent toujours une partie via le code court ou le QR code.
 
-En local, renseignez votre client ID Google dans `.env` :
+En local et sur Render, renseignez les variables de `.env.example`.
 
-```bash
-GOOGLE_CLIENT_ID=your-google-oauth-client-id.apps.googleusercontent.com
-```
+Pour `FIREBASE_PRIVATE_KEY` sur Render, gardez les `\n` echappes dans la variable d'environnement.
+
+## Deploiement Render
+
+Le fichier `render.yaml` decrit un service web gratuit qui construit Angular + Express avec `npm run build`, puis demarre `npm start`.
+
+Sur Render, ajoutez les variables Firebase listees dans `.env.example`. Dans Firebase Authentication, ajoutez aussi le domaine Render dans les domaines autorises.

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, effect, signal } from '@angular/core';
+import { Component, OnInit, effect, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from './api.service';
@@ -28,7 +28,7 @@ type DraftQuiz = {
         <section class="panel grid">
           <h1>Connexion admin</h1>
           <p>Connectez-vous avec Google pour creer, consulter et modifier vos quiz.</p>
-          <div id="googleSignInButton"></div>
+          <button type="button" (click)="api.signInWithGoogle()">Connexion avec Google</button>
           @if (api.authError()) {
             <p class="answer-state">{{ api.authError() }}</p>
           }
@@ -157,7 +157,7 @@ type DraftQuiz = {
     </main>
   `,
 })
-export class HomeComponent implements OnInit, AfterViewInit {
+export class HomeComponent implements OnInit {
   quizzes = signal<Quiz[]>([]);
   message = signal('');
   saving = signal(false);
@@ -180,10 +180,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     if (this.api.adminUser()) this.refresh();
-  }
-
-  ngAfterViewInit(): void {
-    this.api.initializeGoogleButton('googleSignInButton');
   }
 
   addRound(): void {

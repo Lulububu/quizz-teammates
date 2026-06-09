@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "concurrently \"npm:dev:server\" \"npm:dev:client\"",
     "dev:server": "tsx watch server/src/index.ts",
@@ -22,11 +25,11 @@
     "@angular/forms": "^18.2.13",
     "@angular/platform-browser": "^18.2.13",
     "@angular/router": "^18.2.13",
-    "better-sqlite3": "^11.9.1",
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
     "express": "^4.21.2",
-    "google-auth-library": "^10.7.0",
+    "firebase": "^10.14.1",
+    "firebase-admin": "^12.7.0",
     "qrcode": "^1.5.4",
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.1",
@@ -39,7 +42,6 @@
     "@angular-devkit/build-angular": "^18.2.13",
     "@angular/cli": "^18.2.13",
     "@angular/compiler-cli": "^18.2.13",
-    "@types/better-sqlite3": "^7.6.13",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/node": "^20.17.19",

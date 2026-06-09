@@ -1,20 +1,24 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
+import { initializeApp, type FirebaseApp } from 'firebase/app';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithPopup,
+  signOut,
+  type Auth,
+} from 'firebase/auth';
 import { io, Socket } from 'socket.io-client';
 import { AdminUser, GameState, PlayerResult, PlayerScore, Quiz, Room } from './types';
 
-declare global {
-  interface Window {
-    google?: {
-      accounts: {
-        id: {
-          initialize(config: { client_id: string; callback: (response: { credential: string }) => void }): void;
-          renderButton(parent: HTMLElement, options: Record<string, string | number | boolean>): void;
-        };
-      };
-    };
-  }
-}
+type FirebaseWebConfig = {
+  apiKey: string;
+  authDomain: string;
+  projectId: string;
+  appId: string;
+  messagingSenderId?: string;
+};
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -24,7 +28,9 @@ export class ApiService {
   adminUser = signal<AdminUser | undefined>(undefined);
   authError = signal('');
   private socket: Socket;
-  private idToken = localStorage.getItem('adminIdToken') ?? '';
+  private firebaseApp: FirebaseApp | undefined;
+  private auth: Auth | undefined;
+  private idToken = '';
 
   constructor(private http: HttpClient) {
     this.socket = io();
@@ -35,7 +41,7 @@ export class ApiService {
     });
     this.socket.on('host-game-state', (state: GameState) => this.gameState.set(state));
     this.socket.on('player-result', (result: PlayerResult) => this.playerResult.set(result));
-    if (this.idToken) this.loadAdminUser();
+    this.initializeFirebase();
   }
 
   listQuizzes() {
@@ -100,54 +106,51 @@ export class ApiService {
     return this.emit('submit-answer', payload);
   }
 
+  async signInWithGoogle(): Promise<void> {
+    if (!this.auth) {
+      this.authError.set('Firebase doit etre configure avant la connexion.');
+      return;
+    }
+    try {
+      await signInWithPopup(this.auth, new GoogleAuthProvider());
+    } catch (error) {
+      this.authError.set(error instanceof Error ? error.message : 'Connexion Google impossible.');
+    }
+  }
+
+  async signOut(): Promise<void> {
+    if (this.auth) await signOut(this.auth);
+    this.idToken = '';
+    this.adminUser.set(undefined);
+    this.authError.set('');
+  }
+
   private emit<T>(event: string, payload: unknown): Promise<T> {
     return new Promise((resolve) => {
       this.socket.emit(event, payload, (response: T) => resolve(response));
     });
   }
 
-  initializeGoogleButton(elementId: string): void {
-    this.http.get<{ googleClientId: string }>('/api/auth/config').subscribe({
-      next: (config) => {
-        if (!config.googleClientId) {
-          this.authError.set('GOOGLE_CLIENT_ID doit etre configure cote serveur.');
+  private initializeFirebase(): void {
+    this.http.get<{ firebase: FirebaseWebConfig }>('/api/auth/config').subscribe({
+      next: ({ firebase }) => {
+        if (!firebase.apiKey || !firebase.authDomain || !firebase.projectId || !firebase.appId) {
+          this.authError.set('Configuration Firebase web incomplete cote serveur.');
           return;
         }
-        this.renderGoogleButton(elementId, config.googleClientId);
+        this.firebaseApp = initializeApp(firebase);
+        this.auth = getAuth(this.firebaseApp);
+        onAuthStateChanged(this.auth, async (user) => {
+          if (!user) {
+            this.idToken = '';
+            this.adminUser.set(undefined);
+            return;
+          }
+          this.idToken = await user.getIdToken();
+          this.loadAdminUser();
+        });
       },
-      error: () => this.authError.set('Impossible de charger la configuration Google.'),
-    });
-  }
-
-  signOut(): void {
-    this.idToken = '';
-    localStorage.removeItem('adminIdToken');
-    this.adminUser.set(undefined);
-    this.authError.set('');
-  }
-
-  private renderGoogleButton(elementId: string, clientId: string): void {
-    const target = document.getElementById(elementId);
-    if (!target) return;
-    if (!window.google?.accounts?.id) {
-      window.setTimeout(() => this.renderGoogleButton(elementId, clientId), 250);
-      return;
-    }
-    window.google.accounts.id.initialize({
-      client_id: clientId,
-      callback: (response) => {
-        this.idToken = response.credential;
-        localStorage.setItem('adminIdToken', this.idToken);
-        this.loadAdminUser();
-      },
-    });
-    target.innerHTML = '';
-    window.google.accounts.id.renderButton(target, {
-      theme: 'filled_blue',
-      size: 'large',
-      shape: 'pill',
-      text: 'signin_with',
-      locale: 'fr',
+      error: () => this.authError.set('Impossible de charger la configuration Firebase.'),
     });
   }
 
@@ -158,8 +161,9 @@ export class ApiService {
         this.authError.set('');
       },
       error: () => {
-        this.signOut();
-        this.authError.set('Session Google expiree ou invalide.');
+        this.idToken = '';
+        this.adminUser.set(undefined);
+        this.authError.set('Session Firebase expiree ou invalide.');
       },
     });
   }

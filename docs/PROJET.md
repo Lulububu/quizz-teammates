@@ -17,8 +17,8 @@ La mecanique differenciee du quiz est la suivante : pour chaque manche, les joue
 - Frontend : Angular standalone.
 - Backend : Express.
 - Temps reel : Socket.IO.
-- Base de donnees : SQLite via `better-sqlite3`.
-- Authentification admin : Google Identity Services cote client et verification d'ID token Google cote serveur.
+- Base de donnees : Firestore.
+- Authentification admin : Firebase Auth Google cote client et verification d'ID token Firebase cote serveur.
 
 ## Modele metier
 
@@ -83,12 +83,12 @@ La mecanique differenciee du quiz est la suivante : pour chaque manche, les joue
 2. Saisit un pseudo.
 3. Repond aux trois oeuvres.
 4. Repond a la personne cible parmi quatre propositions apres la revelation des trois oeuvres.
-5. Consulte son classement en direct.
+5. Consulte son resultat, ses points et sa position apres chaque question.
 
 ## Etat d'avancement
 
-- [x] Structure de projet Angular + Express + SQLite.
-- [x] Schema SQLite initial.
+- [x] Structure de projet Angular + Express.
+- [x] Persistance Firestore.
 - [x] API de creation de quiz, manches et salons.
 - [x] Socket.IO pour rejoindre un salon, envoyer une reponse et recevoir le classement.
 - [x] Interface Angular pour creer un quiz QCM, creer un salon, piloter le lancement et rejoindre une partie.
@@ -105,11 +105,12 @@ La mecanique differenciee du quiz est la suivante : pour chaque manche, les joue
 - [x] Saisie de plusieurs indices par oeuvre.
 - [x] Revelation progressive des indices pendant le timer.
 - [x] Suppression des champs de creation d'oeuvre non utilises ; le titre technique de l'oeuvre est derive de la bonne proposition.
-- [x] Authentification Google pour les createurs de quiz.
+- [x] Authentification Firebase/Google pour les createurs de quiz.
 - [x] Isolation des quiz par compte createur.
 - [x] Acces joueur sans compte conserve.
+- [x] Migration de SQLite vers Firestore pour un deploiement Render sans disque persistant.
+- [x] Configuration Render via `render.yaml`.
 - [ ] Upload et stockage des fichiers media.
-- [ ] Authentification createur.
 - [ ] Interface avancee d'animation question par question.
 - [ ] Tests automatises.
 
