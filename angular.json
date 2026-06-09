@@ -1,0 +1,68 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "quizz-teammates": {
+      "projectType": "application",
+      "schematics": {},
+      "root": "client",
+      "sourceRoot": "client/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/client",
+            "index": "client/src/index.html",
+            "main": "client/src/main.ts",
+            "polyfills": [
+              "zone.js"
+            ],
+            "tsConfig": "client/tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "client/public"
+              }
+            ],
+            "styles": [
+              "client/src/styles.css"
+            ],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "600kB",
+                  "maximumError": "1MB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "quizz-teammates:build:production"
+            },
+            "development": {
+              "buildTarget": "quizz-teammates:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        }
+      }
+    }
+  }
+}
