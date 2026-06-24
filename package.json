@@ -14,6 +14,7 @@
     "build:client": "npx --no-install ng build",
     "build:server": "tsc -p server/tsconfig.json",
     "start": "node dist/server/index.js",
+    "dictionary:generate": "node scripts/generate-work-dictionary.mjs",
     "typecheck": "tsc -p server/tsconfig.json --noEmit && npx --no-install ng build --configuration development",
     "lint": "npm run typecheck"
   },
@@ -25,6 +26,7 @@
     "@angular/forms": "^18.2.13",
     "@angular/platform-browser": "^18.2.13",
     "@angular/router": "^18.2.13",
+    "cloudinary": "^2.10.0",
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
     "express": "^4.21.2",

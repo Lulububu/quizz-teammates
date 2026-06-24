@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { firestore } from './firebase.js';
 
+export type AnswerMode = 'choices' | 'autocomplete';
+
 export type ClueInput = {
   id?: string;
   kind: 'text' | 'image' | 'audio' | 'video' | 'link';
@@ -13,8 +15,11 @@ export type WorkInput = {
   title: string;
   kind: string;
   clues: ClueInput[];
-  options: string[];
-  correctOptionIndex: number;
+  answerMode?: AnswerMode;
+  dictionaryId?: string;
+  options?: string[];
+  correctOptionIndex?: number;
+  correctAnswer?: string;
 };
 
 export type RoundInput = {
@@ -23,8 +28,11 @@ export type RoundInput = {
   person: {
     id?: string;
     name: string;
-    options: string[];
-    correctOptionIndex: number;
+    answerMode?: AnswerMode;
+    dictionaryId?: string;
+    options?: string[];
+    correctOptionIndex?: number;
+    correctAnswer?: string;
   };
   works: WorkInput[];
 };
@@ -32,6 +40,7 @@ export type RoundInput = {
 export type QuizInput = {
   title: string;
   description?: string;
+  answerMode?: AnswerMode;
   rounds: RoundInput[];
 };
 
@@ -54,6 +63,8 @@ export type Work = {
   title: string;
   kind: string;
   position: number;
+  answer_mode?: AnswerMode;
+  dictionary_id?: string;
   clues: Clue[];
   options: AnswerOption[];
 };
@@ -65,6 +76,8 @@ export type Round = {
   person: {
     id: string;
     name: string;
+    answer_mode?: AnswerMode;
+    dictionary_id?: string;
     options: AnswerOption[];
   };
   works: Work[];
@@ -75,8 +88,19 @@ export type QuizRow = {
   owner_user_id: string;
   title: string;
   description: string;
+  answer_mode: AnswerMode;
   created_at: string;
   rounds?: Round[];
+};
+
+export type AnswerDictionary = {
+  id: string;
+  owner_user_id: string;
+  name: string;
+  values: string[];
+  created_at?: string;
+  updated_at?: string;
+  usage_count?: number;
 };
 
 export type RoomRow = {
@@ -113,6 +137,7 @@ export type AnswerRow = {
 
 const quizzes = firestore.collection('quizzes');
 const rooms = firestore.collection('rooms');
+const answerDictionaries = firestore.collection('answerDictionaries');
 
 export async function listQuizzes(ownerUserId: string): Promise<QuizRow[]> {
   const snapshot = await quizzes.where('owner_user_id', '==', ownerUserId).get();
@@ -127,8 +152,9 @@ export async function createQuiz(input: QuizInput, ownerUserId: string): Promise
     owner_user_id: ownerUserId,
     title: input.title,
     description: input.description ?? '',
+    answer_mode: input.answerMode ?? 'choices',
     created_at: new Date().toISOString(),
-    rounds: buildRounds(input.rounds),
+    rounds: buildRounds(input.rounds, input.answerMode ?? 'choices'),
   };
   await quizzes.doc(id).set(quiz);
   return quizFromDoc(id, quiz, false);
@@ -140,7 +166,8 @@ export async function updateQuiz(quizId: string, input: QuizInput, ownerUserId: 
   await quizzes.doc(quizId).update({
     title: input.title,
     description: input.description ?? '',
-    rounds: buildRounds(input.rounds),
+    answer_mode: input.answerMode ?? 'choices',
+    rounds: buildRounds(input.rounds, input.answerMode ?? 'choices'),
   });
   return getOwnedQuiz(quizId, ownerUserId);
 }
@@ -156,6 +183,10 @@ export async function getQuiz(quizId: string): Promise<QuizRow | undefined> {
   return getQuizDetails(quizId, false);
 }
 
+export async function getQuizWithAnswers(quizId: string): Promise<QuizRow | undefined> {
+  return getQuizDetails(quizId, true);
+}
+
 export async function getOwnedQuiz(quizId: string, ownerUserId: string): Promise<QuizRow | undefined> {
   const quiz = await getQuizDetails(quizId, false);
   return quiz?.owner_user_id === ownerUserId ? quiz : undefined;
@@ -169,6 +200,58 @@ export async function getOwnedQuizForEditing(quizId: string, ownerUserId: string
 export async function userOwnsQuiz(quizId: string, ownerUserId: string): Promise<boolean> {
   const snapshot = await quizzes.doc(quizId).get();
   return snapshot.exists && snapshot.data()?.owner_user_id === ownerUserId;
+}
+
+export async function listAnswerDictionaries(ownerUserId: string): Promise<AnswerDictionary[]> {
+  const snapshot = await answerDictionaries.where('owner_user_id', '==', ownerUserId).get();
+  const ownedQuizzes = await listQuizzes(ownerUserId);
+  return snapshot.docs
+    .map((doc) => {
+      const dictionary = dictionaryFromDoc(doc.id, doc.data());
+      return {
+        ...dictionary,
+        usage_count: ownedQuizzes.filter((quiz) => quizUsesDictionary(quiz, dictionary.id)).length,
+      };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export async function getAnswerDictionaryValues(ownerUserId: string, dictionaryId?: string): Promise<string[]> {
+  if (dictionaryId) {
+    const snapshot = await answerDictionaries.doc(dictionaryId).get();
+    if (snapshot.exists && snapshot.data()?.owner_user_id === ownerUserId) {
+      return dictionaryValues(snapshot.data()?.values);
+    }
+    return [];
+  }
+  const dictionaries = await listAnswerDictionaries(ownerUserId);
+  return Array.from(new Set(dictionaries.flatMap((dictionary) => dictionary.values)));
+}
+
+export async function saveAnswerDictionary(
+  ownerUserId: string,
+  input: { id?: string; name: string; values: string[] },
+): Promise<AnswerDictionary | undefined> {
+  const id = input.id || randomUUID();
+  const uniqueValues = Array.from(new Set(input.values.map((value) => value.trim()).filter(Boolean)));
+  const existing = await answerDictionaries.doc(id).get();
+  if (existing.exists && existing.data()?.owner_user_id !== ownerUserId) return undefined;
+  const dictionary = {
+    owner_user_id: ownerUserId,
+    name: input.name.trim(),
+    values: uniqueValues,
+    created_at: existing.data()?.created_at ?? new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+  await answerDictionaries.doc(id).set(dictionary);
+  return dictionaryFromDoc(id, dictionary);
+}
+
+export async function deleteAnswerDictionary(ownerUserId: string, dictionaryId: string): Promise<boolean> {
+  const snapshot = await answerDictionaries.doc(dictionaryId).get();
+  if (!snapshot.exists || snapshot.data()?.owner_user_id !== ownerUserId) return false;
+  await answerDictionaries.doc(dictionaryId).delete();
+  return true;
 }
 
 export async function createRoom(quizId: string): Promise<RoomRow> {
@@ -223,6 +306,32 @@ export async function addPlayer(code: string, nickname: string): Promise<PlayerS
   };
   await rooms.doc(code).collection('players').doc(id).set(player);
   return player;
+}
+
+export async function getPlayer(code: string, playerId: string): Promise<PlayerScore | undefined> {
+  const snapshot = await rooms.doc(code).collection('players').doc(playerId).get();
+  return snapshot.exists ? (snapshot.data() as PlayerScore) : undefined;
+}
+
+export async function findPlayerByNickname(code: string, nickname: string): Promise<PlayerScore | undefined> {
+  const snapshot = await rooms.doc(code).collection('players').get();
+  const normalizedNickname = nickname.trim().toLocaleLowerCase('fr-FR');
+  const player = snapshot.docs.find(
+    (doc) => String(doc.data().nickname ?? '').trim().toLocaleLowerCase('fr-FR') === normalizedNickname,
+  );
+  return player ? (player.data() as PlayerScore) : undefined;
+}
+
+export async function removePlayer(code: string, playerId: string): Promise<boolean> {
+  const playerRef = rooms.doc(code).collection('players').doc(playerId);
+  const player = await playerRef.get();
+  if (!player.exists) return false;
+  const answers = await rooms.doc(code).collection('answers').where('player_id', '==', playerId).get();
+  for (const answer of answers.docs) {
+    await answer.ref.delete();
+  }
+  await playerRef.delete();
+  return true;
 }
 
 export async function getLeaderboard(roomIdOrCode: string): Promise<PlayerScore[]> {
@@ -304,9 +413,11 @@ export async function recordAnswer(code: string, answer: Omit<AnswerRow, 'id' | 
   }
 }
 
-export async function getPlayers(code: string): Promise<Array<{ id: string }>> {
+export async function getPlayers(code: string): Promise<PlayerScore[]> {
   const snapshot = await rooms.doc(code).collection('players').get();
-  return snapshot.docs.map((doc) => ({ id: doc.id }));
+  return snapshot.docs
+    .map((doc) => doc.data() as PlayerScore)
+    .sort((a, b) => (a.joined_at ?? '').localeCompare(b.joined_at ?? ''));
 }
 
 export async function getPlayerAnswer(
@@ -329,7 +440,7 @@ export async function getPlayerAnswer(
   return data ? { isCorrect: data.is_correct, points: data.points } : undefined;
 }
 
-function buildRounds(rounds: RoundInput[]): Round[] {
+function buildRounds(rounds: RoundInput[], fallbackAnswerMode: AnswerMode): Round[] {
   return rounds.map((round, roundIndex) => {
     const roundId = randomUUID();
     const personId = randomUUID();
@@ -340,7 +451,9 @@ function buildRounds(rounds: RoundInput[]): Round[] {
       person: {
         id: personId,
         name: round.person.name,
-        options: buildOptions(round.person.options, round.person.correctOptionIndex),
+        answer_mode: round.person.answerMode ?? fallbackAnswerMode,
+        dictionary_id: round.person.dictionaryId ?? '',
+        options: buildOptions(round.person.options, round.person.correctOptionIndex, round.person.correctAnswer),
       },
       works: round.works.map((work, workIndex) => {
         const workId = randomUUID();
@@ -349,25 +462,28 @@ function buildRounds(rounds: RoundInput[]): Round[] {
           title: work.title,
           kind: work.kind || 'other',
           position: workIndex,
+          answer_mode: work.answerMode ?? fallbackAnswerMode,
+          dictionary_id: work.dictionaryId ?? '',
           clues: work.clues.map((clue, clueIndex) => ({
             id: randomUUID(),
             kind: clue.kind,
             content: clue.content,
             position: clueIndex,
           })),
-          options: buildOptions(work.options, work.correctOptionIndex),
+          options: buildOptions(work.options, work.correctOptionIndex, work.correctAnswer),
         };
       }),
     };
   });
 }
 
-function buildOptions(options: string[], correctOptionIndex: number): AnswerOption[] {
-  return options.map((label, optionIndex) => ({
+function buildOptions(options?: string[], correctOptionIndex = 0, correctAnswer?: string): AnswerOption[] {
+  const labels = options?.length ? options : [correctAnswer ?? ''];
+  return labels.map((label, optionIndex) => ({
     id: randomUUID(),
     label,
     position: optionIndex,
-    isCorrect: optionIndex === correctOptionIndex ? 1 : 0,
+    isCorrect: optionIndex === correctOptionIndex || (!options?.length && optionIndex === 0) ? 1 : 0,
   }));
 }
 
@@ -394,6 +510,7 @@ function quizFromDoc(id: string, data: FirebaseFirestore.DocumentData, includeCo
     owner_user_id: data.owner_user_id,
     title: data.title,
     description: data.description ?? '',
+    answer_mode: data.answer_mode ?? 'choices',
     created_at: data.created_at,
     rounds,
   };
@@ -402,6 +519,29 @@ function quizFromDoc(id: string, data: FirebaseFirestore.DocumentData, includeCo
 function scrubOptions(options: AnswerOption[], includeCorrectOptions: boolean): AnswerOption[] {
   if (includeCorrectOptions) return options;
   return options.map(({ isCorrect: _isCorrect, ...option }) => option);
+}
+
+function dictionaryFromDoc(id: string, data: FirebaseFirestore.DocumentData): AnswerDictionary {
+  return {
+    id,
+    owner_user_id: data.owner_user_id,
+    name: typeof data.name === 'string' && data.name.trim() ? data.name : 'Dictionnaire principal',
+    values: dictionaryValues(data.values),
+    created_at: data.created_at,
+    updated_at: data.updated_at,
+  };
+}
+
+function dictionaryValues(values: unknown): string[] {
+  return Array.isArray(values) ? values.filter((value): value is string => typeof value === 'string') : [];
+}
+
+function quizUsesDictionary(quiz: QuizRow, dictionaryId: string): boolean {
+  return (quiz.rounds ?? []).some(
+    (round) =>
+      round.person.dictionary_id === dictionaryId ||
+      round.works.some((work) => work.dictionary_id === dictionaryId),
+  );
 }
 
 async function createUniqueRoomCode(): Promise<string> {

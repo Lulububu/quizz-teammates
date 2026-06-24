@@ -9,29 +9,39 @@ import QRCode from 'qrcode';
 import { Server } from 'socket.io';
 import { z } from 'zod';
 import { requireAdmin, verifyAdminToken } from './auth.js';
+import { createCloudinaryUploadSignature } from './cloudinary.js';
 import { getFirebaseWebConfig } from './firebase.js';
 import {
   addPlayer,
   createQuiz,
   createRoom,
+  deleteAnswerDictionary,
   deleteQuiz,
+  findPlayerByNickname,
   getAnswerCount,
+  getAnswerDictionaryValues,
   getLeaderboard,
   getOwnedQuiz,
   getOwnedQuizForEditing,
+  getPlayer,
   getPlayerAnswer,
   getPlayerCount,
   getPlayers,
   getQuiz,
+  getQuizWithAnswers,
   getRoomByCode,
   getSelectedOption,
   hasAnswered,
+  listAnswerDictionaries,
   listQuizzes,
   recordAnswer,
+  removePlayer,
+  saveAnswerDictionary,
   updateRoomQuestion,
   updateRoomStatus,
   updateQuiz,
   userOwnsQuiz,
+  type AnswerMode,
   type QuizInput,
 } from './repositories.js';
 
@@ -55,22 +65,29 @@ app.use(express.json({ limit: '2mb' }));
 const quizSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
+  answerMode: z.enum(['choices', 'autocomplete']).optional(),
   rounds: z
     .array(
       z.object({
         title: z.string().min(1),
         person: z.object({
           name: z.string().min(1),
-          options: z.array(z.string().min(1)).length(4),
-          correctOptionIndex: z.number().int().min(0).max(3),
+          answerMode: z.enum(['choices', 'autocomplete']).optional(),
+          dictionaryId: z.string().optional(),
+          options: z.array(z.string().min(1)).optional(),
+          correctOptionIndex: z.number().int().min(0).optional(),
+          correctAnswer: z.string().optional(),
         }),
         works: z
           .array(
             z.object({
               title: z.string().min(1),
               kind: z.string().default('other'),
-              options: z.array(z.string().min(1)).length(4),
-              correctOptionIndex: z.number().int().min(0).max(3),
+              answerMode: z.enum(['choices', 'autocomplete']).optional(),
+              dictionaryId: z.string().optional(),
+              options: z.array(z.string().min(1)).optional(),
+              correctOptionIndex: z.number().int().min(0).optional(),
+              correctAnswer: z.string().optional(),
               clues: z
                 .array(
                   z.object({
@@ -85,6 +102,23 @@ const quizSchema = z.object({
       }),
     )
     .min(1),
+}).superRefine((quiz, ctx) => {
+  for (const [roundIndex, round] of quiz.rounds.entries()) {
+    validateAnswerConfig(round.person.answerMode ?? quiz.answerMode ?? 'choices', round.person, ['rounds', roundIndex, 'person'], ctx);
+    for (const [workIndex, work] of round.works.entries()) {
+      validateAnswerConfig(work.answerMode ?? quiz.answerMode ?? 'choices', work, ['rounds', roundIndex, 'works', workIndex], ctx);
+    }
+  }
+});
+
+const dictionarySchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1),
+  values: z.array(z.string()).default([]),
+});
+
+const uploadSignatureSchema = z.object({
+  kind: z.enum(['image', 'audio', 'video']),
 });
 
 app.get('/api/health', (_req, res) => {
@@ -99,6 +133,56 @@ app.get('/api/auth/me', requireAdmin, (req, res) => {
   res.json(req.adminUser);
 });
 
+app.post('/api/uploads/cloudinary/signature', requireAdmin, (req, res) => {
+  const parsed = uploadSignatureSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'Type de média invalide' });
+    return;
+  }
+  res.json(createCloudinaryUploadSignature(req.adminUser!.id, parsed.data.kind));
+});
+
+app.get('/api/answer-dictionaries', requireAdmin, asyncRoute(async (req, res) => {
+  res.json(await listAnswerDictionaries(req.adminUser!.id));
+}));
+
+app.post('/api/answer-dictionaries', requireAdmin, asyncRoute(async (req, res) => {
+  const parsed = dictionarySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.flatten() });
+    return;
+  }
+  const dictionary = await saveAnswerDictionary(req.adminUser!.id, parsed.data);
+  if (!dictionary) {
+    res.status(404).json({ error: 'Dictionnaire introuvable' });
+    return;
+  }
+  res.status(201).json(dictionary);
+}));
+
+app.put('/api/answer-dictionaries/:dictionaryId', requireAdmin, asyncRoute(async (req, res) => {
+  const parsed = dictionarySchema.safeParse({ ...req.body, id: req.params.dictionaryId });
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.flatten() });
+    return;
+  }
+  const dictionary = await saveAnswerDictionary(req.adminUser!.id, parsed.data);
+  if (!dictionary) {
+    res.status(404).json({ error: 'Dictionnaire introuvable' });
+    return;
+  }
+  res.json(dictionary);
+}));
+
+app.delete('/api/answer-dictionaries/:dictionaryId', requireAdmin, asyncRoute(async (req, res) => {
+  const deleted = await deleteAnswerDictionary(req.adminUser!.id, req.params.dictionaryId);
+  if (!deleted) {
+    res.status(404).json({ error: 'Dictionnaire introuvable' });
+    return;
+  }
+  res.status(204).send();
+}));
+
 app.get('/api/quizzes', requireAdmin, asyncRoute(async (req, res) => {
   res.json(await listQuizzes(req.adminUser!.id));
 }));
@@ -106,7 +190,12 @@ app.get('/api/quizzes', requireAdmin, asyncRoute(async (req, res) => {
 app.post('/api/quizzes', requireAdmin, asyncRoute(async (req, res) => {
   const parsed = quizSchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() });
+    res.status(400).json(validationErrorResponse(parsed.error.issues));
+    return;
+  }
+  const dictionaryError = await validateQuizAutocompleteAnswers(parsed.data as QuizInput, req.adminUser!.id);
+  if (dictionaryError) {
+    res.status(400).json(validationErrorResponse([dictionaryError]));
     return;
   }
   res.status(201).json(await createQuiz(parsed.data as QuizInput, req.adminUser!.id));
@@ -133,7 +222,12 @@ app.get('/api/quizzes/:quizId/edit', requireAdmin, asyncRoute(async (req, res) =
 app.put('/api/quizzes/:quizId', requireAdmin, asyncRoute(async (req, res) => {
   const parsed = quizSchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() });
+    res.status(400).json(validationErrorResponse(parsed.error.issues));
+    return;
+  }
+  const dictionaryError = await validateQuizAutocompleteAnswers(parsed.data as QuizInput, req.adminUser!.id);
+  if (dictionaryError) {
+    res.status(400).json(validationErrorResponse([dictionaryError]));
     return;
   }
   const quiz = await updateQuiz(req.params.quizId, parsed.data as QuizInput, req.adminUser!.id);
@@ -207,21 +301,46 @@ io.on('connection', (socket) => {
     }
     socket.join(room.code);
     socket.join(hostChannel(room.code));
-    callback?.({ ok: true, gameState: await getGameState(room.code, true) });
+    callback?.({ ok: true, gameState: await getGameState(room.code, true, false) });
   });
 
   socket.on('join-room', async (payload: { code: string; nickname: string }, callback) => {
     const room = await getRoomByCode(payload.code);
-    if (!room || !payload.nickname?.trim()) {
-      callback?.({ ok: false, error: 'Code ou pseudo invalide' });
+    const nickname = payload.nickname?.trim() ?? '';
+    if (!room) {
+      callback?.({ ok: false, error: 'Salon introuvable' });
+      return;
+    }
+    if (room.status !== 'lobby') {
+      callback?.({ ok: false, error: 'Cette partie a déjà commencé' });
+      return;
+    }
+    if (nickname.length < 2 || nickname.length > 24) {
+      callback?.({ ok: false, error: 'Le pseudo doit contenir entre 2 et 24 caractères' });
+      return;
+    }
+    if (await findPlayerByNickname(room.code, nickname)) {
+      callback?.({ ok: false, error: 'Ce pseudo est déjà utilisé dans ce salon' });
       return;
     }
 
-    const player = await addPlayer(room.code, payload.nickname.trim());
+    const player = await addPlayer(room.code, nickname);
     socket.join(room.code);
     socket.join(playerChannel(player.id));
-    await emitGameState(room.code);
+    await emitGameState(room.code, false);
     callback?.({ ok: true, playerId: player.id, room, gameState: await getGameState(room.code, false) });
+  });
+
+  socket.on('resume-player', async (payload: { code: string; playerId: string }, callback) => {
+    const room = await getRoomByCode(payload.code);
+    const player = room ? await getPlayer(room.code, payload.playerId) : undefined;
+    if (!room || !player) {
+      callback?.({ ok: false, error: 'Session joueur introuvable' });
+      return;
+    }
+    socket.join(room.code);
+    socket.join(playerChannel(player.id));
+    callback?.({ ok: true, player, gameState: await getGameState(room.code, false) });
   });
 
   socket.on('start-game', async (payload: { code: string; idToken?: string }, callback) => {
@@ -254,6 +373,31 @@ io.on('connection', (socket) => {
     callback?.(result);
   });
 
+  socket.on('remove-player', async (payload: { code: string; playerId: string; idToken?: string }, callback) => {
+    const room = await getRoomByCode(payload.code);
+    if (!room) {
+      callback?.({ ok: false, error: 'Salon introuvable' });
+      return;
+    }
+    const admin = await verifyRoomOwner(room.quiz_id, payload.idToken);
+    if (!admin.ok) {
+      callback?.({ ok: false, error: admin.error });
+      return;
+    }
+    if (room.status !== 'lobby') {
+      callback?.({ ok: false, error: 'Un joueur ne peut être retiré que depuis le lobby' });
+      return;
+    }
+    const removed = await removePlayer(room.code, payload.playerId);
+    if (!removed) {
+      callback?.({ ok: false, error: 'Joueur introuvable' });
+      return;
+    }
+    io.to(playerChannel(payload.playerId)).emit('player-removed', { message: "L'animateur vous a retiré du salon." });
+    await emitGameState(room.code, false);
+    callback?.({ ok: true });
+  });
+
   socket.on(
     'submit-answer',
     async (
@@ -263,18 +407,23 @@ io.on('connection', (socket) => {
         roundId: string;
         targetType: 'work' | 'person';
         targetId: string;
-        optionId: string;
+        optionId?: string;
+        value?: string;
       },
       callback,
     ) => {
       const room = await getRoomByCode(payload.code);
-      const activeQuestion = room ? await getActiveQuestion(room, false) : undefined;
+      const activeQuestion = room ? await getActiveQuestion(room, true) : undefined;
       if (!room || !activeQuestion) {
         callback?.({ ok: false, error: 'Salon introuvable' });
         return;
       }
       if (room.status !== 'question') {
-        callback?.({ ok: false, error: 'Le temps de reponse est termine' });
+        callback?.({ ok: false, error: 'Le temps de réponse est terminé' });
+        return;
+      }
+      if (!(await getPlayer(room.code, payload.playerId))) {
+        callback?.({ ok: false, error: 'Session joueur invalide' });
         return;
       }
       if (
@@ -282,7 +431,7 @@ io.on('connection', (socket) => {
         activeQuestion.targetType !== payload.targetType ||
         activeQuestion.targetId !== payload.targetId
       ) {
-        callback?.({ ok: false, error: 'Cette question n est pas active' });
+        callback?.({ ok: false, error: "Cette question n'est pas active" });
         return;
       }
 
@@ -291,11 +440,20 @@ io.on('connection', (socket) => {
         payload.roundId,
         payload.targetType,
         payload.targetId,
-        payload.optionId,
+        payload.optionId ?? '',
       );
 
-      if (!selectedOption) {
+      const submittedValue = payload.value?.trim() ?? '';
+      const correctOption = activeQuestion.correctOption;
+      const isAutocomplete = activeQuestion.answerMode === 'autocomplete';
+
+      if (!isAutocomplete && !selectedOption) {
         callback?.({ ok: false, error: 'Option introuvable' });
+        return;
+      }
+
+      if (isAutocomplete && !submittedValue) {
+        callback?.({ ok: false, error: 'Réponse vide' });
         return;
       }
 
@@ -308,11 +466,13 @@ io.on('connection', (socket) => {
       );
 
       if (alreadyAnswered) {
-        callback?.({ ok: false, error: 'Reponse deja envoyee' });
+        callback?.({ ok: false, error: 'Réponse déjà envoyée' });
         return;
       }
 
-      const isCorrect = selectedOption.isCorrect === 1;
+      const isCorrect = isAutocomplete
+        ? normalizeAnswer(submittedValue) === normalizeAnswer(correctOption?.label ?? '')
+        : selectedOption?.isCorrect === 1;
       const points = isCorrect ? calculatePoints(payload.targetType, room.question_started_at, room.question_ends_at) : 0;
 
       await recordAnswer(room.code, {
@@ -320,7 +480,7 @@ io.on('connection', (socket) => {
         round_id: payload.roundId,
         target_type: payload.targetType,
         target_id: payload.targetId,
-        value: payload.optionId,
+        value: isAutocomplete ? submittedValue : payload.optionId ?? '',
         is_correct: isCorrect ? 1 : 0,
         points,
         answered_at: new Date().toISOString(),
@@ -360,7 +520,7 @@ async function activateQuestion(code: string, questionIndex: number) {
       void revealQuestion(room.code);
     }, questionDurationMs),
   );
-  await emitGameState(room.code);
+  await emitGameState(room.code, true);
   return { ok: true, gameState: await getGameState(room.code, true) };
 }
 
@@ -369,13 +529,13 @@ async function revealQuestion(code: string): Promise<void> {
   if (!room || room.status !== 'question') return;
   await updateRoomStatus(room.code, 'reveal');
   clearRevealTimer(code);
-  await emitGameState(code);
   await emitPlayerResults(code);
+  await emitGameState(code, false);
 }
 
-async function emitGameState(code: string): Promise<void> {
-  io.to(code).emit('game-state', await getGameState(code, false));
-  io.to(hostChannel(code)).emit('host-game-state', await getGameState(code, true));
+async function emitGameState(code: string, includeSuggestions = false): Promise<void> {
+  io.to(code).emit('game-state', await getGameState(code, false, includeSuggestions));
+  io.to(hostChannel(code)).emit('host-game-state', await getGameState(code, true, false));
 }
 
 function clearRevealTimer(code: string): void {
@@ -384,10 +544,10 @@ function clearRevealTimer(code: string): void {
   revealTimers.delete(code);
 }
 
-async function getGameState(code: string, includeAnswer: boolean) {
+async function getGameState(code: string, includeAnswer: boolean, includeSuggestions = true) {
   const room = await getRoomByCode(code);
   if (!room) return undefined;
-  const activeQuestion = await getActiveQuestion(room, includeAnswer);
+  const activeQuestion = await getActiveQuestion(room, includeAnswer, includeSuggestions);
   const quiz = (await getQuiz(room.quiz_id)) as QuizWithRounds | undefined;
   const leaderboard = room.status === 'finished' || includeAnswer ? await getLeaderboard(room.code) : [];
   return {
@@ -402,6 +562,7 @@ async function getGameState(code: string, includeAnswer: boolean) {
       : 0,
     leaderboard,
     topLeaderboard: includeAnswer ? leaderboard.slice(0, 5) : [],
+    players: includeAnswer ? await getPlayers(room.code) : [],
     activeQuestion,
   };
 }
@@ -409,9 +570,14 @@ async function getGameState(code: string, includeAnswer: boolean) {
 async function getActiveQuestion(
   room: { quiz_id: string; current_question_index: number; status: string },
   includeAnswer: boolean,
+  includeSuggestions = true,
 ) {
-  const quiz = (await getQuiz(room.quiz_id)) as QuizWithRounds | undefined;
-  const rounds = quiz?.rounds ?? [];
+  const shouldIncludeAnswer = includeAnswer || room.status === 'reveal' || room.status === 'finished';
+  const quiz = (await (shouldIncludeAnswer ? getQuizWithAnswers(room.quiz_id) : getQuiz(room.quiz_id))) as
+    | QuizWithRounds
+    | undefined;
+  if (!quiz) return undefined;
+  const rounds = quiz.rounds ?? [];
   if (room.current_question_index < 0) return undefined;
 
   const roundIndex = Math.floor(room.current_question_index / 4);
@@ -422,9 +588,8 @@ async function getActiveQuestion(
   const targetType: 'work' | 'person' = questionInRound < 3 ? 'work' : 'person';
   const target = targetType === 'work' ? round.works[questionInRound] : round.person;
   const options = target.options.map(({ isCorrect: _isCorrect, ...option }) => option);
-  const correctOption = includeAnswer || room.status === 'reveal' || room.status === 'finished'
-    ? target.options.find((option) => option.isCorrect === 1)
-    : undefined;
+  const correctOption = shouldIncludeAnswer ? target.options.find((option) => option.isCorrect === 1) : undefined;
+  const answerMode = target.answer_mode ?? quiz.answer_mode ?? 'choices';
 
   return {
     roundId: round.id,
@@ -433,11 +598,16 @@ async function getActiveQuestion(
     targetId: target.id,
     prompt:
       targetType === 'work'
-        ? `Quelle est cette oeuvre ?`
-        : `Quelle personne relie ces trois oeuvres ?`,
-    clues: targetType === 'work' ? round.works[questionInRound].clues : round.works.flatMap((work) => work.clues),
-    works: targetType === 'person' ? round.works.map((work) => ({ title: work.title, clues: work.clues })) : [],
-    options,
+        ? `Quelle est cette œuvre ?`
+        : `Quelle personne relie ces trois œuvres ?`,
+    clues: targetType === 'work' ? round.works[questionInRound].clues : [],
+    works: targetType === 'person' ? round.works.map((work) => ({ title: work.title, clues: [] })) : [],
+    answerMode,
+    options: answerMode === 'choices' ? options : [],
+    suggestions:
+      answerMode === 'autocomplete' && includeSuggestions
+        ? await getAnswerDictionaryValues(quiz.owner_user_id, target.dictionary_id)
+        : [],
     correctOption,
   };
 }
@@ -455,6 +625,108 @@ function calculatePoints(targetType: 'work' | 'person', startedAt: string | null
   const duration = Math.max(1, ends - started);
   const remainingRatio = Math.max(0, Math.min(1, (ends - now) / duration));
   return Math.round(basePoints * (0.5 + remainingRatio * 0.5));
+}
+
+function normalizeAnswer(value: string): string {
+  return value
+    .trim()
+    .toLocaleLowerCase('fr-FR')
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/\s+/g, ' ');
+}
+
+function validateAnswerConfig(
+  answerMode: AnswerMode,
+  target: { options?: string[]; correctOptionIndex?: number; correctAnswer?: string },
+  path: Array<string | number>,
+  ctx: z.RefinementCtx,
+): void {
+  if (answerMode === 'choices') {
+    if (!target.options || target.options.length !== 4 || target.options.some((option) => !option.trim())) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Quatre propositions non vides sont requises en mode QCM.',
+        path: [...path, 'options'],
+      });
+    }
+    if (target.correctOptionIndex === undefined || target.correctOptionIndex < 0 || target.correctOptionIndex > 3) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Une bonne proposition doit être sélectionnée.',
+        path: [...path, 'correctOptionIndex'],
+      });
+    }
+    return;
+  }
+
+  if (!target.correctAnswer?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Une bonne réponse est requise en mode recherche.',
+      path: [...path, 'correctAnswer'],
+    });
+  }
+}
+
+type ValidationIssue = {
+  path: Array<string | number>;
+  message: string;
+};
+
+async function validateQuizAutocompleteAnswers(quiz: QuizInput, ownerUserId: string): Promise<ValidationIssue | undefined> {
+  for (const [roundIndex, round] of quiz.rounds.entries()) {
+    const personError = await validateAutocompleteAnswer(
+      round.person.answerMode ?? quiz.answerMode ?? 'choices',
+      round.person,
+      ownerUserId,
+      `manche ${roundIndex + 1}, personne cible`,
+      ['rounds', roundIndex, 'person', 'correctAnswer'],
+    );
+    if (personError) return personError;
+
+    for (const [workIndex, work] of round.works.entries()) {
+      const workError = await validateAutocompleteAnswer(
+        work.answerMode ?? quiz.answerMode ?? 'choices',
+        work,
+        ownerUserId,
+        `manche ${roundIndex + 1}, œuvre ${workIndex + 1}`,
+        ['rounds', roundIndex, 'works', workIndex, 'correctAnswer'],
+      );
+      if (workError) return workError;
+    }
+  }
+  return undefined;
+}
+
+async function validateAutocompleteAnswer(
+  answerMode: AnswerMode,
+  target: { correctAnswer?: string; dictionaryId?: string },
+  ownerUserId: string,
+  label: string,
+  path: Array<string | number>,
+): Promise<ValidationIssue | undefined> {
+  if (answerMode !== 'autocomplete') return undefined;
+  const answer = target.correctAnswer?.trim() ?? '';
+  const dictionaryValues = await getAnswerDictionaryValues(ownerUserId, target.dictionaryId);
+  const validAnswers = new Set(dictionaryValues.map(normalizeAnswer));
+  if (!validAnswers.has(normalizeAnswer(answer))) {
+    return {
+      path,
+      message: `La bonne réponse de ${label} doit être présente dans le dictionnaire sélectionné.`,
+    };
+  }
+  return undefined;
+}
+
+function validationErrorResponse(issues: ValidationIssue[] | z.ZodIssue[]) {
+  return {
+    error: 'Validation impossible',
+    issues: issues.map((issue) => ({
+      path: issue.path,
+      message: issue.message,
+    })),
+  };
 }
 
 async function allPlayersAnswered(
@@ -505,7 +777,7 @@ function asyncRoute(
 
 async function verifyRoomOwner(quizId: string, idToken: string | undefined): Promise<{ ok: true } | { ok: false; error: string }> {
   if (!idToken) {
-    return { ok: false, error: 'Connexion Google requise' };
+    return { ok: false, error: 'Connexion Firebase requise' };
   }
   try {
     const admin = await verifyAdminToken(idToken);
@@ -514,22 +786,28 @@ async function verifyRoomOwner(quizId: string, idToken: string | undefined): Pro
     }
     return { ok: true };
   } catch (error) {
-    return { ok: false, error: error instanceof Error ? error.message : 'Session Google invalide' };
+    return { ok: false, error: error instanceof Error ? error.message : 'Session Firebase invalide' };
   }
 }
 
 type QuizWithRounds = {
+  owner_user_id: string;
+  answer_mode: AnswerMode;
   rounds?: Array<{
     id: string;
     title: string;
     person: {
       id: string;
       name: string;
+      answer_mode?: AnswerMode;
+      dictionary_id?: string;
       options: Array<{ id: string; label: string; position: number; isCorrect?: number }>;
     };
     works: Array<{
       id: string;
       title: string;
+      answer_mode?: AnswerMode;
+      dictionary_id?: string;
       clues: Array<{ id?: string; kind: string; content: string }>;
       options: Array<{ id: string; label: string; position: number; isCorrect?: number }>;
     }>;

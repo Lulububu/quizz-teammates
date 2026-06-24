@@ -9,6 +9,8 @@ export type Work = {
   title: string;
   kind: string;
   clues: Clue[];
+  answer_mode?: 'choices' | 'autocomplete';
+  dictionary_id?: string;
   options?: AnswerOption[];
 };
 
@@ -18,6 +20,8 @@ export type Round = {
   person: {
     id?: string;
     name: string;
+    answer_mode?: 'choices' | 'autocomplete';
+    dictionary_id?: string;
     options?: AnswerOption[];
   };
   works: Work[];
@@ -27,6 +31,7 @@ export type Quiz = {
   id: string;
   title: string;
   description: string;
+  answer_mode: 'choices' | 'autocomplete';
   rounds?: Round[];
 };
 
@@ -64,6 +69,7 @@ export type GameState = {
   answerCount: number;
   leaderboard: PlayerScore[];
   topLeaderboard: PlayerScore[];
+  players: PlayerScore[];
   activeQuestion?: ActiveQuestion;
 };
 
@@ -73,10 +79,19 @@ export type ActiveQuestion = {
   targetType: 'work' | 'person';
   targetId: string;
   prompt: string;
+  answerMode: 'choices' | 'autocomplete';
   clues: Clue[];
   works: Array<{ title: string; clues: Clue[] }>;
   options: AnswerOption[];
+  suggestions: string[];
   correctOption?: { id: string; label: string };
+};
+
+export type AnswerDictionary = {
+  id: string;
+  name: string;
+  values: string[];
+  usage_count?: number;
 };
 
 export type PlayerResult = {

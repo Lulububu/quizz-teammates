@@ -1,4 +1,4 @@
-# Projet Quizz Teammates
+# Projet Quiz Teammates
 
 ## Objectif
 
@@ -10,7 +10,7 @@ Creer un site web proche de Kahoot permettant :
 - d'afficher le classement au fil des questions ;
 - d'afficher un classement final.
 
-La mecanique differenciee du quiz est la suivante : pour chaque manche, les joueurs doivent d'abord deviner trois oeuvres a partir d'indices, puis deviner la personne reliee a ces trois oeuvres. Chaque question est un QCM a quatre propositions.
+La mecanique differenciee du quiz est la suivante : pour chaque manche, les joueurs doivent d'abord deviner trois oeuvres a partir d'indices, puis deviner la personne reliee a ces trois oeuvres. Chaque question peut utiliser un QCM a quatre propositions ou une recherche avec autocompletion.
 
 ## Stack retenue
 
@@ -28,6 +28,7 @@ La mecanique differenciee du quiz est la suivante : pour chaque manche, les joue
 - `work` : oeuvre a deviner dans une manche, avec un type optionnel : jeu video, film, livre, serie, musique, autre.
 - `clue` : indice rattache a une oeuvre, sous forme texte, image, audio, video ou lien. Une oeuvre peut avoir plusieurs indices.
 - `answer_option` : proposition de reponse rattachee a une oeuvre ou a une personne cible, avec une seule bonne reponse par question.
+- `answer_dictionary` : dictionnaire nomme de reponses admin, saisi sous forme de liste de valeurs separees par des sauts de ligne et utilise pour l'autocompletion.
 - `person` : personne cible a trouver apres les trois oeuvres.
 - `room` : salon de jeu cree depuis un quiz, avec etat de partie, question active et timer serveur.
 - `player` : joueur dans un salon.
@@ -37,14 +38,16 @@ La mecanique differenciee du quiz est la suivante : pour chaque manche, les joue
 
 - Une manche contient exactement trois oeuvres.
 - Une manche a une seule personne cible.
-- Chaque oeuvre a quatre propositions de reponse, dont une bonne.
-- La question personne a quatre propositions de reponse, dont une bonne.
+- Chaque question choisit un mode de reponse : quatre propositions ou recherche avec autocompletion.
+- En mode QCM, chaque oeuvre et chaque personne cible ont quatre propositions, dont une bonne.
+- En mode recherche, chaque oeuvre et chaque personne cible ont une bonne reponse textuelle ; les joueurs cherchent dans le dictionnaire de reponses choisi pour la question, ou dans tous les dictionnaires si aucun dictionnaire precis n'est selectionne.
 - Le score est calcule cote serveur.
 - Bonne oeuvre trouvee : 100 points.
 - Personne cible trouvee : 300 points.
 - Le classement est recalcule apres chaque reponse valide.
-- La validation se fait par option QCM choisie, pas par saisie libre.
-- Les indices sont stockes comme texte ou URL ; l'upload de fichiers viendra ensuite.
+- La validation se fait par option QCM choisie ou par comparaison de la valeur selectionnee en autocompletion.
+- Les indices peuvent etre saisis comme texte ou televerses dans Cloudinary sous forme d'image, de son ou de video.
+- Les limites sont de 5 Mo pour une image, 10 Mo pour un son et 20 Mo pour une video.
 - Lorsqu'une oeuvre a plusieurs indices, ils sont reveles progressivement pendant la question. L'intervalle est calcule selon le nombre d'indices et le temps disponible.
 - Les quiz appartiennent a un seul compte Google createur. Un autre compte ne peut pas les lister, les consulter, les modifier, les supprimer ou creer un salon depuis ceux-ci.
 - Les joueurs rejoignent toujours une partie sans compte, uniquement avec le code ou le QR code.
@@ -59,7 +62,7 @@ La mecanique differenciee du quiz est la suivante : pour chaque manche, les joue
 - Si tous les joueurs ont repondu, la question se termine sans attendre la fin du timer.
 - A la fin du timer, ou lorsque tous les joueurs ont repondu, la bonne reponse est revelee a tout le monde.
 - Les points dependent de la rapidite : une bonne reponse conserve au minimum 50% des points de base et peut monter a 100% si elle est donnee tres vite.
-- Apres les trois questions d'oeuvres, la quatrieme question de la manche affiche les trois oeuvres et leurs indices, puis demande la personne reliee avec quatre propositions.
+- Apres les trois questions d'oeuvres, la quatrieme question de la manche affiche les trois oeuvres et leurs indices, puis demande la personne reliee selon le mode de cette question.
 - L'animateur passe manuellement a la question suivante apres la revelation.
 - Les joueurs ne voient pas le classement complet pendant la partie ; ils voient leur resultat, leurs points gagnes et leur position apres chaque question.
 - Les joueurs voient aussi leur total de points apres chaque question.
@@ -72,17 +75,18 @@ La mecanique differenciee du quiz est la suivante : pour chaque manche, les joue
 
 1. Cree un quiz.
 2. Ajoute des manches.
-3. Pour chaque manche, renseigne trois oeuvres, leurs indices, quatre propositions pour chaque oeuvre, la bonne proposition, puis la personne cible avec ses quatre propositions.
-4. Cree un salon depuis le quiz.
-5. Partage le QR code ou le code court.
-6. Lance les questions et suit le classement.
+3. Administre au besoin plusieurs dictionnaires nommes, chacun avec une valeur par ligne.
+4. Pour chaque manche, renseigne trois oeuvres, leurs indices, le mode de chaque question, les propositions QCM ou la bonne reponse textuelle, puis la personne cible.
+6. Cree un salon depuis le quiz.
+7. Partage le QR code ou le code court.
+8. Lance les questions et suit le classement.
 
 ### Joueur
 
 1. Rejoint un salon via QR code ou code court.
 2. Saisit un pseudo.
 3. Repond aux trois oeuvres.
-4. Repond a la personne cible parmi quatre propositions apres la revelation des trois oeuvres.
+4. Repond a la personne cible selon le mode du quiz apres la revelation des trois oeuvres.
 5. Consulte son resultat, ses points et sa position apres chaque question.
 
 ## Etat d'avancement
@@ -92,6 +96,8 @@ La mecanique differenciee du quiz est la suivante : pour chaque manche, les joue
 - [x] API de creation de quiz, manches et salons.
 - [x] Socket.IO pour rejoindre un salon, envoyer une reponse et recevoir le classement.
 - [x] Interface Angular pour creer un quiz QCM, creer un salon, piloter le lancement et rejoindre une partie.
+- [x] Mode de reponse par recherche avec autocompletion selectionnable question par question.
+- [x] Administration de plusieurs dictionnaires nommes par compte createur.
 - [x] QR code genere cote serveur pour l'URL de participation.
 - [x] Verification locale : creation d'un quiz de demo, creation d'un salon, inscription d'un joueur et scoring d'une bonne reponse.
 - [x] Deroulement serveur type Kahoot : lancement animateur, question active, timer, revelation, question suivante.
@@ -110,7 +116,7 @@ La mecanique differenciee du quiz est la suivante : pour chaque manche, les joue
 - [x] Acces joueur sans compte conserve.
 - [x] Migration de SQLite vers Firestore pour un deploiement Render sans disque persistant.
 - [x] Configuration Render via `render.yaml`.
-- [ ] Upload et stockage des fichiers media.
+- [x] Upload signe et stockage Cloudinary des indices image, audio et video.
 - [ ] Interface avancee d'animation question par question.
 - [ ] Tests automatises.
 
@@ -127,4 +133,3 @@ La mecanique differenciee du quiz est la suivante : pour chaque manche, les joue
 - Le jeu est-il anime par un maitre du jeu, ou les joueurs avancent-ils chacun a leur rythme ?
 - Les scores doivent-ils tenir compte de la rapidite de reponse ?
 - Les personnes reliees aux oeuvres sont-elles des membres d'une equipe, des celebrites, des auteurs, ou tout type de personne ?
-- Les indices audio/image doivent-ils etre uploades dans l'application ou fournis par URL ?

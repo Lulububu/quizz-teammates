@@ -10,7 +10,8 @@ import {
   type Auth,
 } from 'firebase/auth';
 import { io, Socket } from 'socket.io-client';
-import { AdminUser, GameState, PlayerResult, PlayerScore, Quiz, Room } from './types';
+import { firstValueFrom } from 'rxjs';
+import { AdminUser, AnswerDictionary, GameState, PlayerResult, PlayerScore, Quiz, Room } from './types';
 
 type FirebaseWebConfig = {
   apiKey: string;
@@ -20,11 +21,24 @@ type FirebaseWebConfig = {
   messagingSenderId?: string;
 };
 
+type UploadClueKind = 'image' | 'audio' | 'video';
+
+type CloudinaryUploadSignature = {
+  apiKey: string;
+  cloudName: string;
+  folder: string;
+  publicId: string;
+  resourceType: 'image' | 'video';
+  signature: string;
+  timestamp: number;
+};
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   leaderboard = signal<PlayerScore[]>([]);
   gameState = signal<GameState | undefined>(undefined);
   playerResult = signal<PlayerResult | undefined>(undefined);
+  playerRemoved = signal('');
   adminUser = signal<AdminUser | undefined>(undefined);
   authError = signal('');
   private socket: Socket;
@@ -41,6 +55,9 @@ export class ApiService {
     });
     this.socket.on('host-game-state', (state: GameState) => this.gameState.set(state));
     this.socket.on('player-result', (result: PlayerResult) => this.playerResult.set(result));
+    this.socket.on('player-removed', (payload: { message?: string }) => {
+      this.playerRemoved.set(payload.message ?? 'Vous avez été retiré du salon.');
+    });
     this.initializeFirebase();
   }
 
@@ -58,6 +75,23 @@ export class ApiService {
 
   deleteQuiz(quizId: string) {
     return this.http.delete<void>(`/api/quizzes/${quizId}`, { headers: this.authHeaders() });
+  }
+
+  listAnswerDictionaries() {
+    return this.http.get<AnswerDictionary[]>('/api/answer-dictionaries', { headers: this.authHeaders() });
+  }
+
+  saveAnswerDictionary(dictionary: { id?: string; name: string; values: string[] }) {
+    if (dictionary.id) {
+      return this.http.put<AnswerDictionary>(`/api/answer-dictionaries/${dictionary.id}`, dictionary, {
+        headers: this.authHeaders(),
+      });
+    }
+    return this.http.post<AnswerDictionary>('/api/answer-dictionaries', dictionary, { headers: this.authHeaders() });
+  }
+
+  deleteAnswerDictionary(dictionaryId: string) {
+    return this.http.delete<void>(`/api/answer-dictionaries/${dictionaryId}`, { headers: this.authHeaders() });
   }
 
   getQuiz(quizId: string) {
@@ -83,6 +117,13 @@ export class ApiService {
     return this.emit('join-room', { code, nickname });
   }
 
+  resumePlayer(
+    code: string,
+    playerId: string,
+  ): Promise<{ ok: boolean; player?: PlayerScore; gameState?: GameState; error?: string }> {
+    return this.emit('resume-player', { code, playerId });
+  }
+
   hostRoom(code: string): Promise<{ ok: boolean; gameState?: GameState; error?: string }> {
     return this.emit('host-room', { code, idToken: this.idToken });
   }
@@ -95,20 +136,25 @@ export class ApiService {
     return this.emit('next-question', { code, idToken: this.idToken });
   }
 
+  removePlayer(code: string, playerId: string): Promise<{ ok: boolean; error?: string }> {
+    return this.emit('remove-player', { code, playerId, idToken: this.idToken });
+  }
+
   submitAnswer(payload: {
     code: string;
     playerId: string;
     roundId: string;
     targetType: 'work' | 'person';
     targetId: string;
-    optionId: string;
+    optionId?: string;
+    value?: string;
   }): Promise<{ ok: boolean; isCorrect?: boolean; points?: number; error?: string }> {
-    return this.emit('submit-answer', payload);
+    return this.emitWithTimeout('submit-answer', payload, 12_000);
   }
 
   async signInWithGoogle(): Promise<void> {
     if (!this.auth) {
-      this.authError.set('Firebase doit etre configure avant la connexion.');
+      this.authError.set('Firebase doit être configuré avant la connexion.');
       return;
     }
     try {
@@ -125,9 +171,59 @@ export class ApiService {
     this.authError.set('');
   }
 
+  async uploadClueFile(file: File, kind: UploadClueKind): Promise<string> {
+    const limits: Record<UploadClueKind, number> = {
+      image: 5 * 1024 * 1024,
+      audio: 10 * 1024 * 1024,
+      video: 20 * 1024 * 1024,
+    };
+    if (!file.type.startsWith(`${kind}/`)) {
+      throw new Error(`Le fichier sélectionné n'est pas un fichier ${kind === 'image' ? 'image' : kind === 'audio' ? 'audio' : 'vidéo'}.`);
+    }
+    if (file.size > limits[kind]) {
+      throw new Error(`Ce fichier dépasse la limite de ${limits[kind] / 1024 / 1024} Mo.`);
+    }
+    const upload = await firstValueFrom(
+      this.http.post<CloudinaryUploadSignature>(
+        '/api/uploads/cloudinary/signature',
+        { kind },
+        { headers: this.authHeaders() },
+      ),
+    );
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('api_key', upload.apiKey);
+    formData.append('timestamp', String(upload.timestamp));
+    formData.append('signature', upload.signature);
+    formData.append('folder', upload.folder);
+    formData.append('public_id', upload.publicId);
+
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${encodeURIComponent(upload.cloudName)}/${upload.resourceType}/upload`,
+      { method: 'POST', body: formData },
+    );
+    const result = await response.json() as { secure_url?: string; error?: { message?: string } };
+    if (!response.ok || !result.secure_url) {
+      throw new Error(result.error?.message ?? 'Cloudinary a refusé le téléversement.');
+    }
+    return result.secure_url;
+  }
+
   private emit<T>(event: string, payload: unknown): Promise<T> {
     return new Promise((resolve) => {
       this.socket.emit(event, payload, (response: T) => resolve(response));
+    });
+  }
+
+  private emitWithTimeout<T>(event: string, payload: unknown, timeoutMs: number): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.socket.timeout(timeoutMs).emit(event, payload, (error: Error | null, response: T) => {
+        if (error) {
+          reject(new Error("Le serveur met trop de temps à répondre."));
+          return;
+        }
+        resolve(response);
+      });
     });
   }
 
@@ -135,7 +231,7 @@ export class ApiService {
     this.http.get<{ firebase: FirebaseWebConfig }>('/api/auth/config').subscribe({
       next: ({ firebase }) => {
         if (!firebase.apiKey || !firebase.authDomain || !firebase.projectId || !firebase.appId) {
-          this.authError.set('Configuration Firebase web incomplete cote serveur.');
+          this.authError.set('Configuration Firebase web incomplète côté serveur.');
           return;
         }
         this.firebaseApp = initializeApp(firebase);
@@ -163,7 +259,7 @@ export class ApiService {
       error: () => {
         this.idToken = '';
         this.adminUser.set(undefined);
-        this.authError.set('Session Firebase expiree ou invalide.');
+        this.authError.set('Session Firebase expirée ou invalide.');
       },
     });
   }

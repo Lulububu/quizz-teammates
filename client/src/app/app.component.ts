@@ -8,7 +8,7 @@ import { RouterLink, RouterOutlet } from '@angular/router';
   template: `
     <div class="app-shell">
       <header class="topbar">
-        <a routerLink="/" class="brand">Quizz Teammates</a>
+        <a routerLink="/" class="brand">Quiz Teammates</a>
       </header>
       <router-outlet />
     </div>

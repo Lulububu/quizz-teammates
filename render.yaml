@@ -22,3 +22,9 @@ services:
         sync: false
       - key: FIREBASE_WEB_MESSAGING_SENDER_ID
         sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false

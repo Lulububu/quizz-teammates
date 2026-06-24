@@ -1,7 +1,9 @@
 node_modules/
 dist/
 .angular/
-data/
+data/*
+!data/dictionnaires/
+!data/dictionnaires/*.txt
 npm-debug.log*
 .DS_Store
 .env
