@@ -1,0 +1,537 @@
+/* Theme 1: dark competitive mobile UI, inspired by reference image 1. */
+html[data-theme="cosmic"] {
+  color-scheme: dark;
+  --ink: #f7f8ff;
+  --muted: #aeb7da;
+  --line: #46517e;
+  --paper: #1d2447;
+  --panel: #2d365f;
+  --blue: #35a4ff;
+  --green: #35d08b;
+  --red: #ff5f7f;
+  --yellow: #ffd65c;
+  --orange: #e854bc;
+  --primary: #d84fc6;
+  --primary-hover: #f16eb7;
+  --primary-contrast: #ffffff;
+  --secondary: #3a4572;
+  --secondary-contrast: #f7f8ff;
+  --input-surface: #222a50;
+  --topbar-surface: rgba(29, 36, 71, 0.96);
+  --shadow: 0 18px 42px rgba(4, 8, 28, 0.34);
+  --button-shadow: 0 10px 24px rgba(216, 79, 198, 0.22);
+  --radius: 8px;
+}
+
+html[data-theme="cosmic"] body {
+  background: #1d2447;
+}
+
+html[data-theme="cosmic"] .topbar {
+  border-color: #39436e;
+}
+
+html[data-theme="cosmic"] .panel,
+html[data-theme="cosmic"] .item,
+html[data-theme="cosmic"] .round-editor,
+html[data-theme="cosmic"] .work-editor,
+html[data-theme="cosmic"] .answer-editor,
+html[data-theme="cosmic"] .clue-editor,
+html[data-theme="cosmic"] .dictionary-row,
+html[data-theme="cosmic"] .quiz-basics,
+html[data-theme="cosmic"] .empty-state,
+html[data-theme="cosmic"] .work-recap > section,
+html[data-theme="cosmic"] .work-name-recap > div {
+  background: #2d365f;
+  border-color: #46517e;
+}
+
+html[data-theme="cosmic"] .round-header,
+html[data-theme="cosmic"] .person-editor,
+html[data-theme="cosmic"] .privacy-mode-field,
+html[data-theme="cosmic"] .autocomplete,
+html[data-theme="cosmic"] .selected-search-answer,
+html[data-theme="cosmic"] .audio-clue,
+html[data-theme="cosmic"] .media-preview,
+html[data-theme="cosmic"] .answer-sending {
+  background: #343e6b;
+  border-color: #53608e;
+}
+
+html[data-theme="cosmic"] p,
+html[data-theme="cosmic"] label,
+html[data-theme="cosmic"] .field-help,
+html[data-theme="cosmic"] .answer-submit-bar span {
+  color: #aeb7da;
+}
+
+html[data-theme="cosmic"] .admin-login p,
+html[data-theme="cosmic"] .admin-login h2 {
+  color: #ffffff;
+}
+
+html[data-theme="cosmic"] .admin-tabs,
+html[data-theme="cosmic"] .editor-summary span,
+html[data-theme="cosmic"] .dictionary-stats span,
+html[data-theme="cosmic"] .room-code {
+  border-color: #53608e;
+  background: #343e6b;
+  color: #f7f8ff;
+}
+
+html[data-theme="cosmic"] .admin-tabs button {
+  color: #cbd2f0;
+}
+
+html[data-theme="cosmic"] .admin-tabs button:hover {
+  background: #414d7e;
+  color: #ffffff;
+}
+
+html[data-theme="cosmic"] .admin-tabs button.active {
+  background: #35a4ff;
+  color: #111833;
+}
+
+html[data-theme="cosmic"] .sticky-save {
+  border-color: #53608e;
+  background: rgba(34, 42, 80, 0.98);
+  box-shadow: 0 14px 34px rgba(4, 8, 28, 0.42);
+}
+
+html[data-theme="cosmic"] .sticky-save p,
+html[data-theme="cosmic"] .checkbox-line {
+  color: #f7f8ff;
+}
+
+html[data-theme="cosmic"] .feedback-toast {
+  border-color: #35d08b;
+  border-left-color: #35d08b;
+  background: #234f51;
+  color: #e9fff5;
+  box-shadow: 0 18px 42px rgba(4, 8, 28, 0.45);
+}
+
+html[data-theme="cosmic"] .works-requirement {
+  border-color: #a7772e;
+  background: #4d402f;
+  color: #ffe09a;
+}
+
+html[data-theme="cosmic"] input,
+html[data-theme="cosmic"] select,
+html[data-theme="cosmic"] textarea,
+html[data-theme="cosmic"] .suggestion-list,
+html[data-theme="cosmic"] .suggestion-list button {
+  border-color: #4c5888;
+  background: #222a50;
+  color: #f7f8ff;
+}
+
+html[data-theme="cosmic"] input::placeholder,
+html[data-theme="cosmic"] textarea::placeholder {
+  color: #8f99c2;
+  opacity: 1;
+}
+
+html[data-theme="cosmic"] .suggestion-list button:hover,
+html[data-theme="cosmic"] .suggestion-list button.active {
+  background: #3b4777;
+}
+
+html[data-theme="cosmic"] .leaderboard li:first-child,
+html[data-theme="cosmic"] .current-player {
+  background: #3a4775;
+}
+
+html[data-theme="cosmic"] .current-clue {
+  border-color: #49699f;
+  background: #283a6b;
+}
+
+html[data-theme="cosmic"] .timer-ring {
+  background: radial-gradient(circle, #222a50 54%, transparent 56%), conic-gradient(var(--green) var(--progress), #46517e 0);
+}
+
+html[data-theme="cosmic"] .timer-ring.urgent {
+  background: radial-gradient(circle, #222a50 54%, transparent 56%), conic-gradient(var(--red) var(--progress), #46517e 0);
+}
+
+html[data-theme="cosmic"] .answer-option:nth-child(1) {
+  background: #2d9ff0;
+}
+
+html[data-theme="cosmic"] .answer-option:nth-child(2) {
+  background: #35b982;
+}
+
+html[data-theme="cosmic"] .answer-option:nth-child(3) {
+  background: #ffd65c;
+  color: #202544;
+}
+
+html[data-theme="cosmic"] .answer-option:nth-child(4) {
+  background: #ed5b86;
+}
+
+html[data-theme="cosmic"] .submitted-answer,
+html[data-theme="cosmic"] .correct-answer {
+  border-color: #35d08b;
+  background: #234f51;
+}
+
+html[data-theme="cosmic"] .correct-answer.incorrect {
+  border-color: #ff5f7f;
+  background: #5b2d4a;
+}
+
+html[data-theme="cosmic"] .podium-screen {
+  background: #222951;
+}
+
+html[data-theme="cosmic"] .podium-screen h1,
+html[data-theme="cosmic"] .final-reveal-message {
+  color: #ffffff;
+}
+
+html[data-theme="cosmic"] .podium-place {
+  background: #303967;
+}
+
+html[data-theme="cosmic"] .podium-place.first {
+  background: #d84fc6;
+}
+
+html[data-theme="cosmic"] .podium-place.second {
+  background: #477cc9;
+}
+
+html[data-theme="cosmic"] .podium-place.third {
+  background: #65599d;
+}
+
+html[data-theme="cosmic"] .final-ranking {
+  background: #2d365f;
+}
+
+/* Theme 2: warm learning dashboard, inspired by reference image 2. */
+html[data-theme="academy"] {
+  color-scheme: light;
+  --ink: #34251d;
+  --muted: #79685e;
+  --line: #efd6b7;
+  --paper: #f8f4ee;
+  --panel: #fffaf2;
+  --blue: #586da5;
+  --green: #82c66f;
+  --red: #d46f5d;
+  --yellow: #ffd064;
+  --orange: #ed9946;
+  --primary: #ed9946;
+  --primary-hover: #f2ad62;
+  --primary-contrast: #ffffff;
+  --secondary: #fff0d8;
+  --secondary-contrast: #34251d;
+  --input-surface: #ffffff;
+  --topbar-surface: rgba(255, 250, 242, 0.96);
+  --shadow: 0 14px 34px rgba(113, 78, 46, 0.09);
+  --button-shadow: 0 8px 18px rgba(184, 103, 38, 0.16);
+  --radius: 8px;
+}
+
+html[data-theme="academy"] .public-entry,
+html[data-theme="academy"] .round-editor,
+html[data-theme="academy"] .work-editor {
+  border-color: #efcfaa;
+}
+
+html[data-theme="academy"] .work-editor {
+  border-left-color: #ed9946;
+}
+
+html[data-theme="academy"] .person-editor {
+  border-left-color: #586da5;
+  background: #edf1fb;
+}
+
+html[data-theme="academy"] .current-clue,
+html[data-theme="academy"] .work-name-recap > div {
+  background: #fff0d1;
+}
+
+html[data-theme="academy"] .podium-place.first {
+  background: #cf6a08;
+}
+
+html[data-theme="academy"] .podium-place.second {
+  background: #a88768;
+}
+
+html[data-theme="academy"] .podium-place.third {
+  background: #d09247;
+}
+
+/* Theme 3: airy playful pastel UI, inspired by reference image 3. */
+html[data-theme="orbit"] {
+  color-scheme: light;
+  --ink: #22233e;
+  --muted: #797793;
+  --line: #ddd8f5;
+  --paper: #f1efff;
+  --panel: #ffffff;
+  --blue: #54baf2;
+  --green: #6bc77b;
+  --red: #ff6658;
+  --yellow: #ffca61;
+  --orange: #ff6658;
+  --primary: #ff6658;
+  --primary-hover: #ff897e;
+  --primary-contrast: #ffffff;
+  --secondary: #ece9ff;
+  --secondary-contrast: #35335f;
+  --input-surface: #ffffff;
+  --topbar-surface: rgba(248, 247, 255, 0.96);
+  --shadow: 0 16px 35px rgba(91, 77, 163, 0.1);
+  --button-shadow: 0 9px 20px rgba(255, 102, 88, 0.18);
+  --radius: 8px;
+}
+
+html[data-theme="orbit"] body {
+  background: #f1efff;
+}
+
+html[data-theme="orbit"] .panel,
+html[data-theme="orbit"] .item,
+html[data-theme="orbit"] .round-editor,
+html[data-theme="orbit"] .work-editor,
+html[data-theme="orbit"] .answer-editor,
+html[data-theme="orbit"] .clue-editor {
+  border-color: #e2def7;
+}
+
+html[data-theme="orbit"] .round-header {
+  background: #eae6ff;
+}
+
+html[data-theme="orbit"] .work-editor {
+  border-left-color: #54baf2;
+}
+
+html[data-theme="orbit"] .work-heading > span {
+  background: #54baf2;
+}
+
+html[data-theme="orbit"] .person-editor {
+  border-color: #dfd8ff;
+  border-left-color: #9d79ed;
+  background: #f3efff;
+}
+
+html[data-theme="orbit"] .current-clue {
+  border-color: #b9dff5;
+  background: #eaf8ff;
+}
+
+html[data-theme="orbit"] .work-name-recap > div {
+  border-color: #d6cff7;
+  background: #ffffff;
+}
+
+html[data-theme="orbit"] .answer-option:nth-child(1) {
+  background: #54baf2;
+}
+
+html[data-theme="orbit"] .answer-option:nth-child(2) {
+  background: #72ca82;
+}
+
+html[data-theme="orbit"] .answer-option:nth-child(3) {
+  background: #ffca61;
+  color: #22233e;
+}
+
+html[data-theme="orbit"] .answer-option:nth-child(4) {
+  background: #ff6658;
+}
+
+html[data-theme="orbit"] .podium-screen {
+  background: #e9e5ff;
+}
+
+html[data-theme="orbit"] .podium-screen h1,
+html[data-theme="orbit"] .final-reveal-message {
+  color: #4a3e86;
+}
+
+html[data-theme="orbit"] .podium-place.first {
+  background: #ff6658;
+}
+
+html[data-theme="orbit"] .podium-place.second {
+  background: #54baf2;
+}
+
+html[data-theme="orbit"] .podium-place.third {
+  background: #9d79ed;
+}
+
+html[data-theme="orbit"] .final-ranking {
+  background: #ffffff;
+}
+
+/* Theme 4: original retro game-show system with hard editorial contrast. */
+html[data-theme="arcade"] {
+  color-scheme: light;
+  --ink: #171713;
+  --muted: #625f52;
+  --line: #171713;
+  --paper: #f3f0df;
+  --panel: #fffdf3;
+  --blue: #2764ff;
+  --green: #8be24b;
+  --red: #ff4e3d;
+  --yellow: #ffe13b;
+  --orange: #ff5e2f;
+  --primary: #171713;
+  --primary-hover: #35352c;
+  --primary-contrast: #ffffff;
+  --secondary: #ffe13b;
+  --secondary-contrast: #171713;
+  --input-surface: #ffffff;
+  --topbar-surface: #8be24b;
+  --shadow: 6px 6px 0 #171713;
+  --button-shadow: 3px 3px 0 #171713;
+  --radius: 2px;
+}
+
+html[data-theme="arcade"] body {
+  background: #f3f0df;
+}
+
+html[data-theme="arcade"] h1,
+html[data-theme="arcade"] h2,
+html[data-theme="arcade"] h3,
+html[data-theme="arcade"] h4,
+html[data-theme="arcade"] .brand {
+  font-family: "Arial Black", Impact, ui-sans-serif, system-ui, sans-serif;
+}
+
+html[data-theme="arcade"] .topbar {
+  border-bottom: 3px solid #171713;
+}
+
+html[data-theme="arcade"] button,
+html[data-theme="arcade"] input,
+html[data-theme="arcade"] select,
+html[data-theme="arcade"] textarea,
+html[data-theme="arcade"] .panel,
+html[data-theme="arcade"] .item,
+html[data-theme="arcade"] .round-editor,
+html[data-theme="arcade"] .work-editor,
+html[data-theme="arcade"] .person-editor,
+html[data-theme="arcade"] .answer-editor {
+  border: 2px solid #171713;
+}
+
+html[data-theme="arcade"] .round-header {
+  background: #ffe13b;
+  border-bottom: 2px solid #171713;
+}
+
+html[data-theme="arcade"] .work-editor {
+  border-left: 10px solid #2764ff;
+}
+
+html[data-theme="arcade"] .work-heading > span {
+  border: 2px solid #171713;
+  background: #2764ff;
+}
+
+html[data-theme="arcade"] .person-editor {
+  border-left: 10px solid #ff4e3d;
+  background: #fff4ed;
+}
+
+html[data-theme="arcade"] .eyebrow {
+  color: #171713;
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+}
+
+html[data-theme="arcade"] .current-clue {
+  border: 3px solid #171713;
+  background: #ffffff;
+  box-shadow: 8px 8px 0 #2764ff;
+}
+
+html[data-theme="arcade"] .clue-chip,
+html[data-theme="arcade"] .work-name-recap > div {
+  border: 2px solid #171713;
+  background: #ffe13b;
+}
+
+html[data-theme="arcade"] .answer-option {
+  border: 3px solid #171713;
+  box-shadow: 5px 5px 0 #171713;
+}
+
+html[data-theme="arcade"] .answer-option:nth-child(1) {
+  background: #2764ff;
+}
+
+html[data-theme="arcade"] .answer-option:nth-child(2) {
+  background: #8be24b;
+  color: #171713;
+}
+
+html[data-theme="arcade"] .answer-option:nth-child(3) {
+  background: #ffe13b;
+  color: #171713;
+}
+
+html[data-theme="arcade"] .answer-option:nth-child(4) {
+  background: #ff4e3d;
+}
+
+html[data-theme="arcade"] .podium-screen {
+  background: #2764ff;
+}
+
+html[data-theme="arcade"] .podium-screen h1,
+html[data-theme="arcade"] .final-reveal-message {
+  color: #ffffff;
+  text-shadow: 4px 4px 0 #171713;
+}
+
+html[data-theme="arcade"] .podium-place {
+  border: 3px solid #171713;
+  box-shadow: 8px 8px 0 #171713;
+}
+
+html[data-theme="arcade"] .podium-place.first {
+  background: #ffe13b;
+  color: #171713;
+}
+
+html[data-theme="arcade"] .podium-place.first p {
+  color: #171713;
+}
+
+html[data-theme="arcade"] .podium-place.second {
+  background: #8be24b;
+  color: #171713;
+}
+
+html[data-theme="arcade"] .podium-place.second p {
+  color: #171713;
+}
+
+html[data-theme="arcade"] .podium-place.third {
+  background: #ff4e3d;
+}
+
+html[data-theme="arcade"] .final-ranking {
+  border: 3px solid #171713;
+  background: #fffdf3;
+  box-shadow: 8px 8px 0 #171713;
+}

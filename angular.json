@@ -27,7 +27,8 @@
               }
             ],
             "styles": [
-              "client/src/styles.css"
+              "client/src/styles.css",
+              "client/src/themes.css"
             ],
             "scripts": []
           },

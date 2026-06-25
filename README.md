@@ -49,6 +49,23 @@ Le fichier `render.yaml` decrit un service web gratuit qui construit Angular + E
 
 Sur Render, ajoutez les variables Firebase et Cloudinary listees dans `.env.example`. Dans Firebase Authentication, ajoutez aussi le domaine Render dans les domaines autorises.
 
+## Thèmes visuels
+
+Le thème actif est choisi côté serveur avec la variable `APP_THEME` :
+
+```bash
+APP_THEME=academy
+```
+
+Quatre variantes sont disponibles :
+
+- `academy` : thème chaleureux et pédagogique, inspiré du second visuel ;
+- `cosmic` : thème sombre et compétitif, inspiré du premier visuel ;
+- `orbit` : thème pastel et ludique, inspiré du troisième visuel ;
+- `arcade` : thème original à fort contraste, inspiré des jeux télévisés rétro.
+
+Après une modification de `APP_THEME`, redémarrez le serveur local ou redéployez le service Render. Pour comparer ponctuellement un thème sans toucher à la configuration, ajoutez `?theme=cosmic`, `?theme=orbit`, `?theme=academy` ou `?theme=arcade` à l'URL. Cette option ne modifie pas le thème des autres visiteurs.
+
 ## Dictionnaire d'oeuvres
 
 Pour generer une liste initiale d'oeuvres depuis Wikidata :

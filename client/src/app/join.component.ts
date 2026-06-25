@@ -11,8 +11,8 @@ import { Clue, GameState, Room } from './types';
   standalone: true,
   imports: [FormsModule, NgTemplateOutlet, AnswerSearchComponent],
   template: `
-    <main class="page player-page grid">
-      <section class="panel player-shell grid">
+    <main class="page player-page grid screen screen-player">
+      <section class="panel player-shell grid player-stage">
         <header class="player-header">
           <div>
             <p class="eyebrow">Quiz Teammates</p>

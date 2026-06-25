@@ -21,9 +21,9 @@ import { Clue, GameState, Room } from './types';
   imports: [NgTemplateOutlet],
   template: `
     @if (loading()) {
-      <main class="page"><p class="loading-state">Chargement du salon…</p></main>
+      <main class="page screen screen-host-loading"><p class="loading-state">Chargement du salon…</p></main>
     } @else if (error()) {
-      <main class="page">
+      <main class="page screen screen-host-error">
         <section class="empty-state" role="alert">
           <h1>Salon inaccessible</h1>
           <p>{{ error() }}</p>
@@ -31,7 +31,7 @@ import { Clue, GameState, Room } from './types';
         </section>
       </main>
     } @else if (api.gameState()?.status === 'finished') {
-      <main class="podium-screen">
+      <main class="podium-screen screen screen-podium">
         <h1>Classement final</h1>
         @if (finalRevealMessage()) {
           <p class="final-reveal-message">{{ finalRevealMessage() }}</p>
@@ -75,7 +75,7 @@ import { Clue, GameState, Room } from './types';
         </section>
       </main>
     } @else {
-      <main class="page host-page">
+      <main class="page host-page screen screen-host">
         <section class="panel grid host-stage">
           @if (api.gameState(); as state) {
             <article class="host-question grid">

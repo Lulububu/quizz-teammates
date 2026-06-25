@@ -125,8 +125,17 @@ const uploadSignatureSchema = z.object({
   kind: z.enum(['image', 'audio', 'video']),
 });
 
+const availableThemes = ['academy', 'cosmic', 'orbit', 'arcade'] as const;
+const configuredTheme = availableThemes.includes(process.env.APP_THEME as typeof availableThemes[number])
+  ? process.env.APP_THEME
+  : 'academy';
+
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
+});
+
+app.get('/api/app/config', (_req, res) => {
+  res.json({ theme: configuredTheme, availableThemes });
 });
 
 app.get('/api/auth/config', (_req, res) => {

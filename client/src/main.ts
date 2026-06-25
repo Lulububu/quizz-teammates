@@ -13,6 +13,30 @@ const routes: Routes = [
   { path: '**', redirectTo: '' },
 ];
 
-bootstrapApplication(AppComponent, {
-  providers: [provideHttpClient(), provideRouter(routes)],
-}).catch((error) => console.error(error));
+const availableThemes = ['academy', 'cosmic', 'orbit', 'arcade'] as const;
+type AppTheme = typeof availableThemes[number];
+
+async function bootstrap(): Promise<void> {
+  const theme = await loadTheme();
+  document.documentElement.dataset['theme'] = theme;
+  await bootstrapApplication(AppComponent, {
+    providers: [provideHttpClient(), provideRouter(routes)],
+  });
+}
+
+async function loadTheme(): Promise<AppTheme> {
+  const previewTheme = new URLSearchParams(window.location.search).get('theme');
+  if (availableThemes.includes(previewTheme as AppTheme)) {
+    return previewTheme as AppTheme;
+  }
+
+  try {
+    const response = await fetch('/api/app/config');
+    const config = await response.json() as { theme?: string };
+    return availableThemes.includes(config.theme as AppTheme) ? config.theme as AppTheme : 'academy';
+  } catch {
+    return 'academy';
+  }
+}
+
+void bootstrap().catch((error) => console.error(error));

@@ -36,7 +36,7 @@ type DraftQuiz = {
   standalone: true,
   imports: [FormsModule, NgTemplateOutlet, FieldErrorComponent, AnswerSearchComponent],
   template: `
-    <main class="page grid" [class.editor-page]="api.adminUser() && adminView() === 'editor'">
+    <main class="page grid screen screen-home" [class.editor-page]="api.adminUser() && adminView() === 'editor'">
       @if (!api.authReady()) {
         <section class="auth-loading" aria-live="polite">
           <div class="brand-loader" aria-hidden="true"></div>
@@ -88,7 +88,7 @@ type DraftQuiz = {
         </nav>
 
         @if (adminView() === 'quizzes') {
-          <section class="panel grid">
+          <section class="panel grid quiz-library">
             <div class="section-heading">
               <div>
                 <h2>Mes quiz</h2>
@@ -130,7 +130,7 @@ type DraftQuiz = {
         }
 
         @if (adminView() === 'editor') {
-          <section class="editor-layout">
+          <section class="editor-layout quiz-editor-screen">
             <div class="panel grid editor-main">
               <div class="section-heading">
                 <div>
@@ -419,7 +419,13 @@ type DraftQuiz = {
             <p>{{ message() }}</p>
             <div class="row-actions">
               <button type="button" class="secondary" (click)="switchView('quizzes')">Fermer</button>
-              <button type="button" (click)="saveQuiz()" [disabled]="saving() || hasUploadInProgress()">
+              <button
+                type="button"
+                (click)="saveQuiz()"
+                [class.is-loading]="saving()"
+                [attr.aria-busy]="saving()"
+                [disabled]="saving() || hasUploadInProgress()"
+              >
                 {{ saving() ? 'Enregistrement…' : editingQuizId() ? 'Enregistrer les modifications' : 'Créer le quiz' }}
               </button>
             </div>
@@ -427,7 +433,7 @@ type DraftQuiz = {
         }
 
         @if (adminView() === 'dictionaries') {
-          <section class="dictionary-layout">
+          <section class="dictionary-layout dictionary-screen">
             <div class="panel grid">
               <div class="section-heading">
                 <div>
@@ -458,7 +464,15 @@ type DraftQuiz = {
                   Importer un fichier
                   <input type="file" accept=".txt,.csv,text/plain,text/csv" (change)="importDictionaryFile($event)">
                 </label>
-                <button type="button" (click)="saveDictionary()">Enregistrer</button>
+                <button
+                  type="button"
+                  (click)="saveDictionary()"
+                  [class.is-loading]="dictionarySaving()"
+                  [attr.aria-busy]="dictionarySaving()"
+                  [disabled]="dictionarySaving()"
+                >
+                  {{ dictionarySaving() ? 'Enregistrement…' : 'Enregistrer' }}
+                </button>
               </div>
 
               <div class="dictionary-preview">
@@ -506,6 +520,13 @@ type DraftQuiz = {
       }
     </main>
 
+    @if (feedbackMessage()) {
+      <div class="feedback-toast" [class.info]="feedbackTone() === 'info'" role="status" aria-live="polite">
+        <strong>{{ feedbackTone() === 'success' ? 'Action terminée' : 'Information' }}</strong>
+        <span>{{ feedbackMessage() }}</span>
+      </div>
+    }
+
     <ng-template #answerEditor let-target="target" let-prefix="prefix" let-radioName="radioName" let-label="label">
       @if (target.answerMode === 'choices') {
         <div class="options-grid">
@@ -550,6 +571,9 @@ export class HomeComponent implements OnInit {
   message = signal('');
   fieldErrors = signal<Record<string, string[]>>({});
   saving = signal(false);
+  dictionarySaving = signal(false);
+  feedbackMessage = signal('');
+  feedbackTone = signal<'success' | 'info'>('success');
   editingQuizId = signal<string | undefined>(undefined);
   dirty = signal(false);
   collapsedRounds = signal<Record<number, boolean>>({});
@@ -571,6 +595,7 @@ export class HomeComponent implements OnInit {
   });
   publicRoomCode = '';
   draft: DraftQuiz = this.emptyQuiz();
+  private feedbackTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor(public api: ApiService) {
     effect(() => {
@@ -750,7 +775,9 @@ export class HomeComponent implements OnInit {
     const request = editingId ? this.api.updateQuiz(editingId, this.toPayload(this.draft)) : this.api.createQuiz(this.toPayload(this.draft));
     request.subscribe({
       next: () => {
-        this.message.set(editingId ? 'Quiz modifié.' : 'Quiz créé.');
+        const confirmation = editingId ? 'Les modifications du quiz ont été enregistrées.' : 'Le quiz a été créé et enregistré.';
+        this.message.set(confirmation);
+        this.showFeedback(confirmation);
         this.dirty.set(false);
         this.resetForm();
         this.refresh();
@@ -851,13 +878,19 @@ export class HomeComponent implements OnInit {
     }
     if (this.editingDictionaryId() && !window.confirm('Remplacer le contenu actuel de ce dictionnaire ?')) return;
     const values = this.parseDictionaryText(this.dictionaryText());
+    this.dictionarySaving.set(true);
     this.api.saveAnswerDictionary({ id: this.editingDictionaryId(), name, values }).subscribe({
       next: () => {
         this.newDictionary();
         this.loadDictionaries();
         this.message.set('Dictionnaire enregistré.');
+        this.showFeedback('Le dictionnaire a été enregistré.');
+        this.dictionarySaving.set(false);
       },
-      error: () => this.message.set("Impossible d'enregistrer le dictionnaire."),
+      error: () => {
+        this.message.set("Impossible d'enregistrer le dictionnaire.");
+        this.dictionarySaving.set(false);
+      },
     });
   }
 
@@ -903,6 +936,13 @@ export class HomeComponent implements OnInit {
   private confirmDiscard(): boolean {
     if (!this.dirty()) return true;
     return window.confirm('Abandonner les modifications non enregistrées ?');
+  }
+
+  private showFeedback(message: string, tone: 'success' | 'info' = 'success'): void {
+    if (this.feedbackTimer) clearTimeout(this.feedbackTimer);
+    this.feedbackTone.set(tone);
+    this.feedbackMessage.set(message);
+    this.feedbackTimer = setTimeout(() => this.feedbackMessage.set(''), 4200);
   }
 
   private refresh(): void {

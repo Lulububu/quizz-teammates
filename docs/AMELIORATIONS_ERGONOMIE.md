@@ -1,6 +1,6 @@
 # Suivi des améliorations ergonomiques
 
-Dernière mise à jour : 22 juin 2026
+Dernière mise à jour : 25 juin 2026
 
 ## Administration
 
@@ -64,6 +64,11 @@ Dernière mise à jour : 22 juin 2026
 - [x] Respecter `prefers-reduced-motion`.
 - [x] Corriger les libellés et accents restants.
 - [x] Vérifier la structure responsive desktop et mobile.
+- [x] Ajouter des classes structurelles aux écrans pour permettre leur thématisation.
+- [x] Centraliser les couleurs, surfaces, rayons et ombres dans des variables CSS.
+- [x] Permettre la sélection du thème avec `APP_THEME`.
+- [x] Ajouter une prévisualisation ponctuelle avec le paramètre d'URL `theme`.
+- [x] Créer les thèmes `academy`, `cosmic`, `orbit` et `arcade`.
 
 ## Validation
 
