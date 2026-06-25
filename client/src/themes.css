@@ -19,7 +19,9 @@ html[data-theme="cosmic"] {
   --input-surface: #222a50;
   --topbar-surface: rgba(29, 36, 71, 0.96);
   --shadow: 0 18px 42px rgba(4, 8, 28, 0.34);
-  --button-shadow: 0 10px 24px rgba(216, 79, 198, 0.22);
+  --button-shadow:
+    0 8px 18px rgba(4, 8, 28, 0.34),
+    0 0 0 1px rgba(83, 96, 142, 0.55);
   --radius: 8px;
 }
 
