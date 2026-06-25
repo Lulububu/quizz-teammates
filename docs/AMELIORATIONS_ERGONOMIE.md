@@ -5,6 +5,10 @@ Dernière mise à jour : 22 juin 2026
 ## Administration
 
 - [x] Séparer `Mes quiz`, `Éditeur` et `Dictionnaires`.
+- [x] Masquer l'écran public pendant la restauration de la session Firebase.
+- [x] Élargir l'éditeur et afficher une œuvre par ligne.
+- [x] Agrandir les champs et espacer les sections de saisie.
+- [x] Commencer une nouvelle manche avec une œuvre et permettre d'en ajouter jusqu'à trois.
 - [x] Ajouter une entrée joueur par code sur l'accueil.
 - [x] Replier et déplier les manches.
 - [x] Dupliquer, supprimer et réordonner les manches.
@@ -24,6 +28,7 @@ Dernière mise à jour : 22 juin 2026
 
 ## Joueur
 
+- [x] Identité emoji stable pour les classements anonymisés.
 - [x] Valider le pseudo localement.
 - [x] Restaurer la session après actualisation.
 - [x] Afficher la réponse envoyée.
@@ -34,6 +39,13 @@ Dernière mise à jour : 22 juin 2026
 
 ## Animateur
 
+- [x] Option de masquage des pseudos sur tous les écrans de score.
+- [x] Activation et désactivation à la volée depuis le bandeau animateur.
+- [x] Révélation finale des identités avec le podium en ordre 3, 2, 1.
+- [x] Mode alternatif avec œuvres mélangées et questions personnes regroupées à la fin.
+- [x] Intégrer le code, le QR code et la copie du lien dans le bandeau global.
+- [x] Supprimer la colonne participants de la scène animateur.
+- [x] Agrandir la zone principale dédiée aux indices et aux médias.
 - [x] Afficher la liste des participants.
 - [x] Retirer un participant du lobby.
 - [x] Signaler les pseudos en double.
@@ -75,6 +87,7 @@ Le contrôle visuel dans le navigateur intégré reste à reprendre : la navigat
 
 ## Recherche joueur
 
+- [x] Composant de recherche partagé entre l'éditeur et l'écran joueur.
 - [x] Question personne limitée aux noms des trois œuvres.
 - [x] Index de recherche préparé une seule fois par question.
 - [x] Liste de résultats intégrée au flux sans masquer le bouton de validation.

@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { firestore } from './firebase.js';
 
 export type AnswerMode = 'choices' | 'autocomplete';
+export type SequenceMode = 'rounds' | 'works-first';
 
 export type ClueInput = {
   id?: string;
@@ -41,6 +42,8 @@ export type QuizInput = {
   title: string;
   description?: string;
   answerMode?: AnswerMode;
+  sequenceMode?: SequenceMode;
+  hidePlayerNames?: boolean;
   rounds: RoundInput[];
 };
 
@@ -89,6 +92,8 @@ export type QuizRow = {
   title: string;
   description: string;
   answer_mode: AnswerMode;
+  sequence_mode: SequenceMode;
+  hide_player_names: boolean;
   created_at: string;
   rounds?: Round[];
 };
@@ -112,12 +117,21 @@ export type RoomRow = {
   current_question_index: number;
   question_started_at: string | null;
   question_ends_at: string | null;
+  question_order?: QuestionReference[];
+  hide_player_names?: boolean;
   created_at: string;
+};
+
+export type QuestionReference = {
+  round_id: string;
+  target_type: 'work' | 'person';
+  target_id: string;
 };
 
 export type PlayerScore = {
   id: string;
   nickname: string;
+  avatar?: string;
   score: number;
   joined_at?: string;
 };
@@ -153,6 +167,8 @@ export async function createQuiz(input: QuizInput, ownerUserId: string): Promise
     title: input.title,
     description: input.description ?? '',
     answer_mode: input.answerMode ?? 'choices',
+    sequence_mode: input.sequenceMode ?? 'rounds',
+    hide_player_names: input.hidePlayerNames ?? false,
     created_at: new Date().toISOString(),
     rounds: buildRounds(input.rounds, input.answerMode ?? 'choices'),
   };
@@ -167,6 +183,8 @@ export async function updateQuiz(quizId: string, input: QuizInput, ownerUserId: 
     title: input.title,
     description: input.description ?? '',
     answer_mode: input.answerMode ?? 'choices',
+    sequence_mode: input.sequenceMode ?? 'rounds',
+    hide_player_names: input.hidePlayerNames ?? false,
     rounds: buildRounds(input.rounds, input.answerMode ?? 'choices'),
   });
   return getOwnedQuiz(quizId, ownerUserId);
@@ -255,6 +273,8 @@ export async function deleteAnswerDictionary(ownerUserId: string, dictionaryId: 
 }
 
 export async function createRoom(quizId: string): Promise<RoomRow> {
+  const quiz = await getQuiz(quizId);
+  if (!quiz) throw new Error('Quiz introuvable');
   const id = randomUUID();
   const code = await createUniqueRoomCode();
   const room: RoomRow = {
@@ -266,6 +286,8 @@ export async function createRoom(quizId: string): Promise<RoomRow> {
     current_question_index: -1,
     question_started_at: null,
     question_ends_at: null,
+    question_order: buildQuestionOrder(quiz),
+    hide_player_names: quiz.hide_player_names,
     created_at: new Date().toISOString(),
   };
   await rooms.doc(code).set(room);
@@ -296,11 +318,17 @@ export async function updateRoomStatus(code: string, status: string): Promise<vo
   await rooms.doc(code).update({ status });
 }
 
+export async function updateRoomPlayerNamesVisibility(code: string, hidePlayerNames: boolean): Promise<void> {
+  await rooms.doc(code).update({ hide_player_names: hidePlayerNames });
+}
+
 export async function addPlayer(code: string, nickname: string): Promise<PlayerScore> {
   const id = randomUUID();
+  const avatar = await getAvailablePlayerAvatar(code);
   const player = {
     id,
     nickname,
+    avatar,
     score: 0,
     joined_at: new Date().toISOString(),
   };
@@ -511,9 +539,68 @@ function quizFromDoc(id: string, data: FirebaseFirestore.DocumentData, includeCo
     title: data.title,
     description: data.description ?? '',
     answer_mode: data.answer_mode ?? 'choices',
+    sequence_mode: data.sequence_mode ?? 'rounds',
+    hide_player_names: data.hide_player_names ?? false,
     created_at: data.created_at,
     rounds,
   };
+}
+
+async function getAvailablePlayerAvatar(code: string): Promise<string> {
+  const snapshot = await rooms.doc(code).collection('players').get();
+  const used = new Set(snapshot.docs.map((doc) => String(doc.data().avatar ?? '')));
+  const available = PLAYER_AVATARS.filter((avatar) => !used.has(avatar));
+  const pool = available.length > 0 ? available : PLAYER_AVATARS;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+const PLAYER_AVATARS = [
+  '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯',
+  '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🦄', '🐝',
+  '🐙', '🦋', '🐢', '🐬', '🦩', '🍏', '🍐', '🍊', '🍋', '🍉',
+  '🍇', '🍓', '🫐', '🍒', '🍑', '🥭', '🍍', '🥝', '🍅', '🥥',
+] as const;
+
+function buildQuestionOrder(quiz: QuizRow): QuestionReference[] {
+  const rounds = quiz.rounds ?? [];
+  if (quiz.sequence_mode === 'works-first') {
+    const works = shuffle(
+      rounds.flatMap((round) =>
+        round.works.map((work) => ({
+          round_id: round.id,
+          target_type: 'work' as const,
+          target_id: work.id,
+        })),
+      ),
+    );
+    const persons = rounds.map((round) => ({
+      round_id: round.id,
+      target_type: 'person' as const,
+      target_id: round.person.id,
+    }));
+    return [...works, ...persons];
+  }
+  return rounds.flatMap((round) => [
+    ...round.works.map((work) => ({
+      round_id: round.id,
+      target_type: 'work' as const,
+      target_id: work.id,
+    })),
+    {
+      round_id: round.id,
+      target_type: 'person' as const,
+      target_id: round.person.id,
+    },
+  ]);
+}
+
+function shuffle<T>(values: T[]): T[] {
+  const result = [...values];
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const target = Math.floor(Math.random() * (index + 1));
+    [result[index], result[target]] = [result[target], result[index]];
+  }
+  return result;
 }
 
 function scrubOptions(options: AnswerOption[], includeCorrectOptions: boolean): AnswerOption[] {

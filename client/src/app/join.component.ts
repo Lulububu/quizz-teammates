@@ -3,17 +3,13 @@ import { Component, OnDestroy, OnInit, computed, effect, signal } from '@angular
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from './api.service';
+import { AnswerSearchComponent } from './answer-search.component';
 import { Clue, GameState, Room } from './types';
-
-type SearchEntry = {
-  label: string;
-  normalized: string;
-};
 
 @Component({
   selector: 'app-join',
   standalone: true,
-  imports: [FormsModule, NgTemplateOutlet],
+  imports: [FormsModule, NgTemplateOutlet, AnswerSearchComponent],
   template: `
     <main class="page player-page grid">
       <section class="panel player-shell grid">
@@ -23,6 +19,9 @@ type SearchEntry = {
             <h1>Participation</h1>
           </div>
           <span class="room-code">Code {{ code() }}</span>
+          @if (playerAvatar()) {
+            <span class="player-avatar" title="Votre identité dans les classements">{{ playerAvatar() }}</span>
+          }
         </header>
 
         @if (roomError()) {
@@ -112,46 +111,14 @@ type SearchEntry = {
                     </div>
                   </div>
                 } @else if (state.activeQuestion.answerMode === 'autocomplete') {
-                  <div class="autocomplete">
-                    <label>
-                      Rechercher une œuvre ou une réponse
-                      <input
-                        [ngModel]="answerQuery()"
-                        (ngModelChange)="updateAnswerQuery($event)"
-                        placeholder="Saisissez au moins 2 caractères"
-                        autocomplete="off"
-                        role="combobox"
-                        aria-autocomplete="list"
-                        [attr.aria-expanded]="showSuggestions()"
-                        [disabled]="!canAnswer() || sendingAnswer()"
-                        (keydown)="handleAutocompleteKey($event)"
-                      >
-                    </label>
-                    @if (showSuggestions()) {
-                      <div class="suggestion-list" role="listbox">
-                        @for (suggestion of filteredSuggestions(); track suggestion; let index = $index) {
-                          <button
-                            type="button"
-                            role="option"
-                            [class.active]="suggestionIndex() === index"
-                            [attr.aria-selected]="suggestionIndex() === index"
-                            (click)="selectSuggestion(suggestion)"
-                          >
-                            {{ suggestion }}
-                          </button>
-                        }
-                      </div>
-                    }
-                    @if (answerQuery().trim().length >= 2 && filteredSuggestions().length === 0 && !selectedAutocompleteAnswer()) {
-                      <p class="search-empty">Aucun résultat pour cette recherche.</p>
-                    }
-                    @if (selectedAutocompleteAnswer()) {
-                      <div class="selected-search-answer">
-                        <span>Réponse sélectionnée</span>
-                        <strong>{{ selectedAutocompleteAnswer() }}</strong>
-                        <button type="button" class="secondary" (click)="clearSelectedAnswer()">Modifier</button>
-                      </div>
-                    }
+                  <div class="player-search">
+                    <app-answer-search
+                      [values]="state.activeQuestion.suggestions"
+                      [value]="selectedAutocompleteAnswer()"
+                      (valueChange)="selectedAutocompleteAnswer.set($event)"
+                      [disabled]="!canAnswer() || sendingAnswer()"
+                      label="Rechercher une œuvre ou une réponse"
+                    />
                     <div class="answer-submit-bar">
                       <span>
                         {{ selectedAutocompleteAnswer()
@@ -253,6 +220,7 @@ export class JoinComponent implements OnInit, OnDestroy {
   code = signal('');
   room = signal<Room | undefined>(undefined);
   playerId = signal('');
+  playerAvatar = signal('');
   loading = signal(true);
   joining = signal(false);
   roomError = signal('');
@@ -261,10 +229,7 @@ export class JoinComponent implements OnInit, OnDestroy {
   sendingAnswer = signal(false);
   answeredQuestionIndex = signal<number | undefined>(undefined);
   selectedAnswer = signal('');
-  answerQuery = signal('');
   selectedAutocompleteAnswer = signal('');
-  searchIndex = signal<SearchEntry[]>([]);
-  suggestionIndex = signal(0);
   now = signal(Date.now());
   canAnswer = computed(
     () => Boolean(this.playerId()) && this.api.gameState()?.status === 'question' && !this.sendingAnswer(),
@@ -281,19 +246,6 @@ export class JoinComponent implements OnInit, OnDestroy {
     const end = new Date(state.questionEndsAt).getTime();
     return Math.max(0, Math.min(100, ((end - this.now()) / Math.max(1, end - start)) * 100));
   });
-  filteredSuggestions = computed(() => {
-    const query = this.normalize(this.answerQuery());
-    if (query.length < 2 || this.selectedAutocompleteAnswer()) return [];
-    const startsWith: string[] = [];
-    const contains: string[] = [];
-    for (const entry of this.searchIndex()) {
-      if (entry.normalized.startsWith(query)) startsWith.push(entry.label);
-      else if (contains.length < 8 && entry.normalized.includes(query)) contains.push(entry.label);
-      if (startsWith.length >= 8) break;
-    }
-    return [...startsWith, ...contains].slice(0, 8);
-  });
-  showSuggestions = computed(() => this.filteredSuggestions().length > 0 && !this.selectedAutocompleteAnswer());
   nickname = '';
   private timerId: number | undefined;
   private currentQuestionIndex: number | undefined;
@@ -306,18 +258,12 @@ export class JoinComponent implements OnInit, OnDestroy {
       const index = this.api.gameState()?.currentQuestionIndex;
       if (index !== undefined && index !== this.currentQuestionIndex) {
         this.currentQuestionIndex = index;
-        this.answerQuery.set('');
         this.selectedAutocompleteAnswer.set('');
-        this.searchIndex.set(
-          (this.api.gameState()?.activeQuestion?.suggestions ?? []).map((label) => ({
-            label,
-            normalized: this.normalize(label),
-          })),
-        );
         this.selectedAnswer.set('');
         this.sendingAnswer.set(false);
-        this.suggestionIndex.set(0);
         this.answeredQuestionIndex.set(undefined);
+        this.message.set('');
+        this.messageIsError.set(false);
       }
     }, { allowSignalWrites: true });
     effect(() => {
@@ -370,6 +316,7 @@ export class JoinComponent implements OnInit, OnDestroy {
       return;
     }
     this.playerId.set(response.playerId);
+    this.playerAvatar.set(response.player?.avatar ?? '');
     sessionStorage.setItem(this.sessionKey(), JSON.stringify({ playerId: response.playerId, nickname: this.nickname.trim() }));
     if (response.gameState) this.api.gameState.set(response.gameState);
     this.showMessage('Vous êtes inscrit.');
@@ -438,42 +385,6 @@ export class JoinComponent implements OnInit, OnDestroy {
     }
   }
 
-  handleAutocompleteKey(event: KeyboardEvent): void {
-    const suggestions = this.filteredSuggestions();
-    if (!suggestions.length) return;
-    if (event.key === 'ArrowDown') {
-      event.preventDefault();
-      this.suggestionIndex.update((index) => Math.min(suggestions.length - 1, index + 1));
-    } else if (event.key === 'ArrowUp') {
-      event.preventDefault();
-      this.suggestionIndex.update((index) => Math.max(0, index - 1));
-    } else if (event.key === 'Enter') {
-      event.preventDefault();
-      this.selectSuggestion(suggestions[this.suggestionIndex()]);
-    } else if (event.key === 'Escape') {
-      this.answerQuery.set('');
-      this.suggestionIndex.set(0);
-    }
-  }
-
-  selectSuggestion(suggestion: string): void {
-    this.answerQuery.set(suggestion);
-    this.selectedAutocompleteAnswer.set(suggestion);
-    this.suggestionIndex.set(0);
-  }
-
-  updateAnswerQuery(value: string): void {
-    this.answerQuery.set(value);
-    if (value !== this.selectedAutocompleteAnswer()) this.selectedAutocompleteAnswer.set('');
-    this.suggestionIndex.set(0);
-  }
-
-  clearSelectedAnswer(): void {
-    this.selectedAutocompleteAnswer.set('');
-    this.answerQuery.set('');
-    this.suggestionIndex.set(0);
-  }
-
   visibleClues(state: GameState): Clue[] {
     const clues = state.activeQuestion?.clues ?? [];
     if (state.status !== 'question') return clues;
@@ -496,6 +407,7 @@ export class JoinComponent implements OnInit, OnDestroy {
         return;
       }
       this.playerId.set(saved.playerId);
+      this.playerAvatar.set(response.player?.avatar ?? '');
       this.nickname = saved.nickname ?? response.player?.nickname ?? '';
       if (response.gameState) this.api.gameState.set(response.gameState);
       this.showMessage('Session joueur restaurée.');
@@ -511,10 +423,6 @@ export class JoinComponent implements OnInit, OnDestroy {
   private showMessage(message: string, error = false): void {
     this.message.set(message);
     this.messageIsError.set(error);
-  }
-
-  private normalize(value: string): string {
-    return value.trim().toLocaleLowerCase('fr-FR').normalize('NFD').replace(/\p{Diacritic}/gu, '');
   }
 
   private visibleClueCount(state: GameState, clueCount: number): number {

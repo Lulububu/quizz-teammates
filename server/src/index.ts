@@ -38,10 +38,12 @@ import {
   removePlayer,
   saveAnswerDictionary,
   updateRoomQuestion,
+  updateRoomPlayerNamesVisibility,
   updateRoomStatus,
   updateQuiz,
   userOwnsQuiz,
   type AnswerMode,
+  type QuestionReference,
   type QuizInput,
 } from './repositories.js';
 
@@ -66,6 +68,8 @@ const quizSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
   answerMode: z.enum(['choices', 'autocomplete']).optional(),
+  sequenceMode: z.enum(['rounds', 'works-first']).optional(),
+  hidePlayerNames: z.boolean().optional(),
   rounds: z
     .array(
       z.object({
@@ -328,7 +332,7 @@ io.on('connection', (socket) => {
     socket.join(room.code);
     socket.join(playerChannel(player.id));
     await emitGameState(room.code, false);
-    callback?.({ ok: true, playerId: player.id, room, gameState: await getGameState(room.code, false) });
+    callback?.({ ok: true, playerId: player.id, player, room, gameState: await getGameState(room.code, false) });
   });
 
   socket.on('resume-player', async (payload: { code: string; playerId: string }, callback) => {
@@ -372,6 +376,25 @@ io.on('connection', (socket) => {
     const result = await activateQuestion(payload.code, room.current_question_index + 1);
     callback?.(result);
   });
+
+  socket.on(
+    'set-player-names-visibility',
+    async (payload: { code: string; hidePlayerNames: boolean; idToken?: string }, callback) => {
+      const room = await getRoomByCode(payload.code);
+      if (!room) {
+        callback?.({ ok: false, error: 'Salon introuvable' });
+        return;
+      }
+      const admin = await verifyRoomOwner(room.quiz_id, payload.idToken);
+      if (!admin.ok) {
+        callback?.({ ok: false, error: admin.error });
+        return;
+      }
+      await updateRoomPlayerNamesVisibility(room.code, payload.hidePlayerNames);
+      await emitGameState(room.code, false);
+      callback?.({ ok: true });
+    },
+  );
 
   socket.on('remove-player', async (payload: { code: string; playerId: string; idToken?: string }, callback) => {
     const room = await getRoomByCode(payload.code);
@@ -501,7 +524,7 @@ async function activateQuestion(code: string, questionIndex: number) {
     return { ok: false, error: 'Salon introuvable' };
   }
   const quiz = (await getQuiz(room.quiz_id)) as QuizWithRounds | undefined;
-  const questionCount = getQuestionCount(quiz);
+  const questionCount = room.question_order?.length ?? getQuestionCount(quiz);
   if (questionIndex >= questionCount) {
     clearRevealTimer(room.code);
     await updateRoomQuestion(room.code, questionIndex, null, null, 'finished');
@@ -549,11 +572,15 @@ async function getGameState(code: string, includeAnswer: boolean, includeSuggest
   if (!room) return undefined;
   const activeQuestion = await getActiveQuestion(room, includeAnswer, includeSuggestions);
   const quiz = (await getQuiz(room.quiz_id)) as QuizWithRounds | undefined;
-  const leaderboard = room.status === 'finished' || includeAnswer ? await getLeaderboard(room.code) : [];
+  const rawLeaderboard = room.status === 'finished' || includeAnswer ? await getLeaderboard(room.code) : [];
+  const hidePlayerNames = room.hide_player_names ?? quiz?.hide_player_names ?? false;
+  const leaderboard = hidePlayerNames
+    ? anonymizeLeaderboard(rawLeaderboard, includeAnswer)
+    : rawLeaderboard;
   return {
     status: room.status,
     currentQuestionIndex: room.current_question_index,
-    totalQuestions: getQuestionCount(quiz),
+    totalQuestions: room.question_order?.length ?? getQuestionCount(quiz),
     questionStartedAt: room.question_started_at,
     questionEndsAt: room.question_ends_at,
     playerCount: await getPlayerCount(room.code),
@@ -563,12 +590,18 @@ async function getGameState(code: string, includeAnswer: boolean, includeSuggest
     leaderboard,
     topLeaderboard: includeAnswer ? leaderboard.slice(0, 5) : [],
     players: includeAnswer ? await getPlayers(room.code) : [],
+    hidePlayerNames,
     activeQuestion,
   };
 }
 
 async function getActiveQuestion(
-  room: { quiz_id: string; current_question_index: number; status: string },
+  room: {
+    quiz_id: string;
+    current_question_index: number;
+    status: string;
+    question_order?: QuestionReference[];
+  },
   includeAnswer: boolean,
   includeSuggestions = true,
 ) {
@@ -580,13 +613,20 @@ async function getActiveQuestion(
   const rounds = quiz.rounds ?? [];
   if (room.current_question_index < 0) return undefined;
 
-  const roundIndex = Math.floor(room.current_question_index / 4);
-  const questionInRound = room.current_question_index % 4;
-  const round = rounds[roundIndex];
+  const questionReference =
+    room.question_order?.[room.current_question_index]
+    ?? getLegacyQuestionReference(rounds, room.current_question_index);
+  if (!questionReference) return undefined;
+  const round = rounds.find((candidate) => candidate.id === questionReference.round_id);
   if (!round) return undefined;
 
-  const targetType: 'work' | 'person' = questionInRound < 3 ? 'work' : 'person';
-  const target = targetType === 'work' ? round.works[questionInRound] : round.person;
+  const targetType = questionReference.target_type;
+  const workTarget =
+    targetType === 'work'
+      ? round.works.find((work) => work.id === questionReference.target_id)
+      : undefined;
+  const target = targetType === 'work' ? workTarget : round.person;
+  if (!target || target.id !== questionReference.target_id) return undefined;
   const options = target.options.map(({ isCorrect: _isCorrect, ...option }) => option);
   const correctOption = shouldIncludeAnswer ? target.options.find((option) => option.isCorrect === 1) : undefined;
   const answerMode = target.answer_mode ?? quiz.answer_mode ?? 'choices';
@@ -600,7 +640,7 @@ async function getActiveQuestion(
       targetType === 'work'
         ? `Quelle est cette œuvre ?`
         : `Quelle personne relie ces trois œuvres ?`,
-    clues: targetType === 'work' ? round.works[questionInRound].clues : [],
+    clues: workTarget?.clues ?? [],
     works: targetType === 'person' ? round.works.map((work) => ({ title: work.title, clues: [] })) : [],
     answerMode,
     options: answerMode === 'choices' ? options : [],
@@ -612,8 +652,36 @@ async function getActiveQuestion(
   };
 }
 
+function getLegacyQuestionReference(
+  rounds: NonNullable<QuizWithRounds['rounds']>,
+  questionIndex: number,
+): QuestionReference | undefined {
+  const roundIndex = Math.floor(questionIndex / 4);
+  const questionInRound = questionIndex % 4;
+  const round = rounds[roundIndex];
+  if (!round) return undefined;
+  if (questionInRound < 3) {
+    const work = round.works[questionInRound];
+    return work
+      ? { round_id: round.id, target_type: 'work', target_id: work.id }
+      : undefined;
+  }
+  return { round_id: round.id, target_type: 'person', target_id: round.person.id };
+}
+
 function getQuestionCount(quiz: QuizWithRounds | undefined): number {
   return (quiz?.rounds?.length ?? 0) * 4;
+}
+
+function anonymizeLeaderboard<T extends { nickname: string; avatar?: string }>(
+  leaderboard: T[],
+  includeRealNames: boolean,
+): Array<T & { realNickname?: string }> {
+  return leaderboard.map((player) => ({
+    ...player,
+    ...(includeRealNames ? { realNickname: player.nickname } : {}),
+    nickname: player.avatar || '🎭',
+  }));
 }
 
 function calculatePoints(targetType: 'work' | 'person', startedAt: string | null, endsAt: string | null): number {
@@ -793,6 +861,7 @@ async function verifyRoomOwner(quizId: string, idToken: string | undefined): Pro
 type QuizWithRounds = {
   owner_user_id: string;
   answer_mode: AnswerMode;
+  hide_player_names: boolean;
   rounds?: Array<{
     id: string;
     title: string;

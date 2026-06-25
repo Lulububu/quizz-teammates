@@ -2,6 +2,7 @@ import { Component, HostListener, OnInit, computed, effect, signal } from '@angu
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from './api.service';
+import { AnswerSearchComponent } from './answer-search.component';
 import { FieldErrorComponent } from './field-error.component';
 import { AnswerDictionary, Quiz } from './types';
 
@@ -25,16 +26,23 @@ type DraftRound = {
 type DraftQuiz = {
   title: string;
   description: string;
+  sequenceMode: 'rounds' | 'works-first';
+  hidePlayerNames: boolean;
   rounds: DraftRound[];
 };
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [FormsModule, NgTemplateOutlet, FieldErrorComponent],
+  imports: [FormsModule, NgTemplateOutlet, FieldErrorComponent, AnswerSearchComponent],
   template: `
-    <main class="page grid">
-      @if (!api.adminUser()) {
+    <main class="page grid" [class.editor-page]="api.adminUser() && adminView() === 'editor'">
+      @if (!api.authReady()) {
+        <section class="auth-loading" aria-live="polite">
+          <div class="brand-loader" aria-hidden="true"></div>
+          <p>Ouverture de Quiz Teammates…</p>
+        </section>
+      } @else if (!api.adminUser()) {
         <section class="public-entry">
           <div>
             <p class="eyebrow">Quiz Teammates</p>
@@ -101,6 +109,14 @@ type DraftQuiz = {
                     <h3>{{ quiz.title }}</h3>
                     <p>{{ quiz.description || 'Sans description' }}</p>
                     <span>{{ quiz.rounds?.length || 0 }} manche(s) · {{ (quiz.rounds?.length || 0) * 4 }} question(s)</span>
+                    <span>
+                      {{ quiz.sequence_mode === 'works-first'
+                        ? 'Œuvres mélangées, personnes à la fin'
+                        : 'Déroulement par manche' }}
+                    </span>
+                    @if (quiz.hide_player_names) {
+                      <span>Classements anonymisés</span>
+                    }
                   </div>
                   <div class="row-actions">
                     <button type="button" (click)="createRoom(quiz.id)">Créer un salon</button>
@@ -130,7 +146,7 @@ type DraftQuiz = {
                 <span><strong>{{ clueCount() }}</strong> indice(s)</span>
               </div>
 
-              <div class="form-grid">
+              <div class="form-grid quiz-basics">
                 <label>
                   Titre du quiz
                   <input [(ngModel)]="draft.title" placeholder="Cinéma et jeux d'enfance">
@@ -139,6 +155,29 @@ type DraftQuiz = {
                 <label>
                   Description
                   <textarea [(ngModel)]="draft.description" rows="2" placeholder="Session équipe du vendredi"></textarea>
+                </label>
+                <label class="sequence-mode-field">
+                  Déroulement des questions
+                  <select [(ngModel)]="draft.sequenceMode">
+                    <option value="rounds">Par manche : 3 œuvres puis la personne</option>
+                    <option value="works-first">Œuvres mélangées puis toutes les personnes</option>
+                  </select>
+                  <span class="field-help">
+                    @if (draft.sequenceMode === 'works-first') {
+                      Toutes les œuvres sont mélangées entre les manches. Les questions sur les personnes arrivent seulement à la fin.
+                    } @else {
+                      Chaque personne est demandée juste après les trois œuvres de sa manche.
+                    }
+                  </span>
+                </label>
+                <label class="privacy-mode-field">
+                  <span class="checkbox-line">
+                    <input type="checkbox" [(ngModel)]="draft.hidePlayerNames">
+                    Masquer les pseudos dans les classements
+                  </span>
+                  <span class="field-help">
+                    Chaque joueur reçoit un emoji animal ou fruit affiché à la place de son pseudo sur les écrans de score.
+                  </span>
                 </label>
               </div>
 
@@ -180,12 +219,55 @@ type DraftQuiz = {
                         </label>
                       </div>
 
-                      <div class="works-grid">
-                        @for (work of round.works; track $index; let workIndex = $index) {
-                          <section class="work-editor">
+                      <section class="works-section">
+                        <div class="section-heading works-heading">
+                          <div>
+                            <h4>Œuvres de la manche</h4>
+                            <p>{{ round.works.length }} / 3 œuvre(s) ajoutée(s)</p>
+                          </div>
+                          <button
+                            type="button"
+                            class="secondary"
+                            (click)="addWork(roundIndex)"
+                            [disabled]="round.works.length >= 3"
+                          >
+                            Ajouter une œuvre
+                          </button>
+                        </div>
+                        @if (round.works.length < 3) {
+                          <p class="works-requirement">
+                            Ajoutez encore {{ 3 - round.works.length }} œuvre(s) pour compléter cette manche.
+                          </p>
+                        }
+                        <div class="works-grid">
+                          @for (work of round.works; track $index; let workIndex = $index) {
+                            <section class="work-editor">
                             <div class="section-heading compact">
-                              <h4>Œuvre {{ workIndex + 1 }}</h4>
-                              <button type="button" class="secondary" (click)="duplicateWork(roundIndex, workIndex)">Dupliquer vers la suivante</button>
+                              <div class="work-heading">
+                                <span>{{ workIndex + 1 }}</span>
+                                <div>
+                                  <p class="eyebrow">Question œuvre</p>
+                                  <h4>Œuvre {{ workIndex + 1 }}</h4>
+                                </div>
+                              </div>
+                              <div class="compact-actions">
+                                <button
+                                  type="button"
+                                  class="secondary"
+                                  (click)="duplicateWork(roundIndex, workIndex)"
+                                  [disabled]="round.works.length >= 3"
+                                >
+                                  Dupliquer
+                                </button>
+                                <button
+                                  type="button"
+                                  class="danger ghost"
+                                  (click)="removeWork(roundIndex, workIndex)"
+                                  [disabled]="round.works.length === 1"
+                                >
+                                  Supprimer
+                                </button>
+                              </div>
                             </div>
                             @for (clue of work.clues; track $index; let clueIndex = $index) {
                               <div class="clue-editor">
@@ -247,7 +329,7 @@ type DraftQuiz = {
                               </div>
                             }
                             <button type="button" class="secondary" (click)="addClue(work)">Ajouter un indice</button>
-                            <div class="form-grid two">
+                            <div class="form-grid two answer-settings">
                               <label>
                                 Mode de réponse
                                 <select [(ngModel)]="work.answerMode">
@@ -267,17 +349,20 @@ type DraftQuiz = {
                                 </label>
                               }
                             </div>
-                            <ng-container
-                              *ngTemplateOutlet="answerEditor; context: {
-                                target: work,
-                                prefix: errorPath('rounds', roundIndex, 'works', workIndex),
-                                radioName: 'work-' + roundIndex + '-' + workIndex,
-                                label: 'œuvre'
-                              }"
-                            />
-                          </section>
-                        }
-                      </div>
+                            <div class="answer-editor">
+                              <ng-container
+                                *ngTemplateOutlet="answerEditor; context: {
+                                  target: work,
+                                  prefix: errorPath('rounds', roundIndex, 'works', workIndex),
+                                  radioName: 'work-' + roundIndex + '-' + workIndex,
+                                  label: 'œuvre'
+                                }"
+                              />
+                            </div>
+                            </section>
+                          }
+                        </div>
+                      </section>
 
                       <section class="person-editor">
                         <h4>Question sur la personne reliée</h4>
@@ -301,14 +386,16 @@ type DraftQuiz = {
                             </label>
                           }
                         </div>
-                        <ng-container
-                          *ngTemplateOutlet="answerEditor; context: {
-                            target: round.person,
-                            prefix: errorPath('rounds', roundIndex, 'person'),
-                            radioName: 'person-' + roundIndex,
-                            label: 'personne'
-                          }"
-                        />
+                        <div class="answer-editor">
+                          <ng-container
+                            *ngTemplateOutlet="answerEditor; context: {
+                              target: round.person,
+                              prefix: errorPath('rounds', roundIndex, 'person'),
+                              radioName: 'person-' + roundIndex,
+                              label: 'personne'
+                            }"
+                          />
+                        </div>
                       </section>
                     </div>
                   }
@@ -443,19 +530,16 @@ type DraftQuiz = {
         <app-field-error [errors]="fieldErrors()" [path]="prefix + '.options'" />
         <app-field-error [errors]="fieldErrors()" [path]="prefix + '.correctOptionIndex'" />
       } @else {
-        <label>
-          Bonne réponse {{ label }}
-          <input [(ngModel)]="target.correctAnswer" list="answerDictionary" placeholder="Nom exact attendu">
-          <app-field-error [errors]="fieldErrors()" [path]="prefix + '.correctAnswer'" />
-        </label>
+        <app-answer-search
+          [values]="dictionaryValuesFor(target.dictionaryId)"
+          [value]="target.correctAnswer"
+          (valueChange)="target.correctAnswer = $event"
+          [label]="'Bonne réponse ' + label"
+          placeholder="Rechercher puis sélectionner une réponse"
+        />
+        <app-field-error [errors]="fieldErrors()" [path]="prefix + '.correctAnswer'" />
       }
     </ng-template>
-
-    <datalist id="answerDictionary">
-      @for (value of dictionaryValues(); track value) {
-        <option [value]="value"></option>
-      }
-    </datalist>
   `,
 })
 export class HomeComponent implements OnInit {
@@ -575,10 +659,23 @@ export class HomeComponent implements OnInit {
   }
 
   duplicateWork(roundIndex: number, workIndex: number): void {
-    const targetIndex = (workIndex + 1) % 3;
-    const confirmed = window.confirm(`Remplacer l'œuvre ${targetIndex + 1} par une copie de l'œuvre ${workIndex + 1} ?`);
-    if (!confirmed) return;
-    this.draft.rounds[roundIndex].works[targetIndex] = structuredClone(this.draft.rounds[roundIndex].works[workIndex]);
+    const works = this.draft.rounds[roundIndex].works;
+    if (works.length >= 3) return;
+    works.splice(workIndex + 1, 0, structuredClone(works[workIndex]));
+    this.dirty.set(true);
+  }
+
+  addWork(roundIndex: number): void {
+    const works = this.draft.rounds[roundIndex].works;
+    if (works.length >= 3) return;
+    works.push(this.newWork());
+    this.dirty.set(true);
+  }
+
+  removeWork(roundIndex: number, workIndex: number): void {
+    const works = this.draft.rounds[roundIndex].works;
+    if (works.length <= 1) return;
+    works.splice(workIndex, 1);
     this.dirty.set(true);
   }
 
@@ -641,6 +738,12 @@ export class HomeComponent implements OnInit {
   }
 
   saveQuiz(): void {
+    const incompleteRoundIndex = this.draft.rounds.findIndex((round) => round.works.length !== 3);
+    if (incompleteRoundIndex >= 0) {
+      this.message.set(`La manche ${incompleteRoundIndex + 1} doit contenir exactement trois œuvres.`);
+      this.collapsedRounds.update((rounds) => ({ ...rounds, [incompleteRoundIndex]: false }));
+      return;
+    }
     this.saving.set(true);
     this.fieldErrors.set({});
     const editingId = this.editingQuizId();
@@ -792,6 +895,11 @@ export class HomeComponent implements OnInit {
     return parts.join('.');
   }
 
+  dictionaryValuesFor(dictionaryId: string): string[] {
+    if (!dictionaryId) return this.dictionaryValues();
+    return this.dictionaries().find((dictionary) => dictionary.id === dictionaryId)?.values ?? [];
+  }
+
   private confirmDiscard(): boolean {
     if (!this.dirty()) return true;
     return window.confirm('Abandonner les modifications non enregistrées ?');
@@ -823,7 +931,13 @@ export class HomeComponent implements OnInit {
   }
 
   private emptyQuiz(): DraftQuiz {
-    return { title: 'Quiz découverte', description: '', rounds: [this.newRound()] };
+    return {
+      title: 'Quiz découverte',
+      description: '',
+      sequenceMode: 'rounds',
+      hidePlayerNames: false,
+      rounds: [this.newRound()],
+    };
   }
 
   private extractFieldErrors(error: unknown): Record<string, string[]> {
@@ -840,6 +954,8 @@ export class HomeComponent implements OnInit {
     return {
       title: quiz.title,
       description: quiz.description,
+      sequenceMode: quiz.sequence_mode ?? 'rounds',
+      hidePlayerNames: quiz.hide_player_names ?? false,
       rounds: (quiz.rounds ?? []).map((round) => ({
         title: round.title,
         person: {
@@ -871,6 +987,8 @@ export class HomeComponent implements OnInit {
     return {
       title: draft.title,
       description: draft.description,
+      sequenceMode: draft.sequenceMode,
+      hidePlayerNames: draft.hidePlayerNames,
       rounds: draft.rounds.map((round) => ({
         title: round.title,
         person: {
@@ -950,14 +1068,18 @@ export class HomeComponent implements OnInit {
         correctOptionIndex: 0,
         correctAnswer: '',
       },
-      works: [0, 1, 2].map(() => ({
-        clues: [{ kind: 'text', content: '' }],
-        answerMode: 'choices',
-        dictionaryId: '',
-        options: ['', '', '', ''],
-        correctOptionIndex: 0,
-        correctAnswer: '',
-      })),
+      works: [this.newWork()],
+    };
+  }
+
+  private newWork(): DraftWork {
+    return {
+      clues: [{ kind: 'text', content: '' }],
+      answerMode: 'choices',
+      dictionaryId: '',
+      options: ['', '', '', ''],
+      correctOptionIndex: 0,
+      correctAnswer: '',
     };
   }
 }

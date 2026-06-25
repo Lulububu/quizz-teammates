@@ -32,6 +32,8 @@ export type Quiz = {
   title: string;
   description: string;
   answer_mode: 'choices' | 'autocomplete';
+  sequence_mode: 'rounds' | 'works-first';
+  hide_player_names: boolean;
   rounds?: Round[];
 };
 
@@ -49,6 +51,8 @@ export type Room = {
 export type PlayerScore = {
   id: string;
   nickname: string;
+  realNickname?: string;
+  avatar?: string;
   score: number;
 };
 
@@ -70,6 +74,7 @@ export type GameState = {
   leaderboard: PlayerScore[];
   topLeaderboard: PlayerScore[];
   players: PlayerScore[];
+  hidePlayerNames: boolean;
   activeQuestion?: ActiveQuestion;
 };
 

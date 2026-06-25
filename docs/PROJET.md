@@ -54,6 +54,13 @@ La mecanique differenciee du quiz est la suivante : pour chaque manche, les joue
 
 ## Deroulement de partie
 
+- Le quiz choisit un mode de déroulement :
+  - par manche : les trois œuvres sont suivies immédiatement de la personne reliée ;
+  - œuvres mélangées : toutes les œuvres sont présentées dans un ordre aléatoire, puis toutes les questions sur les personnes sont regroupées à la fin.
+- L'ordre aléatoire est généré une seule fois à la création du salon et reste identique pour tous les joueurs.
+- Un quiz peut masquer les pseudos dans les classements. Chaque joueur reçoit alors un emoji animal ou fruit stable à son inscription, utilisé sur les tops, podiums et classements finaux.
+- L'organisateur peut activer ou désactiver ce masquage à tout moment depuis le bandeau du salon.
+- Si les pseudos sont masqués au classement final, l'écran animateur révèle les identités en terminant par le 3e, le 2e puis le 1er.
 - Le salon demarre en etat `lobby`.
 - Les joueurs rejoignent avec le QR code ou le code court.
 - L'animateur lance le quiz quand il le souhaite.

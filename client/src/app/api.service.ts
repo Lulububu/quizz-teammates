@@ -39,8 +39,10 @@ export class ApiService {
   gameState = signal<GameState | undefined>(undefined);
   playerResult = signal<PlayerResult | undefined>(undefined);
   playerRemoved = signal('');
+  hostRoomMeta = signal<Room | undefined>(undefined);
   adminUser = signal<AdminUser | undefined>(undefined);
   authError = signal('');
+  authReady = signal(false);
   private socket: Socket;
   private firebaseApp: FirebaseApp | undefined;
   private auth: Auth | undefined;
@@ -50,6 +52,23 @@ export class ApiService {
     this.socket = io();
     this.socket.on('leaderboard', (scores: PlayerScore[]) => this.leaderboard.set(scores));
     this.socket.on('game-state', (state: GameState) => {
+      const currentState = this.gameState();
+      const currentQuestion = currentState?.activeQuestion;
+      const incomingQuestion = state.activeQuestion;
+      if (
+        incomingQuestion?.answerMode === 'autocomplete'
+        && incomingQuestion.suggestions.length === 0
+        && currentQuestion?.targetId === incomingQuestion.targetId
+        && currentQuestion.suggestions.length > 0
+      ) {
+        state = {
+          ...state,
+          activeQuestion: {
+            ...incomingQuestion,
+            suggestions: currentQuestion.suggestions,
+          },
+        };
+      }
       if (state.status === 'question') this.playerResult.set(undefined);
       this.gameState.set(state);
     });
@@ -113,7 +132,7 @@ export class ApiService {
   joinRoom(
     code: string,
     nickname: string,
-  ): Promise<{ ok: boolean; playerId?: string; gameState?: GameState; error?: string }> {
+  ): Promise<{ ok: boolean; playerId?: string; player?: PlayerScore; gameState?: GameState; error?: string }> {
     return this.emit('join-room', { code, nickname });
   }
 
@@ -138,6 +157,10 @@ export class ApiService {
 
   removePlayer(code: string, playerId: string): Promise<{ ok: boolean; error?: string }> {
     return this.emit('remove-player', { code, playerId, idToken: this.idToken });
+  }
+
+  setPlayerNamesVisibility(code: string, hidePlayerNames: boolean): Promise<{ ok: boolean; error?: string }> {
+    return this.emit('set-player-names-visibility', { code, hidePlayerNames, idToken: this.idToken });
   }
 
   submitAnswer(payload: {
@@ -232,6 +255,7 @@ export class ApiService {
       next: ({ firebase }) => {
         if (!firebase.apiKey || !firebase.authDomain || !firebase.projectId || !firebase.appId) {
           this.authError.set('Configuration Firebase web incomplète côté serveur.');
+          this.authReady.set(true);
           return;
         }
         this.firebaseApp = initializeApp(firebase);
@@ -240,13 +264,24 @@ export class ApiService {
           if (!user) {
             this.idToken = '';
             this.adminUser.set(undefined);
+            this.authReady.set(true);
             return;
           }
-          this.idToken = await user.getIdToken();
-          this.loadAdminUser();
+          try {
+            this.idToken = await user.getIdToken();
+            this.loadAdminUser();
+          } catch {
+            this.idToken = '';
+            this.adminUser.set(undefined);
+            this.authError.set('Impossible de restaurer la session Firebase.');
+            this.authReady.set(true);
+          }
         });
       },
-      error: () => this.authError.set('Impossible de charger la configuration Firebase.'),
+      error: () => {
+        this.authError.set('Impossible de charger la configuration Firebase.');
+        this.authReady.set(true);
+      },
     });
   }
 
@@ -255,11 +290,13 @@ export class ApiService {
       next: (user) => {
         this.adminUser.set(user);
         this.authError.set('');
+        this.authReady.set(true);
       },
       error: () => {
         this.idToken = '';
         this.adminUser.set(undefined);
         this.authError.set('Session Firebase expirée ou invalide.');
+        this.authReady.set(true);
       },
     });
   }

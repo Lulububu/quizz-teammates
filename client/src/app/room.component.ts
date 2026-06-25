@@ -1,5 +1,16 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChildren, computed, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  QueryList,
+  ViewChildren,
+  computed,
+  effect,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from './api.service';
 import { Clue, GameState, Room } from './types';
@@ -22,25 +33,28 @@ import { Clue, GameState, Room } from './types';
     } @else if (api.gameState()?.status === 'finished') {
       <main class="podium-screen">
         <h1>Classement final</h1>
+        @if (finalRevealMessage()) {
+          <p class="final-reveal-message">{{ finalRevealMessage() }}</p>
+        }
         @if (podiumPlayers(); as podium) {
           <section class="final-podium" aria-label="Podium final">
             @if (podium[1]) {
               <article class="podium-place second">
-                <p>{{ podium[1].nickname }}</p>
+                <p [class.name-revealed]="isFinalNameRevealed(podium[1])">{{ finalPlayerName(podium[1]) }}</p>
                 <div class="medal">2</div>
                 <strong>{{ podium[1].score }}</strong>
               </article>
             }
             @if (podium[0]) {
               <article class="podium-place first">
-                <p>{{ podium[0].nickname }}</p>
+                <p [class.name-revealed]="isFinalNameRevealed(podium[0])">{{ finalPlayerName(podium[0]) }}</p>
                 <div class="medal">1</div>
                 <strong>{{ podium[0].score }}</strong>
               </article>
             }
             @if (podium[2]) {
               <article class="podium-place third">
-                <p>{{ podium[2].nickname }}</p>
+                <p [class.name-revealed]="isFinalNameRevealed(podium[2])">{{ finalPlayerName(podium[2]) }}</p>
                 <div class="medal">3</div>
                 <strong>{{ podium[2].score }}</strong>
               </article>
@@ -53,7 +67,7 @@ import { Clue, GameState, Room } from './types';
             @for (player of api.gameState()?.leaderboard || []; track player.id; let index = $index) {
               <li>
                 <strong>{{ index + 1 }}</strong>
-                <span>{{ player.nickname }}</span>
+                <span [class.name-revealed]="isFinalNameRevealed(player)">{{ finalPlayerName(player) }}</span>
                 <strong>{{ player.score }}</strong>
               </li>
             }
@@ -61,29 +75,8 @@ import { Clue, GameState, Room } from './types';
         </section>
       </main>
     } @else {
-      <main class="page host-layout">
+      <main class="page host-page">
         <section class="panel grid host-stage">
-          @if (room(); as activeRoom) {
-            <header class="host-header">
-              <div>
-                <p class="eyebrow">Salon animateur</p>
-                <h1>{{ activeRoom.code }}</h1>
-              </div>
-              <button type="button" class="secondary" (click)="copyJoinLink()">
-                {{ linkCopied() ? 'Lien copié' : 'Copier le lien' }}
-              </button>
-            </header>
-            <div class="join-card" [class.compact]="api.gameState()?.status !== 'lobby'">
-              <div>
-                <span>Code de la partie</span>
-                <div class="code">{{ activeRoom.code }}</div>
-              </div>
-              @if (activeRoom.qrCodeDataUrl) {
-                <img class="qr" [src]="activeRoom.qrCodeDataUrl" alt="QR code pour rejoindre le salon">
-              }
-            </div>
-          }
-
           @if (api.gameState(); as state) {
             <article class="host-question grid">
               @if (state.status === 'lobby') {
@@ -161,27 +154,6 @@ import { Clue, GameState, Room } from './types';
           }
         </section>
 
-        <aside class="panel participant-panel">
-          <div class="section-heading compact">
-            <div>
-              <h2>Participants</h2>
-              <p>{{ api.gameState()?.playerCount || 0 }} connecté(s)</p>
-            </div>
-          </div>
-          @if ((api.gameState()?.players || []).length === 0) {
-            <p class="muted">Les pseudos apparaîtront ici.</p>
-          }
-          <ul class="participant-list">
-            @for (player of api.gameState()?.players || []; track player.id) {
-              <li>
-                <span>{{ player.nickname }}</span>
-                @if (api.gameState()?.status === 'lobby') {
-                  <button type="button" class="danger ghost" (click)="removePlayer(player.id, player.nickname)">Retirer</button>
-                }
-              </li>
-            }
-          </ul>
-        </aside>
       </main>
     }
 
@@ -234,8 +206,9 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
   message = signal('');
   messageIsError = signal(false);
   commandPending = signal(false);
-  linkCopied = signal(false);
   autoplayBlocked = signal(false);
+  revealedFinalPlayerIds = signal<Set<string>>(new Set());
+  finalRevealMessage = signal('');
   now = signal(Date.now());
   remainingSeconds = computed(() => {
     const endsAt = this.api.gameState()?.questionEndsAt;
@@ -251,17 +224,36 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
   });
   podiumPlayers = computed(() => this.api.gameState()?.leaderboard.slice(0, 3) ?? []);
   private timerId: number | undefined;
+  private finalRevealTimers: number[] = [];
+  private finalRevealStarted = false;
 
   constructor(
     public api: ApiService,
     private route: ActivatedRoute,
-  ) {}
+  ) {
+    effect(() => {
+      const state = this.api.gameState();
+      if (state?.status !== 'finished') {
+        this.resetFinalReveal();
+        return;
+      }
+      if (!state.hidePlayerNames) {
+        this.clearFinalRevealTimers();
+        this.revealedFinalPlayerIds.set(new Set(state.leaderboard.map((player) => player.id)));
+        this.finalRevealMessage.set('');
+        return;
+      }
+      if (!this.finalRevealStarted) this.startFinalReveal(state.leaderboard);
+    }, { allowSignalWrites: true });
+  }
 
   ngOnInit(): void {
+    this.api.hostRoomMeta.set(undefined);
     const code = (this.route.snapshot.paramMap.get('code') ?? '').toUpperCase();
     this.api.getRoom(code).subscribe({
       next: (room) => {
         this.room.set(room);
+        this.api.hostRoomMeta.set(room);
         this.api.gameState.set(room.gameState);
         void this.api.hostRoom(code).then((response) => {
           this.loading.set(false);
@@ -282,6 +274,8 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy(): void {
     if (this.timerId) window.clearInterval(this.timerId);
+    this.clearFinalRevealTimers();
+    this.api.hostRoomMeta.set(undefined);
   }
 
   ngAfterViewInit(): void {
@@ -310,31 +304,23 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!response.ok) this.showMessage(response.error ?? 'Impossible de passer à la question suivante.', true);
   }
 
-  async removePlayer(playerId: string, nickname: string): Promise<void> {
-    const code = this.room()?.code;
-    if (!code || !window.confirm(`Retirer ${nickname} du salon ?`)) return;
-    const response = await this.api.removePlayer(code, playerId);
-    if (!response.ok) this.showMessage(response.error ?? 'Impossible de retirer ce joueur.', true);
-  }
-
-  async copyJoinLink(): Promise<void> {
-    const code = this.room()?.code;
-    if (!code) return;
-    try {
-      await navigator.clipboard.writeText(`${window.location.origin}/join/${code}`);
-      this.linkCopied.set(true);
-      window.setTimeout(() => this.linkCopied.set(false), 1800);
-    } catch {
-      this.showMessage('Impossible de copier le lien automatiquement.', true);
-    }
-  }
-
   async retryMediaPlayback(): Promise<void> {
     await this.playCurrentMedia();
   }
 
   answerProgress(state: GameState): number {
     return state.playerCount > 0 ? Math.min(100, (state.answerCount / state.playerCount) * 100) : 0;
+  }
+
+  finalPlayerName(player: { id: string; nickname: string; realNickname?: string }): string {
+    if (!this.api.gameState()?.hidePlayerNames || this.revealedFinalPlayerIds().has(player.id)) {
+      return player.realNickname || player.nickname;
+    }
+    return player.nickname;
+  }
+
+  isFinalNameRevealed(player: { id: string }): boolean {
+    return this.revealedFinalPlayerIds().has(player.id);
   }
 
   visibleClues(state: GameState): Clue[] {
@@ -358,6 +344,57 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
   private showMessage(message: string, error = false): void {
     this.message.set(message);
     this.messageIsError.set(error);
+  }
+
+  private startFinalReveal(leaderboard: Array<{ id: string }>): void {
+    this.finalRevealStarted = true;
+    this.revealedFinalPlayerIds.set(new Set());
+    this.finalRevealMessage.set('Découvrons les participants…');
+
+    this.scheduleFinalReveal(700, leaderboard.slice(3).map((player) => player.id));
+    const podiumStart = 1800;
+    if (leaderboard[2]) {
+      this.finalRevealTimers.push(window.setTimeout(() => {
+        this.finalRevealMessage.set('Troisième place');
+        this.revealFinalPlayers([leaderboard[2].id]);
+      }, podiumStart));
+    }
+    if (leaderboard[1]) {
+      this.finalRevealTimers.push(window.setTimeout(() => {
+        this.finalRevealMessage.set('Deuxième place');
+        this.revealFinalPlayers([leaderboard[1].id]);
+      }, podiumStart + 1600));
+    }
+    if (leaderboard[0]) {
+      this.finalRevealTimers.push(window.setTimeout(() => {
+        this.finalRevealMessage.set('Et le gagnant est…');
+        this.revealFinalPlayers([leaderboard[0].id]);
+      }, podiumStart + 3400));
+    }
+    this.finalRevealTimers.push(window.setTimeout(() => {
+      this.finalRevealMessage.set('');
+    }, podiumStart + 5000));
+  }
+
+  private scheduleFinalReveal(delay: number, playerIds: string[]): void {
+    if (!playerIds.length) return;
+    this.finalRevealTimers.push(window.setTimeout(() => this.revealFinalPlayers(playerIds), delay));
+  }
+
+  private revealFinalPlayers(playerIds: string[]): void {
+    this.revealedFinalPlayerIds.update((current) => new Set([...current, ...playerIds]));
+  }
+
+  private resetFinalReveal(): void {
+    this.clearFinalRevealTimers();
+    this.finalRevealStarted = false;
+    this.revealedFinalPlayerIds.set(new Set());
+    this.finalRevealMessage.set('');
+  }
+
+  private clearFinalRevealTimers(): void {
+    for (const timer of this.finalRevealTimers) window.clearTimeout(timer);
+    this.finalRevealTimers = [];
   }
 
   private async playCurrentMedia(): Promise<void> {
