@@ -144,6 +144,55 @@ html[data-theme="cosmic"] .current-player {
   background: #3a4775;
 }
 
+html[data-theme="cosmic"] .player-avatar {
+  border-color: #7c89be;
+  background:
+    radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.38) 0 12%, transparent 13%),
+    linear-gradient(145deg, #35a4ff, #d84fc6);
+  box-shadow:
+    0 9px 22px rgba(4, 8, 28, 0.42),
+    inset 0 -5px 10px rgba(22, 25, 60, 0.3);
+}
+
+html[data-theme="cosmic"] .result-stats p {
+  border: 1px solid #53608e;
+  background: #343e6b;
+  color: #cbd2f0;
+}
+
+html[data-theme="cosmic"] .result-stats strong {
+  color: #ffffff;
+}
+
+html[data-theme="cosmic"] .result-kicker {
+  color: #f3a5e3;
+}
+
+html[data-theme="cosmic"] .correct-answer.incorrect span {
+  color: #ffb8c8;
+}
+
+html[data-theme="cosmic"] .clue-chip,
+html[data-theme="cosmic"] .calm-panel,
+html[data-theme="cosmic"] .dictionary-row.active,
+html[data-theme="cosmic"] .upload-progress,
+html[data-theme="cosmic"] .result-pending {
+  border-color: #53608e;
+  background: #343e6b;
+}
+
+html[data-theme="cosmic"] .status-message {
+  color: #8ce5b5;
+}
+
+html[data-theme="cosmic"] .status-message.error {
+  color: #ff9aaf;
+}
+
+html[data-theme="cosmic"] .status-message.warning {
+  color: #ffd98a;
+}
+
 html[data-theme="cosmic"] .current-clue {
   border-color: #49699f;
   background: #283a6b;
