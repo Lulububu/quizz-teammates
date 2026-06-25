@@ -69,6 +69,7 @@ export type GameState = {
   totalQuestions: number;
   questionStartedAt: string | null;
   questionEndsAt: string | null;
+  finalRevealStartedAt: string | null;
   playerCount: number;
   answerCount: number;
   leaderboard: PlayerScore[];
@@ -105,6 +106,14 @@ export type PlayerResult = {
   totalScore: number;
   rank: number;
   totalPlayers: number;
+};
+
+export type LobbyReaction = {
+  id: string;
+  emoji: string;
+  side: 'left' | 'right';
+  x: number;
+  y: number;
 };
 
 export type AdminUser = {

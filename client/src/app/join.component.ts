@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from './api.service';
 import { AnswerSearchComponent } from './answer-search.component';
+import { finalPlayerName, getFinalRevealState } from './final-reveal';
 import { Clue, GameState, Room } from './types';
 
 @Component({
@@ -61,6 +62,21 @@ import { Clue, GameState, Room } from './types';
                 <div class="waiting-pulse" aria-hidden="true"></div>
                 <h2>{{ playerId() ? 'Vous êtes prêt' : 'La partie attend ses joueurs' }}</h2>
                 <p>L'animateur lancera le quiz quand tout le monde sera prêt.</p>
+                @if (playerId()) {
+                  <div class="lobby-reaction-picker" aria-label="Envoyer une réaction">
+                    <span>Réagir sur l'écran de l'animateur</span>
+                    <div>
+                      @for (emoji of reactionChoices; track emoji) {
+                        <button
+                          type="button"
+                          [disabled]="reactionPending()"
+                          [attr.aria-label]="'Envoyer la réaction ' + emoji"
+                          (click)="sendReaction(emoji)"
+                        >{{ emoji }}</button>
+                      }
+                    </div>
+                  </div>
+                }
               </article>
             } @else if (state.status === 'question' && state.activeQuestion) {
               <article class="question-card grid">
@@ -176,11 +192,16 @@ import { Clue, GameState, Room } from './types';
             } @else if (state.status === 'finished') {
               <article class="item grid">
                 <h2>Quiz terminé</h2>
+                @if (finalReveal().message) {
+                  <p class="final-reveal-message player-final-reveal">{{ finalReveal().message }}</p>
+                }
                 <ol class="leaderboard">
                   @for (player of state.leaderboard; track player.id; let index = $index) {
                     <li [class.current-player]="player.id === playerId()">
                       <strong>{{ index + 1 }}</strong>
-                      <span>{{ player.nickname }}</span>
+                      <span [class.name-revealed]="isFinalNameRevealed(player)">
+                        {{ finalPlayerName(player) }}
+                      </span>
                       <strong>{{ player.score }}</strong>
                     </li>
                   }
@@ -227,10 +248,12 @@ export class JoinComponent implements OnInit, OnDestroy {
   message = signal('');
   messageIsError = signal(false);
   sendingAnswer = signal(false);
+  reactionPending = signal(false);
   answeredQuestionIndex = signal<number | undefined>(undefined);
   selectedAnswer = signal('');
   selectedAutocompleteAnswer = signal('');
   now = signal(Date.now());
+  finalReveal = computed(() => getFinalRevealState(this.api.gameState(), this.now()));
   canAnswer = computed(
     () => Boolean(this.playerId()) && this.api.gameState()?.status === 'question' && !this.sendingAnswer(),
   );
@@ -247,6 +270,7 @@ export class JoinComponent implements OnInit, OnDestroy {
     return Math.max(0, Math.min(100, ((end - this.now()) / Math.max(1, end - start)) * 100));
   });
   nickname = '';
+  reactionChoices = randomReactionChoices();
   private timerId: number | undefined;
   private currentQuestionIndex: number | undefined;
 
@@ -353,6 +377,16 @@ export class JoinComponent implements OnInit, OnDestroy {
     }
   }
 
+  async sendReaction(emoji: string): Promise<void> {
+    if (!this.playerId() || this.reactionPending()) return;
+    this.reactionPending.set(true);
+    try {
+      await this.api.sendLobbyReaction(this.code(), this.playerId(), emoji);
+    } finally {
+      window.setTimeout(() => this.reactionPending.set(false), 500);
+    }
+  }
+
   async answerTextValue(): Promise<void> {
     const question = this.api.gameState()?.activeQuestion;
     const questionIndex = this.api.gameState()?.currentQuestionIndex;
@@ -393,6 +427,14 @@ export class JoinComponent implements OnInit, OnDestroy {
 
   isImageUrl(value: string): boolean {
     return isLikelyImage(value);
+  }
+
+  finalPlayerName(player: { id: string; nickname: string; realNickname?: string; score: number }): string {
+    return finalPlayerName(this.api.gameState(), this.finalReveal(), player);
+  }
+
+  isFinalNameRevealed(player: { id: string }): boolean {
+    return this.finalReveal().revealedPlayerIds.has(player.id);
   }
 
   private async restoreSession(): Promise<void> {
@@ -445,4 +487,13 @@ function isLikelyImage(value: string): boolean {
   } catch {
     return false;
   }
+}
+
+function randomReactionChoices(): string[] {
+  const reactions = ['👏', '🔥', '🎉', '❤️', '😂', '🤩', '🚀', '💡', '😎', '🥳', '⭐', '🙌'];
+  return reactions
+    .map((emoji) => ({ emoji, order: Math.random() }))
+    .sort((left, right) => left.order - right.order)
+    .slice(0, 5)
+    .map(({ emoji }) => emoji);
 }

@@ -11,7 +11,7 @@ import {
 } from 'firebase/auth';
 import { io, Socket } from 'socket.io-client';
 import { firstValueFrom } from 'rxjs';
-import { AdminUser, AnswerDictionary, GameState, PlayerResult, PlayerScore, Quiz, Room } from './types';
+import { AdminUser, AnswerDictionary, GameState, LobbyReaction, PlayerResult, PlayerScore, Quiz, Room } from './types';
 
 type FirebaseWebConfig = {
   apiKey: string;
@@ -39,6 +39,7 @@ export class ApiService {
   gameState = signal<GameState | undefined>(undefined);
   playerResult = signal<PlayerResult | undefined>(undefined);
   playerRemoved = signal('');
+  lobbyReactions = signal<LobbyReaction[]>([]);
   hostRoomMeta = signal<Room | undefined>(undefined);
   adminUser = signal<AdminUser | undefined>(undefined);
   authError = signal('');
@@ -76,6 +77,12 @@ export class ApiService {
     this.socket.on('player-result', (result: PlayerResult) => this.playerResult.set(result));
     this.socket.on('player-removed', (payload: { message?: string }) => {
       this.playerRemoved.set(payload.message ?? 'Vous avez été retiré du salon.');
+    });
+    this.socket.on('lobby-reaction', (reaction: LobbyReaction) => {
+      this.lobbyReactions.update((reactions) => [...reactions, reaction]);
+      window.setTimeout(() => {
+        this.lobbyReactions.update((reactions) => reactions.filter((item) => item.id !== reaction.id));
+      }, 3200);
     });
     this.initializeFirebase();
   }
@@ -161,6 +168,10 @@ export class ApiService {
 
   setPlayerNamesVisibility(code: string, hidePlayerNames: boolean): Promise<{ ok: boolean; error?: string }> {
     return this.emit('set-player-names-visibility', { code, hidePlayerNames, idToken: this.idToken });
+  }
+
+  sendLobbyReaction(code: string, playerId: string, emoji: string): Promise<{ ok: boolean; error?: string }> {
+    return this.emit('lobby-reaction', { code, playerId, emoji });
   }
 
   submitAnswer(payload: {

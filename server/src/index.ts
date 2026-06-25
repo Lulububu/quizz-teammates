@@ -2,6 +2,7 @@ import 'dotenv/config';
 import cors from 'cors';
 import express from 'express';
 import { createServer } from 'node:http';
+import { randomUUID } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -53,6 +54,8 @@ const rootDir = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
 const clientDistDir = existsSync(join(rootDir, 'dist', 'client', 'browser'))
   ? join(rootDir, 'dist', 'client', 'browser')
   : join(rootDir, 'dist', 'client');
+const lobbyReactionEmojis = new Set(['👏', '🔥', '🎉', '❤️', '😂', '🤩', '🚀', '💡', '😎', '🥳', '⭐', '🙌']);
+const lastLobbyReactionAt = new Map<string, number>();
 const io = new Server(server, {
   cors: {
     origin: true,
@@ -356,6 +359,34 @@ io.on('connection', (socket) => {
     callback?.({ ok: true, player, gameState: await getGameState(room.code, false) });
   });
 
+  socket.on('lobby-reaction', async (payload: { code: string; playerId: string; emoji: string }, callback) => {
+    const room = await getRoomByCode(payload.code);
+    const player = room ? await getPlayer(room.code, payload.playerId) : undefined;
+    if (!room || !player || room.status !== 'lobby') {
+      callback?.({ ok: false, error: 'Réaction indisponible.' });
+      return;
+    }
+    if (!lobbyReactionEmojis.has(payload.emoji)) {
+      callback?.({ ok: false, error: 'Réaction invalide.' });
+      return;
+    }
+    const now = Date.now();
+    const lastReaction = lastLobbyReactionAt.get(player.id) ?? 0;
+    if (now - lastReaction < 450) {
+      callback?.({ ok: false, error: 'Patientez avant de renvoyer une réaction.' });
+      return;
+    }
+    lastLobbyReactionAt.set(player.id, now);
+    io.to(hostChannel(room.code)).emit('lobby-reaction', {
+      id: randomUUID(),
+      emoji: payload.emoji,
+      side: Math.random() < 0.5 ? 'left' : 'right',
+      x: 12 + Math.round(Math.random() * 76),
+      y: 12 + Math.round(Math.random() * 68),
+    });
+    callback?.({ ok: true });
+  });
+
   socket.on('start-game', async (payload: { code: string; idToken?: string }, callback) => {
     const room = await getRoomByCode(payload.code);
     if (!room) {
@@ -536,7 +567,7 @@ async function activateQuestion(code: string, questionIndex: number) {
   const questionCount = room.question_order?.length ?? getQuestionCount(quiz);
   if (questionIndex >= questionCount) {
     clearRevealTimer(room.code);
-    await updateRoomQuestion(room.code, questionIndex, null, null, 'finished');
+    await updateRoomQuestion(room.code, questionIndex, new Date().toISOString(), null, 'finished');
     await emitGameState(room.code);
     return { ok: true, finished: true };
   }
@@ -584,7 +615,7 @@ async function getGameState(code: string, includeAnswer: boolean, includeSuggest
   const rawLeaderboard = room.status === 'finished' || includeAnswer ? await getLeaderboard(room.code) : [];
   const hidePlayerNames = room.hide_player_names ?? quiz?.hide_player_names ?? false;
   const leaderboard = hidePlayerNames
-    ? anonymizeLeaderboard(rawLeaderboard, includeAnswer)
+    ? anonymizeLeaderboard(rawLeaderboard, includeAnswer || room.status === 'finished')
     : rawLeaderboard;
   return {
     status: room.status,
@@ -592,6 +623,7 @@ async function getGameState(code: string, includeAnswer: boolean, includeSuggest
     totalQuestions: room.question_order?.length ?? getQuestionCount(quiz),
     questionStartedAt: room.question_started_at,
     questionEndsAt: room.question_ends_at,
+    finalRevealStartedAt: room.status === 'finished' ? room.question_started_at : null,
     playerCount: await getPlayerCount(room.code),
     answerCount: activeQuestion
       ? await getAnswerCount(room.code, activeQuestion.roundId, activeQuestion.targetType, activeQuestion.targetId)

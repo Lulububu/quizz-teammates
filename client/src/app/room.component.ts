@@ -8,11 +8,11 @@ import {
   QueryList,
   ViewChildren,
   computed,
-  effect,
   signal,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from './api.service';
+import { finalPlayerName, getFinalRevealState } from './final-reveal';
 import { Clue, GameState, Room } from './types';
 
 @Component({
@@ -80,9 +80,44 @@ import { Clue, GameState, Room } from './types';
           @if (api.gameState(); as state) {
             <article class="host-question grid">
               @if (state.status === 'lobby') {
-                <div class="empty-state compact">
+                <div class="empty-state compact lobby-launch">
                   <h2>Prêt à lancer le quiz</h2>
-                  <p>Les joueurs peuvent rejoindre avec le code ou le QR code.</p>
+                  <p>Scannez le QR code pour rejoindre la partie.</p>
+                  <div class="lobby-board">
+                    <div class="lobby-player-column" aria-label="Joueurs connectés">
+                      @for (player of leftLobbyPlayers(); track player.id) {
+                        <span class="lobby-player-name">{{ player.nickname }}</span>
+                      }
+                      @for (reaction of leftLobbyReactions(); track reaction.id) {
+                        <span
+                          class="lobby-reaction"
+                          [style.left.%]="reaction.x"
+                          [style.top.%]="reaction.y"
+                          aria-hidden="true"
+                        >{{ reaction.emoji }}</span>
+                      }
+                    </div>
+                    @if (room()?.qrCodeDataUrl; as qrCode) {
+                      <div class="lobby-qr">
+                        <img [src]="qrCode" alt="QR code pour rejoindre la partie">
+                      </div>
+                    }
+                    <div class="lobby-player-column" aria-label="Joueurs connectés">
+                      @for (player of rightLobbyPlayers(); track player.id) {
+                        <span class="lobby-player-name">{{ player.nickname }}</span>
+                      }
+                      @for (reaction of rightLobbyReactions(); track reaction.id) {
+                        <span
+                          class="lobby-reaction"
+                          [style.left.%]="reaction.x"
+                          [style.top.%]="reaction.y"
+                          aria-hidden="true"
+                        >{{ reaction.emoji }}</span>
+                      }
+                    </div>
+                  </div>
+                  <span class="lobby-player-count">{{ state.playerCount }} joueur(s) connecté(s)</span>
+                  <strong class="lobby-code">Code {{ room()?.code }}</strong>
                   <button type="button" (click)="startGame()" [disabled]="commandPending()">
                     {{ commandPending() ? 'Lancement…' : 'Lancer le quiz' }}
                   </button>
@@ -207,9 +242,9 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
   messageIsError = signal(false);
   commandPending = signal(false);
   autoplayBlocked = signal(false);
-  revealedFinalPlayerIds = signal<Set<string>>(new Set());
-  finalRevealMessage = signal('');
   now = signal(Date.now());
+  finalReveal = computed(() => getFinalRevealState(this.api.gameState(), this.now()));
+  finalRevealMessage = computed(() => this.finalReveal().message);
   remainingSeconds = computed(() => {
     const endsAt = this.api.gameState()?.questionEndsAt;
     if (!endsAt) return 0;
@@ -223,29 +258,16 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
     return Math.max(0, Math.min(100, ((end - this.now()) / Math.max(1, end - start)) * 100));
   });
   podiumPlayers = computed(() => this.api.gameState()?.leaderboard.slice(0, 3) ?? []);
+  leftLobbyPlayers = computed(() => (this.api.gameState()?.players ?? []).filter((_, index) => index % 2 === 0));
+  rightLobbyPlayers = computed(() => (this.api.gameState()?.players ?? []).filter((_, index) => index % 2 === 1));
+  leftLobbyReactions = computed(() => this.api.lobbyReactions().filter((reaction) => reaction.side === 'left'));
+  rightLobbyReactions = computed(() => this.api.lobbyReactions().filter((reaction) => reaction.side === 'right'));
   private timerId: number | undefined;
-  private finalRevealTimers: number[] = [];
-  private finalRevealStarted = false;
 
   constructor(
     public api: ApiService,
     private route: ActivatedRoute,
-  ) {
-    effect(() => {
-      const state = this.api.gameState();
-      if (state?.status !== 'finished') {
-        this.resetFinalReveal();
-        return;
-      }
-      if (!state.hidePlayerNames) {
-        this.clearFinalRevealTimers();
-        this.revealedFinalPlayerIds.set(new Set(state.leaderboard.map((player) => player.id)));
-        this.finalRevealMessage.set('');
-        return;
-      }
-      if (!this.finalRevealStarted) this.startFinalReveal(state.leaderboard);
-    }, { allowSignalWrites: true });
-  }
+  ) {}
 
   ngOnInit(): void {
     this.api.hostRoomMeta.set(undefined);
@@ -274,8 +296,8 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy(): void {
     if (this.timerId) window.clearInterval(this.timerId);
-    this.clearFinalRevealTimers();
     this.api.hostRoomMeta.set(undefined);
+    this.api.lobbyReactions.set([]);
   }
 
   ngAfterViewInit(): void {
@@ -313,14 +335,11 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   finalPlayerName(player: { id: string; nickname: string; realNickname?: string }): string {
-    if (!this.api.gameState()?.hidePlayerNames || this.revealedFinalPlayerIds().has(player.id)) {
-      return player.realNickname || player.nickname;
-    }
-    return player.nickname;
+    return finalPlayerName(this.api.gameState(), this.finalReveal(), player);
   }
 
   isFinalNameRevealed(player: { id: string }): boolean {
-    return this.revealedFinalPlayerIds().has(player.id);
+    return this.finalReveal().revealedPlayerIds.has(player.id);
   }
 
   visibleClues(state: GameState): Clue[] {
@@ -344,57 +363,6 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
   private showMessage(message: string, error = false): void {
     this.message.set(message);
     this.messageIsError.set(error);
-  }
-
-  private startFinalReveal(leaderboard: Array<{ id: string }>): void {
-    this.finalRevealStarted = true;
-    this.revealedFinalPlayerIds.set(new Set());
-    this.finalRevealMessage.set('Découvrons les participants…');
-
-    this.scheduleFinalReveal(700, leaderboard.slice(3).map((player) => player.id));
-    const podiumStart = 1800;
-    if (leaderboard[2]) {
-      this.finalRevealTimers.push(window.setTimeout(() => {
-        this.finalRevealMessage.set('Troisième place');
-        this.revealFinalPlayers([leaderboard[2].id]);
-      }, podiumStart));
-    }
-    if (leaderboard[1]) {
-      this.finalRevealTimers.push(window.setTimeout(() => {
-        this.finalRevealMessage.set('Deuxième place');
-        this.revealFinalPlayers([leaderboard[1].id]);
-      }, podiumStart + 1600));
-    }
-    if (leaderboard[0]) {
-      this.finalRevealTimers.push(window.setTimeout(() => {
-        this.finalRevealMessage.set('Et le gagnant est…');
-        this.revealFinalPlayers([leaderboard[0].id]);
-      }, podiumStart + 3400));
-    }
-    this.finalRevealTimers.push(window.setTimeout(() => {
-      this.finalRevealMessage.set('');
-    }, podiumStart + 5000));
-  }
-
-  private scheduleFinalReveal(delay: number, playerIds: string[]): void {
-    if (!playerIds.length) return;
-    this.finalRevealTimers.push(window.setTimeout(() => this.revealFinalPlayers(playerIds), delay));
-  }
-
-  private revealFinalPlayers(playerIds: string[]): void {
-    this.revealedFinalPlayerIds.update((current) => new Set([...current, ...playerIds]));
-  }
-
-  private resetFinalReveal(): void {
-    this.clearFinalRevealTimers();
-    this.finalRevealStarted = false;
-    this.revealedFinalPlayerIds.set(new Set());
-    this.finalRevealMessage.set('');
-  }
-
-  private clearFinalRevealTimers(): void {
-    for (const timer of this.finalRevealTimers) window.clearTimeout(timer);
-    this.finalRevealTimers = [];
   }
 
   private async playCurrentMedia(): Promise<void> {
