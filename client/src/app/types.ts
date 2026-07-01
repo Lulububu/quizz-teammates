@@ -72,11 +72,18 @@ export type GameState = {
   finalRevealStartedAt: string | null;
   playerCount: number;
   answerCount: number;
+  answerStats?: AnswerStats;
   leaderboard: PlayerScore[];
   topLeaderboard: PlayerScore[];
   players: PlayerScore[];
   hidePlayerNames: boolean;
   activeQuestion?: ActiveQuestion;
+};
+
+export type AnswerStats = {
+  total: number;
+  correct: number;
+  incorrect: number;
 };
 
 export type ActiveQuestion = {

@@ -50,6 +50,9 @@ html[data-theme="cosmic"] .work-name-recap > div {
 
 html[data-theme="cosmic"] .round-header,
 html[data-theme="cosmic"] .person-editor,
+html[data-theme="cosmic"] .answer-impact,
+html[data-theme="cosmic"] .answer-impact-row,
+html[data-theme="cosmic"] .derived-answer,
 html[data-theme="cosmic"] .privacy-mode-field,
 html[data-theme="cosmic"] .autocomplete,
 html[data-theme="cosmic"] .selected-search-answer,
@@ -58,6 +61,17 @@ html[data-theme="cosmic"] .media-preview,
 html[data-theme="cosmic"] .answer-sending {
   background: #343e6b;
   border-color: #53608e;
+}
+
+html[data-theme="cosmic"] .answer-impact {
+  background: linear-gradient(135deg, #343e6b, #2d365f);
+}
+
+html[data-theme="cosmic"] .answer-impact-orb {
+  color: #f7f8ff;
+  background:
+    radial-gradient(circle, #222a50 0 52%, transparent 54%),
+    conic-gradient(var(--green) var(--correct), var(--red) 0);
 }
 
 html[data-theme="cosmic"] p,
@@ -310,6 +324,10 @@ html[data-theme="academy"] .work-name-recap > div {
   background: #fff0d1;
 }
 
+html[data-theme="academy"] .answer-impact {
+  background: linear-gradient(135deg, #fff2d8, #edf1fb);
+}
+
 html[data-theme="academy"] .podium-place.first {
   background: #cf6a08;
 }
@@ -381,6 +399,10 @@ html[data-theme="orbit"] .person-editor {
 html[data-theme="orbit"] .current-clue {
   border-color: #b9dff5;
   background: #eaf8ff;
+}
+
+html[data-theme="orbit"] .answer-impact {
+  background: linear-gradient(135deg, #f3efff, #eaf8ff);
 }
 
 html[data-theme="orbit"] .work-name-recap > div {
@@ -501,6 +523,11 @@ html[data-theme="arcade"] .work-heading > span {
 html[data-theme="arcade"] .person-editor {
   border-left: 10px solid #ff4e3d;
   background: #fff4ed;
+}
+
+html[data-theme="arcade"] .answer-impact,
+html[data-theme="arcade"] .answer-impact-row {
+  border: 2px solid #171713;
 }
 
 html[data-theme="arcade"] .eyebrow {

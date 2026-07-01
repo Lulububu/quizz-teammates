@@ -391,6 +391,29 @@ export async function getAnswerCount(
   return snapshot.data().count;
 }
 
+export async function getAnswerStats(
+  code: string,
+  roundId: string,
+  targetType: 'work' | 'person',
+  targetId: string,
+): Promise<{ total: number; correct: number; incorrect: number }> {
+  const snapshot = await rooms
+    .doc(code)
+    .collection('answers')
+    .where('round_id', '==', roundId)
+    .where('target_type', '==', targetType)
+    .where('target_id', '==', targetId)
+    .get();
+  let correct = 0;
+  let incorrect = 0;
+  for (const answer of snapshot.docs) {
+    const data = answer.data() as AnswerRow;
+    if (data.is_correct === 1) correct += 1;
+    else incorrect += 1;
+  }
+  return { total: correct + incorrect, correct, incorrect };
+}
+
 export async function getSelectedOption(
   quizId: string,
   roundId: string,

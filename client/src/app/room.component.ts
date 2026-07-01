@@ -169,6 +169,30 @@ import { Clue, GameState, Room } from './types';
                   <p class="eyebrow">Réponse révélée</p>
                   <h2>{{ state.activeQuestion.correctOption?.label || 'Réponse indisponible' }}</h2>
                 </div>
+                @if (state.answerStats; as stats) {
+                  <section class="answer-impact" aria-label="Répartition des réponses">
+                    <div
+                      class="answer-impact-orb"
+                      [style.--correct]="answerCorrectRate(stats) + '%'"
+                      [attr.aria-label]="stats.correct + ' bonne(s) réponse(s) et ' + stats.incorrect + ' mauvaise(s) réponse(s)'"
+                    >
+                      <strong>{{ answerCorrectRate(stats) }}%</strong>
+                      <span>de réussite</span>
+                    </div>
+                    <div class="answer-impact-bars">
+                      <div class="answer-impact-row good">
+                        <span>Bonnes réponses</span>
+                        <strong>{{ stats.correct }}</strong>
+                        <i [style.width.%]="answerStatWidth(stats.correct, stats.total)"></i>
+                      </div>
+                      <div class="answer-impact-row bad">
+                        <span>Mauvaises réponses</span>
+                        <strong>{{ stats.incorrect }}</strong>
+                        <i [style.width.%]="answerStatWidth(stats.incorrect, stats.total)"></i>
+                      </div>
+                    </div>
+                  </section>
+                }
                 <ol class="leaderboard podium">
                   @for (player of state.topLeaderboard; track player.id; let index = $index) {
                     <li>
@@ -332,6 +356,14 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
 
   answerProgress(state: GameState): number {
     return state.playerCount > 0 ? Math.min(100, (state.answerCount / state.playerCount) * 100) : 0;
+  }
+
+  answerCorrectRate(stats: { total: number; correct: number }): number {
+    return stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
+  }
+
+  answerStatWidth(value: number, total: number): number {
+    return total > 0 ? Math.max(4, Math.min(100, (value / total) * 100)) : 0;
   }
 
   finalPlayerName(player: { id: string; nickname: string; realNickname?: string }): string {

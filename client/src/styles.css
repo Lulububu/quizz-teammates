@@ -1074,6 +1074,16 @@ p {
   font-size: 1.2rem;
 }
 
+.derived-answer {
+  max-width: 360px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  background: white;
+  color: var(--muted);
+  font-weight: 800;
+  text-align: right;
+}
+
 .section-heading.compact {
   align-items: start;
 }
@@ -1386,6 +1396,86 @@ p {
   align-items: center;
 }
 
+.answer-impact {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid var(--line);
+  background: linear-gradient(135deg, rgba(255, 250, 242, 0.96), rgba(238, 242, 251, 0.96));
+  box-shadow: 0 18px 34px rgba(43, 54, 74, 0.1);
+}
+
+.answer-impact-orb {
+  --correct: 0%;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  width: 156px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  justify-self: center;
+  color: var(--ink);
+  background:
+    radial-gradient(circle, white 0 52%, transparent 54%),
+    conic-gradient(var(--green) var(--correct), var(--red) 0);
+  animation: answer-orb-pop 520ms cubic-bezier(.2, 1.6, .35, 1);
+}
+
+.answer-impact-orb strong {
+  font-size: 2.3rem;
+  line-height: 1;
+}
+
+.answer-impact-orb span {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.answer-impact-bars {
+  display: grid;
+  gap: 12px;
+}
+
+.answer-impact-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  overflow: hidden;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  background: white;
+}
+
+.answer-impact-row span,
+.answer-impact-row strong {
+  position: relative;
+  z-index: 1;
+}
+
+.answer-impact-row strong {
+  font-size: 1.45rem;
+}
+
+.answer-impact-row i {
+  position: absolute;
+  inset: auto auto 0 0;
+  height: 5px;
+  border-radius: 999px;
+  transition: width 520ms ease;
+}
+
+.answer-impact-row.good i {
+  background: var(--green);
+}
+
+.answer-impact-row.bad i {
+  background: var(--red);
+}
+
 .room-code {
   padding: 8px 10px;
   border: 1px solid var(--line);
@@ -1672,6 +1762,17 @@ app-answer-search,
   transition: width 200ms ease;
 }
 
+@keyframes answer-orb-pop {
+  from {
+    transform: scale(.72) rotate(-14deg);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
 .final-ranking {
   z-index: 1;
   width: min(760px, 100%);
@@ -1832,6 +1933,7 @@ app-answer-search,
   }
 
   .result-stats,
+  .answer-impact,
   .final-podium,
   .public-entry,
   .editor-layout,

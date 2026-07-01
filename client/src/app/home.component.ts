@@ -194,7 +194,7 @@ type DraftQuiz = {
                     </button>
                     <div>
                       <p class="eyebrow">Manche {{ roundIndex + 1 }}</p>
-                      <h3>{{ round.title || 'Sans titre' }}</h3>
+                      <h3>{{ roundSummary(round, roundIndex) }}</h3>
                     </div>
                     <div class="compact-actions">
                       <button type="button" class="secondary" (click)="moveRound(roundIndex, -1)" [disabled]="roundIndex === 0">Monter</button>
@@ -206,19 +206,6 @@ type DraftQuiz = {
 
                   @if (!isRoundCollapsed(roundIndex)) {
                     <div class="round-body grid">
-                      <div class="form-grid two">
-                        <label>
-                          Nom de la manche
-                          <input [(ngModel)]="round.title">
-                          <app-field-error [errors]="fieldErrors()" [path]="errorPath('rounds', roundIndex, 'title')" />
-                        </label>
-                        <label>
-                          Personne cible
-                          <input [(ngModel)]="round.person.name">
-                          <app-field-error [errors]="fieldErrors()" [path]="errorPath('rounds', roundIndex, 'person', 'name')" />
-                        </label>
-                      </div>
-
                       <section class="works-section">
                         <div class="section-heading works-heading">
                           <div>
@@ -365,7 +352,15 @@ type DraftQuiz = {
                       </section>
 
                       <section class="person-editor">
-                        <h4>Question sur la personne reliée</h4>
+                        <div class="section-heading compact">
+                          <div>
+                            <p class="eyebrow">Question finale de la manche</p>
+                            <h4>Personne reliée</h4>
+                          </div>
+                          <span class="derived-answer">
+                            {{ personAnswerPreview(round.person) || 'À définir dans la bonne réponse' }}
+                          </span>
+                        </div>
                         <div class="form-grid two">
                           <label>
                             Mode de réponse
@@ -658,6 +653,15 @@ export class HomeComponent implements OnInit {
       (roundTotal, round) => roundTotal + round.works.reduce((workTotal, work) => workTotal + work.clues.length, 0),
       0,
     );
+  }
+
+  roundSummary(round: DraftRound, roundIndex: number): string {
+    const person = this.personAnswerPreview(round.person);
+    return person ? `Manche ${roundIndex + 1} · ${person}` : `Manche ${roundIndex + 1}`;
+  }
+
+  personAnswerPreview(person: DraftRound['person']): string {
+    return this.answerLabel(person);
   }
 
   addRound(): void {
@@ -1029,11 +1033,11 @@ export class HomeComponent implements OnInit {
       description: draft.description,
       sequenceMode: draft.sequenceMode,
       hidePlayerNames: draft.hidePlayerNames,
-      rounds: draft.rounds.map((round) => ({
-        title: round.title,
+      rounds: draft.rounds.map((round, roundIndex) => ({
+        title: this.roundPayloadTitle(roundIndex),
         person: {
-          name: round.person.name,
-          ...this.answerPayload(round.person, round.person.correctAnswer || round.person.name),
+          name: this.personPayloadName(round.person),
+          ...this.answerPayload(round.person, ''),
         },
         works: round.works.map((work, workIndex) => ({
           title: work.answerMode === 'autocomplete'
@@ -1060,6 +1064,19 @@ export class HomeComponent implements OnInit {
       options: target.options,
       correctOptionIndex: target.correctOptionIndex,
     };
+  }
+
+  private roundPayloadTitle(roundIndex: number): string {
+    return `Manche ${roundIndex + 1}`;
+  }
+
+  private personPayloadName(person: DraftRound['person']): string {
+    return this.answerLabel(person) || 'Personne à définir';
+  }
+
+  private answerLabel(target: DraftAnswerTarget): string {
+    if (target.answerMode === 'autocomplete') return target.correctAnswer.trim();
+    return target.options[target.correctOptionIndex]?.trim() ?? '';
   }
 
   private optionLabels(options: Array<{ label: string }> | undefined): string[] {
@@ -1099,7 +1116,7 @@ export class HomeComponent implements OnInit {
 
   private newRound(): DraftRound {
     return {
-      title: 'Nouvelle manche',
+      title: '',
       person: {
         name: '',
         answerMode: 'choices',

@@ -20,6 +20,7 @@ import {
   deleteQuiz,
   findPlayerByNickname,
   getAnswerCount,
+  getAnswerStats,
   getAnswerDictionaryValues,
   getLeaderboard,
   getOwnedQuiz,
@@ -617,6 +618,9 @@ async function getGameState(code: string, includeAnswer: boolean, includeSuggest
   const leaderboard = hidePlayerNames
     ? anonymizeLeaderboard(rawLeaderboard, includeAnswer || room.status === 'finished')
     : rawLeaderboard;
+  const answerStats = activeQuestion
+    ? await getAnswerStats(room.code, activeQuestion.roundId, activeQuestion.targetType, activeQuestion.targetId)
+    : undefined;
   return {
     status: room.status,
     currentQuestionIndex: room.current_question_index,
@@ -625,9 +629,8 @@ async function getGameState(code: string, includeAnswer: boolean, includeSuggest
     questionEndsAt: room.question_ends_at,
     finalRevealStartedAt: room.status === 'finished' ? room.question_started_at : null,
     playerCount: await getPlayerCount(room.code),
-    answerCount: activeQuestion
-      ? await getAnswerCount(room.code, activeQuestion.roundId, activeQuestion.targetType, activeQuestion.targetId)
-      : 0,
+    answerCount: answerStats?.total ?? 0,
+    answerStats,
     leaderboard,
     topLeaderboard: includeAnswer ? leaderboard.slice(0, 5) : [],
     players: includeAnswer ? await getPlayers(room.code) : [],

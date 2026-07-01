@@ -74,7 +74,17 @@ Pour generer une liste initiale d'oeuvres depuis Wikidata :
 npm run dictionary:generate
 ```
 
-Le fichier produit est `data/dictionnaires/oeuvres-wikidata.txt`. Il contient une valeur par ligne au format `Titre (type, annee)` et peut etre utilise pour remplir un dictionnaire dans l'interface admin.
+Le fichier produit est `data/dictionnaires/oeuvres-wikidata.txt`. Il contient une valeur par ligne au format `Titre (type, annee, attribution : valeur)` et peut etre utilise pour remplir un dictionnaire dans l'interface admin.
+
+Exemples :
+
+```text
+Forrest Gump (film, 1994, realisateur : Robert Zemeckis)
+Fondation (livre, 1942, auteur : Isaac Asimov)
+Minecraft (jeu video, 2011, studio : Mojang Studios)
+```
+
+Le script trie localement les resultats Wikidata par nombre de liens interwiki afin de favoriser les oeuvres les plus connues, puis deduplique les valeurs.
 
 Si votre environnement local intercepte les certificats HTTPS, utilisez :
 
