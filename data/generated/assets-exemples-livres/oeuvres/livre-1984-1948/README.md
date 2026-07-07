@@ -1,0 +1,49 @@
+# 1984
+
+- Reponse attendue : 1984 (livre, 1948, auteur : George Orwell)
+- Type : livre
+- Annee : 1948
+- Attribution : auteur : George Orwell
+- Occurrences : manche 5, oeuvre 3
+
+## Indices a preparer
+
+### 1. Citation courte
+
+- Type d'indice : text
+- Fichier cible : texte a saisir dans le quiz
+- Consigne : Court extrait connu, a limiter a une phrase breve.
+- Texte retenu : 
+
+### 2. Indice narratif
+
+- Type d'indice : text
+- Fichier cible : texte a saisir dans le quiz
+- Consigne : Theme, lieu, objet ou situation centrale sans donner le titre.
+- Texte retenu : 
+
+### 3. Indice auteur ou epoque
+
+- Type d'indice : text
+- Fichier cible : texte a saisir dans le quiz
+- Consigne : Auteur, mouvement, epoque ou contexte, selon la difficulte voulue.
+- Texte retenu : 
+
+
+## Fichiers source
+
+Placez vos medias source dans `sources/` si vous souhaitez les traiter localement :
+
+- audio : `sources/source-audio.mp3`
+- video : `sources/source-video.mp4`
+- image : `sources/source-image.jpg`
+
+
+
+## Assets telecharges
+
+- data/generated/assets-exemples-livres/oeuvres/livre-1984-1948/sources/openlibrary-cover.jpg - Open Library / image
+- data/generated/assets-exemples-livres/oeuvres/livre-1984-1948/assets/indices-livre.txt - Open Library / text
+
+
+

@@ -99,6 +99,10 @@ export class ApiService {
     return this.http.put<Quiz>(`/api/quizzes/${quizId}`, payload, { headers: this.authHeaders() });
   }
 
+  duplicateQuiz(quizId: string) {
+    return this.http.post<Quiz>(`/api/quizzes/${quizId}/duplicate`, {}, { headers: this.authHeaders() });
+  }
+
   deleteQuiz(quizId: string) {
     return this.http.delete<void>(`/api/quizzes/${quizId}`, { headers: this.authHeaders() });
   }

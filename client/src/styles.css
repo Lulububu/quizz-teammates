@@ -750,6 +750,234 @@ p {
   align-items: center;
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(18, 17, 24, 0.58);
+}
+
+.modal-panel {
+  width: min(760px, 100%);
+  max-height: min(820px, calc(100vh - 48px));
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 4px);
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: 0 26px 70px rgba(18, 17, 24, 0.28);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 22px 24px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.modal-header h2 {
+  margin: 2px 0 0;
+}
+
+.import-modal-body {
+  display: grid;
+  gap: 16px;
+  padding: 20px 24px 24px;
+}
+
+.file-drop {
+  display: grid;
+  place-items: center;
+  min-height: 118px;
+  padding: 22px;
+  border: 1px dashed color-mix(in srgb, var(--primary), var(--line) 45%);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--input-surface), var(--primary) 7%);
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 850;
+  text-align: center;
+}
+
+.file-drop.is-disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.file-drop input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.import-status,
+.modal-errors {
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+
+.import-status {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--blue), transparent 45%);
+  background: color-mix(in srgb, var(--blue), var(--panel) 82%);
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.import-progress {
+  display: grid;
+  gap: 8px;
+}
+
+.import-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.import-progress-track {
+  height: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--input-surface), var(--ink) 8%);
+}
+
+.import-progress-track span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary), var(--green));
+  transition: width 260ms ease;
+}
+
+.loader-dot {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 650ms linear infinite;
+}
+
+.modal-errors {
+  border: 1px solid color-mix(in srgb, var(--red), transparent 25%);
+  background: color-mix(in srgb, var(--red), var(--panel) 84%);
+  color: var(--ink);
+}
+
+.modal-errors strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.modal-errors p {
+  margin: 4px 0 0;
+  color: var(--ink);
+  font-weight: 750;
+}
+
+.ghost-toggle {
+  min-height: 34px;
+  margin-top: 10px;
+  padding: 0;
+  background: transparent;
+  color: var(--ink);
+  box-shadow: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ghost-toggle:not(:disabled):hover {
+  filter: none;
+  transform: none;
+}
+
+.modal-error-details {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--red), transparent 35%);
+}
+
+.modal-error-details p {
+  font-size: 0.92rem;
+  font-weight: 650;
+}
+
+.missing-dictionary-values {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--orange), transparent 30%);
+  background: color-mix(in srgb, var(--yellow), white 42%);
+}
+
+.missing-dictionary-values strong {
+  display: block;
+  color: var(--ink);
+}
+
+.missing-dictionary-values p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.missing-values-table-wrap {
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--input-surface);
+}
+
+.missing-values-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.missing-values-table th,
+.missing-values-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  text-align: left;
+  vertical-align: top;
+}
+
+.missing-values-table th {
+  background: color-mix(in srgb, var(--secondary), var(--input-surface) 45%);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+}
+
+.missing-values-table th:first-child,
+.missing-values-table td:first-child {
+  width: 64px;
+  color: var(--muted);
+  font-weight: 850;
+}
+
+.missing-values-table tr:last-child td {
+  border-bottom: 0;
+}
+
 .danger.ghost {
   background: transparent;
   color: #a83b2d;
@@ -1309,6 +1537,13 @@ p {
   border-left-color: var(--blue);
   background: #eef2fb;
   color: #263865;
+}
+
+.feedback-toast.error {
+  border-color: color-mix(in srgb, var(--red), white 35%);
+  border-left-color: var(--red);
+  background: color-mix(in srgb, var(--red), white 84%);
+  color: #6d241b;
 }
 
 .file-button {

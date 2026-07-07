@@ -1,0 +1,1214 @@
+{
+  "title": "Quiz sondage - 3 œuvres préférées",
+  "description": "Généré automatiquement depuis Vos 3 oeuvres préférés(1-18).xlsx. Les indices sont à relire avant animation.",
+  "sequenceMode": "works-first",
+  "hidePlayerNames": true,
+  "rounds": [
+    {
+      "title": "Manche 1",
+      "person": {
+        "name": "Dabot Louis",
+        "answerMode": "choices",
+        "options": [
+          "Bonnefont Julien",
+          "Alexis PAPAGNO",
+          "Dabot Louis",
+          "Ombeline Rossi"
+        ],
+        "correctOptionIndex": 2
+      },
+      "works": [
+        {
+          "title": "World of Warcraft",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "World of Warcraft (jeu vidéo, 2004, studio : Blizzard Entertainment)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : jeu vidéo, 2004, studio : Blizzard Entertainment"
+            }
+          ]
+        },
+        {
+          "title": "Fondation",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Fondation (livre, 1942, auteur : Isaac Asimov)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : livre, 1942, auteur : Isaac Asimov"
+            }
+          ]
+        },
+        {
+          "title": "Gladiator",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Gladiator (film, 2000, réalisateur : Ridley Scott)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : film, 2000, réalisateur : Ridley Scott"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 2",
+      "person": {
+        "name": "Benjamin BORDELET",
+        "answerMode": "choices",
+        "options": [
+          "Bocéno Susie",
+          "Lambert Emilie",
+          "Briand Samuel",
+          "Benjamin BORDELET"
+        ],
+        "correctOptionIndex": 3
+      },
+      "works": [
+        {
+          "title": "Demon Days",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Demon Days (musique, 2005, artiste : Gorillaz)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Fury",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Fury (film, 2014, réalisateur : David Ayer)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Gran Turismo 4",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Gran Turismo 4 (jeu vidéo, 2004, studio : Polyphony Digital)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : jeu vidéo, 2004, studio : Polyphony Digital"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 3",
+      "person": {
+        "name": "Briand Samuel",
+        "answerMode": "choices",
+        "options": [
+          "Briand Samuel",
+          "Yoann Colas",
+          "Makanga Elvie",
+          "Dabot Louis"
+        ],
+        "correctOptionIndex": 0
+      },
+      "works": [
+        {
+          "title": "Elden Ring",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Elden Ring (jeu vidéo, 2022, studio : FromSoftware)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Je suis une légende",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Je suis une légende (film, 2007, réalisateur : Francis Lawrence)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : film, 2007, réalisateur : Francis Lawrence"
+            }
+          ]
+        },
+        {
+          "title": "Grand Theft Auto V",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Grand Theft Auto V (jeu vidéo, 2013, studio : Rockstar Leeds, Rockstar London, Rockstar New England)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : jeu vidéo, 2013, studio : Rockstar Leeds"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 4",
+      "person": {
+        "name": "Yoann Colas",
+        "answerMode": "choices",
+        "options": [
+          "Johanna Guichard",
+          "Yoann Colas",
+          "Benjamin BORDELET",
+          "Jean-Baptiste Billaud"
+        ],
+        "correctOptionIndex": 1
+      },
+      "works": [
+        {
+          "title": "Deux ans de vacances",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Deux ans de vacances (livre, 1888, auteur : Jules Verne)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : livre, 1888, auteur : Jules Verne"
+            }
+          ]
+        },
+        {
+          "title": "Summertime",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Summertime (musique, 1958, artiste : Ella Fitzgerald, Louis Armstrong)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Aladdin",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Aladdin (film, 1986, réalisateur : Bruno Corbucci)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : film, 1986, réalisateur : Bruno Corbucci"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 5",
+      "person": {
+        "name": "Fabien",
+        "answerMode": "choices",
+        "options": [
+          "Fabien",
+          "Thibault Brouassin",
+          "Bocéno Susie",
+          "Ombeline Rossi"
+        ],
+        "correctOptionIndex": 0
+      },
+      "works": [
+        {
+          "title": "Jungle - Tash Sultana",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Jungle (musique, 2016, artiste : Tash Sultana)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Django Unchained",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Django Unchained (film, 2012, réalisateur : Quentin Tarantino)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : film, 2012, réalisateur : Quentin Tarantino"
+            }
+          ]
+        },
+        {
+          "title": "1984",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "1984 (livre, 1948, auteur : George Orwell)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : livre, 1948, auteur : George Orwell"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 6",
+      "person": {
+        "name": "Bardier Alice",
+        "answerMode": "choices",
+        "options": [
+          "Bocéno Susie",
+          "Makanga Elvie",
+          "LAJNEF Yousri",
+          "Bardier Alice"
+        ],
+        "correctOptionIndex": 3
+      },
+      "works": [
+        {
+          "title": "Millénium",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Millénium (livre, 1983, auteur : John Varley)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : livre, 1983, auteur : John Varley"
+            }
+          ]
+        },
+        {
+          "title": "Blade Runner",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Blade Runner (film, 1982, réalisateur : Ridley Scott)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : film, 1982, réalisateur : Ridley Scott"
+            }
+          ]
+        },
+        {
+          "title": "Stardew Valley",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Stardew Valley (jeu vidéo, 2016, studio : ConcernedApe)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 7",
+      "person": {
+        "name": "Makanga Elvie",
+        "answerMode": "choices",
+        "options": [
+          "Makanga Elvie",
+          "Alexis PAPAGNO",
+          "Ombeline Rossi",
+          "Dabot Louis"
+        ],
+        "correctOptionIndex": 0
+      },
+      "works": [
+        {
+          "title": "Plus malin que le diable",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Plus malin que le diable (livre, 1938, auteur : Napoleon Hill)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Titanic",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Titanic (film, 1997, réalisateur : James Cameron)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : film, 1997, réalisateur : James Cameron"
+            }
+          ]
+        },
+        {
+          "title": "killing me softly with his song",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Killing Me Softly with His Song (musique, 1973, artiste : Roberta Flack)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 8",
+      "person": {
+        "name": "Alexis PAPAGNO",
+        "answerMode": "choices",
+        "options": [
+          "Capucine BECHEMIN",
+          "Dabot Louis",
+          "Alexis PAPAGNO",
+          "Bocéno Susie"
+        ],
+        "correctOptionIndex": 2
+      },
+      "works": [
+        {
+          "title": "Red Dead Redemption 2",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Red Dead Redemption 2 (jeu vidéo, 2018, studio : Rockstar Studios)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Outer Wilds",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Outer Wilds (jeu vidéo, 2019, studio : Mobius Digital)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Shutter Island",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Shutter Island (film, 2010, réalisateur : Martin Scorsese)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : film, 2010, réalisateur : Martin Scorsese"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 9",
+      "person": {
+        "name": "Jean-Baptiste Billaud",
+        "answerMode": "choices",
+        "options": [
+          "Jean-Baptiste Billaud",
+          "LAJNEF Yousri",
+          "Bocéno Susie",
+          "Dabot Louis"
+        ],
+        "correctOptionIndex": 0
+      },
+      "works": [
+        {
+          "title": "Knights of Cydonia",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Knights of Cydonia (musique, 2006, artiste : Muse)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Princesse Mononoké",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Princesse Mononoké (film, 1997, réalisateur : Hayao Miyazaki)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Red Dead Redemption 2",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Red Dead Redemption 2 (jeu vidéo, 2018, studio : Rockstar Studios)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 10",
+      "person": {
+        "name": "Ombeline Rossi",
+        "answerMode": "choices",
+        "options": [
+          "Benjamin BORDELET",
+          "Yoann Colas",
+          "Makanga Elvie",
+          "Ombeline Rossi"
+        ],
+        "correctOptionIndex": 3
+      },
+      "works": [
+        {
+          "title": "Diablo II",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Diablo II (jeu vidéo, 2000, studio : Blizzard North)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : jeu vidéo, 2000, studio : Blizzard North"
+            }
+          ]
+        },
+        {
+          "title": "La Horde du Contrevent",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "La Horde du Contrevent (livre, 2004, auteur : Alain Damasio)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Marillion",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Marillion (musique, 1979, artiste : Marillion)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 11",
+      "person": {
+        "name": "Lambert Emilie",
+        "answerMode": "choices",
+        "options": [
+          "Benjamin BORDELET",
+          "Johanna Guichard",
+          "Yoann Colas",
+          "Lambert Emilie"
+        ],
+        "correctOptionIndex": 3
+      },
+      "works": [
+        {
+          "title": "Guerre et Paix",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Guerre et Paix (livre, 1863, auteur : Léon Tolstoï)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : livre, 1863, auteur : Léon Tolstoï"
+            }
+          ]
+        },
+        {
+          "title": "Animal Crossing",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Animal Crossing (jeu vidéo, 2001, studio : Nintendo Entertainment Analysis and Development)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : jeu vidéo, 2001, studio : Nintendo Entertainment Analysis and Development"
+            }
+          ]
+        },
+        {
+          "title": "Big Fish",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Big Fish (film, 2003, réalisateur : Tim Burton)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : film, 2003, réalisateur : Tim Burton"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 12",
+      "person": {
+        "name": "Thibault Brouassin",
+        "answerMode": "choices",
+        "options": [
+          "Thibault Brouassin",
+          "Bonnefont Julien",
+          "Bocéno Susie",
+          "LAJNEF Yousri"
+        ],
+        "correctOptionIndex": 0
+      },
+      "works": [
+        {
+          "title": "Star Wars",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Star Wars (film, 1977, réalisateur : George Lucas)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Pokémon",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Pokémon (jeu vidéo, 1996, studio : Game Freak)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Harry Potter",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Harry Potter (livre, 1997, auteur : J. K. Rowling)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 13",
+      "person": {
+        "name": "Stohr Valérie",
+        "answerMode": "choices",
+        "options": [
+          "Benjamin BORDELET",
+          "Stohr Valérie",
+          "Makanga Elvie",
+          "Capucine BECHEMIN"
+        ],
+        "correctOptionIndex": 1
+      },
+      "works": [
+        {
+          "title": "The Scientist",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "The Scientist (musique, 2002, artiste : Coldplay)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Concerto pour clarinette de Mozart",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Concerto pour clarinette de Mozart (musique, 1791, artiste : Wolfgang Amadeus Mozart)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Les Cahiers d'Esther",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Les Cahiers d'Esther (livre, 2016, auteur : Riad Sattouf)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 14",
+      "person": {
+        "name": "Bocéno Susie",
+        "answerMode": "choices",
+        "options": [
+          "Bocéno Susie",
+          "Bonnefont Julien",
+          "Ombeline Rossi",
+          "Fabien"
+        ],
+        "correctOptionIndex": 0
+      },
+      "works": [
+        {
+          "title": "Delivery - Babyshambles",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Delivery (musique, 2007, artiste : Babyshambles)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Friends",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Friends (film, 1994, réalisateur : David Crane, Marta Kauffman)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Les sept soeurs - Lucinda Riley",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Les Sept Sœurs (livre, 2014, auteur : Lucinda Riley)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 15",
+      "person": {
+        "name": "Capucine BECHEMIN",
+        "answerMode": "choices",
+        "options": [
+          "Bonnefont Julien",
+          "Ombeline Rossi",
+          "Yoann Colas",
+          "Capucine BECHEMIN"
+        ],
+        "correctOptionIndex": 3
+      },
+      "works": [
+        {
+          "title": "Là-haut",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Là-haut (film, 2009, réalisateur : Pete Docter)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Slipping Through My Fingers",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Slipping Through My Fingers (musique, 1981, artiste : ABBA)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "I Can Do It with a Broken Heart",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "I Can Do It with a Broken Heart (musique, 2024, artiste : Taylor Swift)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 16",
+      "person": {
+        "name": "Bonnefont Julien",
+        "answerMode": "choices",
+        "options": [
+          "Capucine BECHEMIN",
+          "Briand Samuel",
+          "Bonnefont Julien",
+          "Dabot Louis"
+        ],
+        "correctOptionIndex": 2
+      },
+      "works": [
+        {
+          "title": "Forrest Gump",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Forrest Gump (film, 1994, réalisateur : Robert Zemeckis)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : film, 1994, réalisateur : Robert Zemeckis"
+            }
+          ]
+        },
+        {
+          "title": "God of War Ragnarök",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "God of War Ragnarök (jeu vidéo, 2022, studio : Santa Monica Studio)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Et il me parla de cerisiers, de poussières et d'une montagne",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Et il me parla de cerisiers, de poussières et d'une montagne (livre, 2016, auteur : Antoine Paje)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 17",
+      "person": {
+        "name": "Johanna Guichard",
+        "answerMode": "choices",
+        "options": [
+          "Bocéno Susie",
+          "Johanna Guichard",
+          "Benjamin BORDELET",
+          "Ombeline Rossi"
+        ],
+        "correctOptionIndex": 1
+      },
+      "works": [
+        {
+          "title": "The Nights",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "The Nights (musique, 2014, artiste : Avicii)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Gossip Girl",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Gossip Girl (film, 2007, réalisateur : Josh Schwartz, Stephanie Savage)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Friends",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Friends (film, 1994, réalisateur : David Crane, Marta Kauffman)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 18",
+      "person": {
+        "name": "LAJNEF Yousri",
+        "answerMode": "choices",
+        "options": [
+          "LAJNEF Yousri",
+          "Dabot Louis",
+          "Fabien",
+          "Briand Samuel"
+        ],
+        "correctOptionIndex": 0
+      },
+      "works": [
+        {
+          "title": "Le Crime de l'Orient-Express",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Le Crime de l'Orient-Express (livre, 1934, auteur : Agatha Christie)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : livre, 1934, auteur : Agatha Christie"
+            }
+          ]
+        },
+        {
+          "title": "Hamnet",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Hamnet (film, 2025, réalisateur : Chloé Zhao)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Hollow Knight",
+          "kind": "other",
+          "answerMode": "autocomplete",
+          "dictionaryId": "",
+          "correctAnswer": "Hollow Knight (jeu vidéo, 2017, studio : Team Cherry)",
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

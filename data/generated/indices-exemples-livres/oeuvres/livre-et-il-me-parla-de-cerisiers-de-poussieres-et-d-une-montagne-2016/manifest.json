@@ -1,0 +1,58 @@
+{
+  "title": "Et il me parla de cerisiers, de poussières et d'une montagne",
+  "answer": "Et il me parla de cerisiers, de poussières et d'une montagne (livre, 2016, auteur : Antoine Paje)",
+  "type": "livre",
+  "year": "2016",
+  "attribution": "auteur : Antoine Paje",
+  "occurrences": [
+    {
+      "round": 16,
+      "work": 3,
+      "person": "Bonnefont Julien"
+    }
+  ],
+  "folder": "oeuvres/livre-et-il-me-parla-de-cerisiers-de-poussieres-et-d-une-montagne-2016",
+  "plannedClues": [
+    {
+      "label": "Citation courte",
+      "kind": "text",
+      "content": "",
+      "instruction": "Court extrait connu, a limiter a une phrase breve."
+    },
+    {
+      "label": "Indice narratif",
+      "kind": "text",
+      "content": "",
+      "instruction": "Theme, lieu, objet ou situation centrale sans donner le titre."
+    },
+    {
+      "label": "Indice auteur ou epoque",
+      "kind": "text",
+      "content": "",
+      "instruction": "Auteur, mouvement, epoque ou contexte, selon la difficulte voulue."
+    }
+  ],
+  "downloadedSources": [],
+  "webSuggestions": [
+    {
+      "provider": "Google Books",
+      "kind": "search",
+      "url": "https://www.google.com/search?q=site%3Abooks.google.com+Et%20il%20me%20parla%20de%20cerisiers%2C%20de%20poussi%C3%A8res%20et%20d'une%20montagne%20auteur%20%3A%20Antoine%20Paje",
+      "note": "Recherche de notice ou apercu livre.",
+      "verificationRequired": true
+    },
+    {
+      "provider": "Wikisource",
+      "kind": "search",
+      "url": "https://www.google.com/search?q=site%3Afr.wikisource.org+Et%20il%20me%20parla%20de%20cerisiers%2C%20de%20poussi%C3%A8res%20et%20d'une%20montagne%20auteur%20%3A%20Antoine%20Paje",
+      "note": "Recherche texte libre si l oeuvre est dans le domaine public.",
+      "verificationRequired": true
+    }
+  ],
+  "processedAssets": [],
+  "notes": [
+    "Le script ne recupere pas automatiquement de contenus proteges.",
+    "Suggestions specialisees generees depuis TMDB, jeuxvideo.com ou YouTube selon le type d'oeuvre.",
+    "Verifiez toujours la pertinence, la licence et l'attribution avant d'utiliser une source dans le quiz."
+  ]
+}

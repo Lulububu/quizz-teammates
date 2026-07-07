@@ -1,0 +1,40 @@
+{
+  "title": "Gran Turismo 4",
+  "answer": "Gran Turismo 4 (jeu vidéo, 2004, studio : Polyphony Digital)",
+  "type": "jeu video",
+  "year": "2004",
+  "attribution": "studio : Polyphony Digital",
+  "occurrences": [
+    {
+      "round": 2,
+      "work": 3,
+      "person": "Benjamin BORDELET"
+    }
+  ],
+  "folder": "oeuvres/jeu-video-gran-turismo-4-2004",
+  "plannedClues": [
+    {
+      "label": "Son iconique",
+      "kind": "audio",
+      "target": "assets/01-son-iconique.mp3",
+      "instruction": "Effet sonore, jingle ou ambiance tres courte."
+    },
+    {
+      "label": "Theme musical",
+      "kind": "audio",
+      "target": "assets/02-bo-8s.mp3",
+      "instruction": "Extrait de bande originale, environ 8 secondes."
+    },
+    {
+      "label": "Screenshot",
+      "kind": "image",
+      "target": "assets/03-screenshot.jpg",
+      "instruction": "Image de gameplay ou environnement sans interface trop explicite."
+    }
+  ],
+  "processedAssets": [],
+  "notes": [
+    "Le script ne recupere pas automatiquement de contenus proteges.",
+    "Ajoutez vos fichiers source dans sources/ ou referencez une URL autorisee, puis uploadez les assets finaux dans l'application."
+  ]
+}

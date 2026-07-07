@@ -1,0 +1,8 @@
+{
+  "providers": [
+    "RAWG",
+    "Steam"
+  ],
+  "requiredEnv": "RAWG_API_KEY",
+  "message": "Aucun asset Steam trouve. Ajoutez RAWG_API_KEY pour telecharger des screenshots et backgrounds de jeux video plus largement."
+}

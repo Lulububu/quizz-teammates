@@ -1,0 +1,25 @@
+[
+  {
+    "provider": "Open Library",
+    "kind": "image",
+    "url": "https://covers.openlibrary.org/b/id/8745958-L.jpg",
+    "localPath": "data/generated/assets-exemples-livres/oeuvres/livre-1984-1948/sources/openlibrary-cover.jpg",
+    "note": "Couverture Open Library.",
+    "verificationRequired": true,
+    "openLibraryKey": "/works/OL11326416W",
+    "title": "1984 (adaptation)",
+    "authorName": [
+      "Michael Dean",
+      "George Orwell"
+    ],
+    "firstPublishYear": 2003
+  },
+  {
+    "provider": "Open Library",
+    "kind": "text",
+    "url": "https://openlibrary.org/works/OL11326416W",
+    "localPath": "data/generated/assets-exemples-livres/oeuvres/livre-1984-1948/assets/indices-livre.txt",
+    "note": "Fichier texte avec indices de travail.",
+    "verificationRequired": true
+  }
+]

@@ -1,0 +1,75 @@
+{
+  "title": "Elden Ring",
+  "answer": "Elden Ring (jeu vidéo, 2022, studio : FromSoftware)",
+  "type": "jeu video",
+  "year": "2022",
+  "attribution": "studio : FromSoftware",
+  "occurrences": [
+    {
+      "round": 3,
+      "work": 1,
+      "person": "Briand Samuel"
+    }
+  ],
+  "folder": "oeuvres/jeu-video-elden-ring-2022",
+  "plannedClues": [
+    {
+      "label": "Son iconique",
+      "kind": "audio",
+      "target": "assets/01-son-iconique.mp3",
+      "instruction": "Effet sonore, jingle ou ambiance tres courte."
+    },
+    {
+      "label": "Theme musical",
+      "kind": "audio",
+      "target": "assets/02-bo-8s.mp3",
+      "instruction": "Extrait de bande originale, environ 8 secondes."
+    },
+    {
+      "label": "Screenshot",
+      "kind": "image",
+      "target": "assets/03-screenshot.jpg",
+      "instruction": "Image de gameplay ou environnement sans interface trop explicite."
+    }
+  ],
+  "downloadedSources": [],
+  "webSuggestions": [],
+  "providerAssets": [
+    {
+      "provider": "Steam CDN",
+      "kind": "image",
+      "url": "https://cdn.akamai.steamstatic.com/steam/apps/1245620/header.jpg",
+      "localPath": "data/generated/assets-exemples-jeux-video/oeuvres/jeu-video-elden-ring-2022/sources/steam-header.jpg",
+      "note": "Image header Steam.",
+      "verificationRequired": true,
+      "appId": 1245620,
+      "title": "Elden Ring"
+    },
+    {
+      "provider": "Steam CDN",
+      "kind": "image",
+      "url": "https://cdn.akamai.steamstatic.com/steam/apps/1245620/capsule_616x353.jpg",
+      "localPath": "data/generated/assets-exemples-jeux-video/oeuvres/jeu-video-elden-ring-2022/sources/steam-capsule.jpg",
+      "note": "Capsule Steam.",
+      "verificationRequired": true,
+      "appId": 1245620,
+      "title": "Elden Ring"
+    },
+    {
+      "provider": "Steam CDN",
+      "kind": "image",
+      "url": "https://cdn.akamai.steamstatic.com/steam/apps/1245620/library_hero.jpg",
+      "localPath": "data/generated/assets-exemples-jeux-video/oeuvres/jeu-video-elden-ring-2022/sources/steam-library-hero.jpg",
+      "note": "Hero Steam.",
+      "verificationRequired": true,
+      "appId": 1245620,
+      "title": "Elden Ring"
+    }
+  ],
+  "processedAssets": [],
+  "notes": [
+    "Le script ne recupere pas automatiquement de contenus proteges.",
+    "Assets telecharges depuis des fournisseurs API quand disponibles.",
+    "Verifiez toujours la pertinence, la licence et l'attribution avant d'utiliser une source dans le quiz."
+  ]
+}

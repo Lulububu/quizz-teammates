@@ -1,0 +1,40 @@
+{
+  "title": "Shutter Island",
+  "answer": "Shutter Island (film, 2010, réalisateur : Martin Scorsese)",
+  "type": "film",
+  "year": "2010",
+  "attribution": "réalisateur : Martin Scorsese",
+  "occurrences": [
+    {
+      "round": 8,
+      "work": 3,
+      "person": "Alexis PAPAGNO"
+    }
+  ],
+  "folder": "oeuvres/film-shutter-island-2010",
+  "plannedClues": [
+    {
+      "label": "Plan discret",
+      "kind": "image",
+      "target": "assets/01-scene-discrete.jpg",
+      "instruction": "Screenshot d un decor, objet, silhouette ou plan non spoiler."
+    },
+    {
+      "label": "Plan reconnaissable",
+      "kind": "image",
+      "target": "assets/02-scene-reconnaissable.jpg",
+      "instruction": "Screenshot plus caracteristique, sans afficher le titre."
+    },
+    {
+      "label": "Extrait bande annonce",
+      "kind": "video",
+      "target": "assets/03-bande-annonce-10s.mp4",
+      "instruction": "Court extrait de bande annonce, sans titre incruste si possible."
+    }
+  ],
+  "processedAssets": [],
+  "notes": [
+    "Le script ne recupere pas automatiquement de contenus proteges.",
+    "Ajoutez vos fichiers source dans sources/ ou referencez une URL autorisee, puis uploadez les assets finaux dans l'application."
+  ]
+}

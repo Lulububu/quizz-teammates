@@ -1,0 +1,60 @@
+{
+  "title": "Big Fish",
+  "answer": "Big Fish (film, 2003, réalisateur : Tim Burton)",
+  "type": "film",
+  "year": "2003",
+  "attribution": "réalisateur : Tim Burton",
+  "occurrences": [
+    {
+      "round": 11,
+      "work": 3,
+      "person": "Lambert Emilie"
+    }
+  ],
+  "folder": "oeuvres/film-big-fish-2003",
+  "plannedClues": [
+    {
+      "label": "Plan discret",
+      "kind": "image",
+      "target": "assets/01-scene-discrete.jpg",
+      "instruction": "Screenshot d un decor, objet, silhouette ou plan non spoiler."
+    },
+    {
+      "label": "Plan reconnaissable",
+      "kind": "image",
+      "target": "assets/02-scene-reconnaissable.jpg",
+      "instruction": "Screenshot plus caracteristique, sans afficher le titre."
+    },
+    {
+      "label": "Extrait bande annonce",
+      "kind": "video",
+      "target": "assets/03-bande-annonce-10s.mp4",
+      "instruction": "Court extrait de bande annonce, sans titre incruste si possible."
+    }
+  ],
+  "downloadedSources": [
+    {
+      "title": "Fabri Fibra, Fish & Vacca.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/c/c2/Fabri_Fibra%2C_Fish_%26_Vacca.jpg",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Fabri_Fibra,_Fish_%26_Vacca.jpg",
+      "mime": "image/jpeg",
+      "mediaType": "image",
+      "size": 60455,
+      "width": 633,
+      "height": 462,
+      "licenseShortName": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "artist": "Bine Bardi",
+      "credit": "100_4901",
+      "attributionRequired": "true",
+      "localPath": "data/generated/indices-test-download/oeuvres/film-big-fish-2003/sources/free-source-01-fabri-fibra-fish-vacca-jpg.jpg",
+      "source": "Wikimedia Commons",
+      "verificationRequired": true
+    }
+  ],
+  "processedAssets": [],
+  "notes": [
+    "Sources telechargees depuis Wikimedia Commons quand une correspondance libre a ete trouvee.",
+    "Verifiez toujours la pertinence, la licence et l'attribution avant d'utiliser une source dans le quiz."
+  ]
+}

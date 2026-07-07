@@ -1,0 +1,78 @@
+{
+  "title": "Aladdin",
+  "answer": "Aladdin (film, 1986, réalisateur : Bruno Corbucci)",
+  "type": "film",
+  "year": "1986",
+  "attribution": "réalisateur : Bruno Corbucci",
+  "occurrences": [
+    {
+      "round": 4,
+      "work": 3,
+      "person": "Yoann Colas"
+    }
+  ],
+  "folder": "oeuvres/film-aladdin-1986",
+  "plannedClues": [
+    {
+      "label": "Plan discret",
+      "kind": "image",
+      "target": "assets/01-scene-discrete.jpg",
+      "instruction": "Screenshot d un decor, objet, silhouette ou plan non spoiler."
+    },
+    {
+      "label": "Plan reconnaissable",
+      "kind": "image",
+      "target": "assets/02-scene-reconnaissable.jpg",
+      "instruction": "Screenshot plus caracteristique, sans afficher le titre."
+    },
+    {
+      "label": "Extrait bande annonce",
+      "kind": "video",
+      "target": "assets/03-bande-annonce-10s.mp4",
+      "instruction": "Court extrait de bande annonce, sans titre incruste si possible."
+    }
+  ],
+  "downloadedSources": [
+    {
+      "title": "FardierdeCugnot20050111.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/5/56/FardierdeCugnot20050111.jpg",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:FardierdeCugnot20050111.jpg",
+      "mime": "image/jpeg",
+      "mediaType": "image",
+      "size": 52311,
+      "width": 1085,
+      "height": 600,
+      "licenseShortName": "CC BY-SA 3.0",
+      "licenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+      "artist": "",
+      "credit": "Own work , 11 January 2005.Photo et photographisme © Roby . Grand format sur demande",
+      "attributionRequired": "true",
+      "localPath": "data/generated/indices-test-download/oeuvres/film-aladdin-1986/sources/free-source-01-fardierdecugnot20050111-jpg.jpg",
+      "source": "Wikimedia Commons",
+      "verificationRequired": true
+    },
+    {
+      "title": "VahidOnline-69177-tehran.webm",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/4/48/VahidOnline-69177-tehran.webm",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:VahidOnline-69177-tehran.webm",
+      "mime": "video/webm",
+      "mediaType": "video",
+      "size": 1258621,
+      "width": 324,
+      "height": 480,
+      "licenseShortName": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "Vahid Online",
+      "credit": "https://t.me/VahidOnline/69177",
+      "attributionRequired": "true",
+      "localPath": "data/generated/indices-test-download/oeuvres/film-aladdin-1986/sources/free-source-02-vahidonline-69177-tehran-webm.webm",
+      "source": "Wikimedia Commons",
+      "verificationRequired": true
+    }
+  ],
+  "processedAssets": [],
+  "notes": [
+    "Sources telechargees depuis Wikimedia Commons quand une correspondance libre a ete trouvee.",
+    "Verifiez toujours la pertinence, la licence et l'attribution avant d'utiliser une source dans le quiz."
+  ]
+}

@@ -1,0 +1,10 @@
+[
+  {
+    "provider": "Open Library",
+    "kind": "text",
+    "url": "https://openlibrary.org/works/OL30342507W",
+    "localPath": "data/generated/assets-exemples-livres/oeuvres/livre-guerre-et-paix-1863/assets/indices-livre.txt",
+    "note": "Fichier texte avec indices de travail.",
+    "verificationRequired": true
+  }
+]

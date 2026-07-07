@@ -1,0 +1,67 @@
+{
+  "title": "Fondation",
+  "answer": "Fondation (livre, 1942, auteur : Isaac Asimov)",
+  "type": "livre",
+  "year": "1942",
+  "attribution": "auteur : Isaac Asimov",
+  "occurrences": [
+    {
+      "round": 1,
+      "work": 2,
+      "person": "Dabot Louis"
+    }
+  ],
+  "folder": "oeuvres/livre-fondation-1942",
+  "plannedClues": [
+    {
+      "label": "Citation courte",
+      "kind": "text",
+      "content": "",
+      "instruction": "Court extrait connu, a limiter a une phrase breve."
+    },
+    {
+      "label": "Indice narratif",
+      "kind": "text",
+      "content": "",
+      "instruction": "Theme, lieu, objet ou situation centrale sans donner le titre."
+    },
+    {
+      "label": "Indice auteur ou epoque",
+      "kind": "text",
+      "content": "",
+      "instruction": "Auteur, mouvement, epoque ou contexte, selon la difficulte voulue."
+    }
+  ],
+  "downloadedSources": [],
+  "webSuggestions": [],
+  "providerAssets": [
+    {
+      "provider": "Open Library",
+      "kind": "image",
+      "url": "https://covers.openlibrary.org/b/id/13110557-L.jpg",
+      "localPath": "data/generated/assets-exemples-livres/oeuvres/livre-fondation-1942/sources/openlibrary-cover.jpg",
+      "note": "Couverture Open Library.",
+      "verificationRequired": true,
+      "openLibraryKey": "/works/OL32890850W",
+      "title": "Prélude à Fondation",
+      "authorName": [
+        "Isaac Asimov"
+      ],
+      "firstPublishYear": 1989
+    },
+    {
+      "provider": "Open Library",
+      "kind": "text",
+      "url": "https://openlibrary.org/works/OL32890850W",
+      "localPath": "data/generated/assets-exemples-livres/oeuvres/livre-fondation-1942/assets/indices-livre.txt",
+      "note": "Fichier texte avec indices de travail.",
+      "verificationRequired": true
+    }
+  ],
+  "processedAssets": [],
+  "notes": [
+    "Le script ne recupere pas automatiquement de contenus proteges.",
+    "Assets telecharges depuis des fournisseurs API quand disponibles.",
+    "Verifiez toujours la pertinence, la licence et l'attribution avant d'utiliser une source dans le quiz."
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "title": "Harry Potter",
+  "answer": "Harry Potter (livre, 1997, auteur : J. K. Rowling)",
+  "type": "livre",
+  "year": "1997",
+  "attribution": "auteur : J. K. Rowling",
+  "occurrences": [
+    {
+      "round": 12,
+      "work": 3,
+      "person": "Thibault Brouassin"
+    }
+  ],
+  "folder": "oeuvres/livre-harry-potter-1997",
+  "plannedClues": [
+    {
+      "label": "Citation courte",
+      "kind": "text",
+      "content": "",
+      "instruction": "Court extrait connu, a limiter a une phrase breve."
+    },
+    {
+      "label": "Indice narratif",
+      "kind": "text",
+      "content": "",
+      "instruction": "Theme, lieu, objet ou situation centrale sans donner le titre."
+    },
+    {
+      "label": "Indice auteur ou epoque",
+      "kind": "text",
+      "content": "",
+      "instruction": "Auteur, mouvement, epoque ou contexte, selon la difficulte voulue."
+    }
+  ],
+  "processedAssets": [],
+  "notes": [
+    "Le script ne recupere pas automatiquement de contenus proteges.",
+    "Ajoutez vos fichiers source dans sources/ ou referencez une URL autorisee, puis uploadez les assets finaux dans l'application."
+  ]
+}

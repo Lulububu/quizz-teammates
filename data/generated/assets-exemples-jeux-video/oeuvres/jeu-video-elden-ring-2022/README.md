@@ -1,0 +1,50 @@
+# Elden Ring
+
+- Reponse attendue : Elden Ring (jeu vidéo, 2022, studio : FromSoftware)
+- Type : jeu video
+- Annee : 2022
+- Attribution : studio : FromSoftware
+- Occurrences : manche 3, oeuvre 1
+
+## Indices a preparer
+
+### 1. Son iconique
+
+- Type d'indice : audio
+- Fichier cible : assets/01-son-iconique.mp3
+- Consigne : Effet sonore, jingle ou ambiance tres courte.
+
+
+### 2. Theme musical
+
+- Type d'indice : audio
+- Fichier cible : assets/02-bo-8s.mp3
+- Consigne : Extrait de bande originale, environ 8 secondes.
+
+
+### 3. Screenshot
+
+- Type d'indice : image
+- Fichier cible : assets/03-screenshot.jpg
+- Consigne : Image de gameplay ou environnement sans interface trop explicite.
+
+
+
+## Fichiers source
+
+Placez vos medias source dans `sources/` si vous souhaitez les traiter localement :
+
+- audio : `sources/source-audio.mp3`
+- video : `sources/source-video.mp4`
+- image : `sources/source-image.jpg`
+
+
+
+## Assets telecharges
+
+- data/generated/assets-exemples-jeux-video/oeuvres/jeu-video-elden-ring-2022/sources/steam-header.jpg - Steam CDN / image
+- data/generated/assets-exemples-jeux-video/oeuvres/jeu-video-elden-ring-2022/sources/steam-capsule.jpg - Steam CDN / image
+- data/generated/assets-exemples-jeux-video/oeuvres/jeu-video-elden-ring-2022/sources/steam-library-hero.jpg - Steam CDN / image
+
+
+

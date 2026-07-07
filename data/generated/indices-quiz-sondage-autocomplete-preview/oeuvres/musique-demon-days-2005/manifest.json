@@ -1,0 +1,40 @@
+{
+  "title": "Demon Days",
+  "answer": "Demon Days (musique, 2005, artiste : Gorillaz)",
+  "type": "musique",
+  "year": "2005",
+  "attribution": "artiste : Gorillaz",
+  "occurrences": [
+    {
+      "round": 2,
+      "work": 1,
+      "person": "Benjamin BORDELET"
+    }
+  ],
+  "folder": "oeuvres/musique-demon-days-2005",
+  "plannedClues": [
+    {
+      "label": "Extrait tres court",
+      "kind": "audio",
+      "target": "assets/01-extrait-1s.mp3",
+      "instruction": "1 seconde, idealement un passage reconnaissable sans paroles trop evidentes."
+    },
+    {
+      "label": "Extrait court",
+      "kind": "audio",
+      "target": "assets/02-extrait-5s.mp3",
+      "instruction": "5 secondes, meme passage ou passage plus identifiable."
+    },
+    {
+      "label": "Extrait long",
+      "kind": "audio",
+      "target": "assets/03-extrait-10s.mp3",
+      "instruction": "10 secondes, dernier indice avant revelation."
+    }
+  ],
+  "processedAssets": [],
+  "notes": [
+    "Le script ne recupere pas automatiquement de contenus proteges.",
+    "Ajoutez vos fichiers source dans sources/ ou referencez une URL autorisee, puis uploadez les assets finaux dans l'application."
+  ]
+}

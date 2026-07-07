@@ -15,6 +15,8 @@
     "build:server": "tsc -p server/tsconfig.json",
     "start": "node dist/server/index.js",
     "dictionary:generate": "node scripts/generate-work-dictionary.mjs",
+    "survey:generate": "node scripts/generate-survey-quiz.mjs",
+    "clues:prepare": "node scripts/generate-clue-workspace.mjs",
     "typecheck": "tsc -p server/tsconfig.json --noEmit && npx --no-install ng build --configuration development",
     "lint": "npm run typecheck"
   },

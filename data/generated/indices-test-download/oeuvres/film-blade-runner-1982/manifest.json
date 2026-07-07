@@ -1,0 +1,41 @@
+{
+  "title": "Blade Runner",
+  "answer": "Blade Runner (film, 1982, réalisateur : Ridley Scott)",
+  "type": "film",
+  "year": "1982",
+  "attribution": "réalisateur : Ridley Scott",
+  "occurrences": [
+    {
+      "round": 6,
+      "work": 2,
+      "person": "Bardier Alice"
+    }
+  ],
+  "folder": "oeuvres/film-blade-runner-1982",
+  "plannedClues": [
+    {
+      "label": "Plan discret",
+      "kind": "image",
+      "target": "assets/01-scene-discrete.jpg",
+      "instruction": "Screenshot d un decor, objet, silhouette ou plan non spoiler."
+    },
+    {
+      "label": "Plan reconnaissable",
+      "kind": "image",
+      "target": "assets/02-scene-reconnaissable.jpg",
+      "instruction": "Screenshot plus caracteristique, sans afficher le titre."
+    },
+    {
+      "label": "Extrait bande annonce",
+      "kind": "video",
+      "target": "assets/03-bande-annonce-10s.mp4",
+      "instruction": "Court extrait de bande annonce, sans titre incruste si possible."
+    }
+  ],
+  "downloadedSources": [],
+  "processedAssets": [],
+  "notes": [
+    "Sources telechargees depuis Wikimedia Commons quand une correspondance libre a ete trouvee.",
+    "Verifiez toujours la pertinence, la licence et l'attribution avant d'utiliser une source dans le quiz."
+  ]
+}

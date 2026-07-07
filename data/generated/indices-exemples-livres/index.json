@@ -1,0 +1,292 @@
+[
+  {
+    "title": "1984",
+    "answer": "1984 (livre, 1948, auteur : George Orwell)",
+    "type": "livre",
+    "year": "1948",
+    "attribution": "auteur : George Orwell",
+    "occurrences": [
+      {
+        "round": 5,
+        "work": 3,
+        "person": "Fabien"
+      }
+    ],
+    "folder": "oeuvres/livre-1984-1948",
+    "plannedClues": [
+      {
+        "label": "Citation courte",
+        "kind": "text",
+        "content": "",
+        "instruction": "Court extrait connu, a limiter a une phrase breve."
+      },
+      {
+        "label": "Indice narratif",
+        "kind": "text",
+        "content": "",
+        "instruction": "Theme, lieu, objet ou situation centrale sans donner le titre."
+      },
+      {
+        "label": "Indice auteur ou epoque",
+        "kind": "text",
+        "content": "",
+        "instruction": "Auteur, mouvement, epoque ou contexte, selon la difficulte voulue."
+      }
+    ],
+    "downloadedSources": [],
+    "webSuggestions": [
+      {
+        "provider": "Google Books",
+        "kind": "search",
+        "url": "https://www.google.com/search?q=site%3Abooks.google.com+1984%20auteur%20%3A%20George%20Orwell",
+        "note": "Recherche de notice ou apercu livre.",
+        "verificationRequired": true
+      },
+      {
+        "provider": "Wikisource",
+        "kind": "search",
+        "url": "https://www.google.com/search?q=site%3Afr.wikisource.org+1984%20auteur%20%3A%20George%20Orwell",
+        "note": "Recherche texte libre si l oeuvre est dans le domaine public.",
+        "verificationRequired": true
+      }
+    ],
+    "processedAssets": [],
+    "notes": [
+      "Le script ne recupere pas automatiquement de contenus proteges.",
+      "Suggestions specialisees generees depuis TMDB, jeuxvideo.com ou YouTube selon le type d'oeuvre.",
+      "Verifiez toujours la pertinence, la licence et l'attribution avant d'utiliser une source dans le quiz."
+    ]
+  },
+  {
+    "title": "Deux ans de vacances",
+    "answer": "Deux ans de vacances (livre, 1888, auteur : Jules Verne)",
+    "type": "livre",
+    "year": "1888",
+    "attribution": "auteur : Jules Verne",
+    "occurrences": [
+      {
+        "round": 4,
+        "work": 1,
+        "person": "Yoann Colas"
+      }
+    ],
+    "folder": "oeuvres/livre-deux-ans-de-vacances-1888",
+    "plannedClues": [
+      {
+        "label": "Citation courte",
+        "kind": "text",
+        "content": "",
+        "instruction": "Court extrait connu, a limiter a une phrase breve."
+      },
+      {
+        "label": "Indice narratif",
+        "kind": "text",
+        "content": "",
+        "instruction": "Theme, lieu, objet ou situation centrale sans donner le titre."
+      },
+      {
+        "label": "Indice auteur ou epoque",
+        "kind": "text",
+        "content": "",
+        "instruction": "Auteur, mouvement, epoque ou contexte, selon la difficulte voulue."
+      }
+    ],
+    "downloadedSources": [],
+    "webSuggestions": [
+      {
+        "provider": "Google Books",
+        "kind": "search",
+        "url": "https://www.google.com/search?q=site%3Abooks.google.com+Deux%20ans%20de%20vacances%20auteur%20%3A%20Jules%20Verne",
+        "note": "Recherche de notice ou apercu livre.",
+        "verificationRequired": true
+      },
+      {
+        "provider": "Wikisource",
+        "kind": "search",
+        "url": "https://www.google.com/search?q=site%3Afr.wikisource.org+Deux%20ans%20de%20vacances%20auteur%20%3A%20Jules%20Verne",
+        "note": "Recherche texte libre si l oeuvre est dans le domaine public.",
+        "verificationRequired": true
+      }
+    ],
+    "processedAssets": [],
+    "notes": [
+      "Le script ne recupere pas automatiquement de contenus proteges.",
+      "Suggestions specialisees generees depuis TMDB, jeuxvideo.com ou YouTube selon le type d'oeuvre.",
+      "Verifiez toujours la pertinence, la licence et l'attribution avant d'utiliser une source dans le quiz."
+    ]
+  },
+  {
+    "title": "Et il me parla de cerisiers, de poussières et d'une montagne",
+    "answer": "Et il me parla de cerisiers, de poussières et d'une montagne (livre, 2016, auteur : Antoine Paje)",
+    "type": "livre",
+    "year": "2016",
+    "attribution": "auteur : Antoine Paje",
+    "occurrences": [
+      {
+        "round": 16,
+        "work": 3,
+        "person": "Bonnefont Julien"
+      }
+    ],
+    "folder": "oeuvres/livre-et-il-me-parla-de-cerisiers-de-poussieres-et-d-une-montagne-2016",
+    "plannedClues": [
+      {
+        "label": "Citation courte",
+        "kind": "text",
+        "content": "",
+        "instruction": "Court extrait connu, a limiter a une phrase breve."
+      },
+      {
+        "label": "Indice narratif",
+        "kind": "text",
+        "content": "",
+        "instruction": "Theme, lieu, objet ou situation centrale sans donner le titre."
+      },
+      {
+        "label": "Indice auteur ou epoque",
+        "kind": "text",
+        "content": "",
+        "instruction": "Auteur, mouvement, epoque ou contexte, selon la difficulte voulue."
+      }
+    ],
+    "downloadedSources": [],
+    "webSuggestions": [
+      {
+        "provider": "Google Books",
+        "kind": "search",
+        "url": "https://www.google.com/search?q=site%3Abooks.google.com+Et%20il%20me%20parla%20de%20cerisiers%2C%20de%20poussi%C3%A8res%20et%20d'une%20montagne%20auteur%20%3A%20Antoine%20Paje",
+        "note": "Recherche de notice ou apercu livre.",
+        "verificationRequired": true
+      },
+      {
+        "provider": "Wikisource",
+        "kind": "search",
+        "url": "https://www.google.com/search?q=site%3Afr.wikisource.org+Et%20il%20me%20parla%20de%20cerisiers%2C%20de%20poussi%C3%A8res%20et%20d'une%20montagne%20auteur%20%3A%20Antoine%20Paje",
+        "note": "Recherche texte libre si l oeuvre est dans le domaine public.",
+        "verificationRequired": true
+      }
+    ],
+    "processedAssets": [],
+    "notes": [
+      "Le script ne recupere pas automatiquement de contenus proteges.",
+      "Suggestions specialisees generees depuis TMDB, jeuxvideo.com ou YouTube selon le type d'oeuvre.",
+      "Verifiez toujours la pertinence, la licence et l'attribution avant d'utiliser une source dans le quiz."
+    ]
+  },
+  {
+    "title": "Fondation",
+    "answer": "Fondation (livre, 1942, auteur : Isaac Asimov)",
+    "type": "livre",
+    "year": "1942",
+    "attribution": "auteur : Isaac Asimov",
+    "occurrences": [
+      {
+        "round": 1,
+        "work": 2,
+        "person": "Dabot Louis"
+      }
+    ],
+    "folder": "oeuvres/livre-fondation-1942",
+    "plannedClues": [
+      {
+        "label": "Citation courte",
+        "kind": "text",
+        "content": "",
+        "instruction": "Court extrait connu, a limiter a une phrase breve."
+      },
+      {
+        "label": "Indice narratif",
+        "kind": "text",
+        "content": "",
+        "instruction": "Theme, lieu, objet ou situation centrale sans donner le titre."
+      },
+      {
+        "label": "Indice auteur ou epoque",
+        "kind": "text",
+        "content": "",
+        "instruction": "Auteur, mouvement, epoque ou contexte, selon la difficulte voulue."
+      }
+    ],
+    "downloadedSources": [],
+    "webSuggestions": [
+      {
+        "provider": "Google Books",
+        "kind": "search",
+        "url": "https://www.google.com/search?q=site%3Abooks.google.com+Fondation%20auteur%20%3A%20Isaac%20Asimov",
+        "note": "Recherche de notice ou apercu livre.",
+        "verificationRequired": true
+      },
+      {
+        "provider": "Wikisource",
+        "kind": "search",
+        "url": "https://www.google.com/search?q=site%3Afr.wikisource.org+Fondation%20auteur%20%3A%20Isaac%20Asimov",
+        "note": "Recherche texte libre si l oeuvre est dans le domaine public.",
+        "verificationRequired": true
+      }
+    ],
+    "processedAssets": [],
+    "notes": [
+      "Le script ne recupere pas automatiquement de contenus proteges.",
+      "Suggestions specialisees generees depuis TMDB, jeuxvideo.com ou YouTube selon le type d'oeuvre.",
+      "Verifiez toujours la pertinence, la licence et l'attribution avant d'utiliser une source dans le quiz."
+    ]
+  },
+  {
+    "title": "Guerre et Paix",
+    "answer": "Guerre et Paix (livre, 1863, auteur : Léon Tolstoï)",
+    "type": "livre",
+    "year": "1863",
+    "attribution": "auteur : Léon Tolstoï",
+    "occurrences": [
+      {
+        "round": 11,
+        "work": 1,
+        "person": "Lambert Emilie"
+      }
+    ],
+    "folder": "oeuvres/livre-guerre-et-paix-1863",
+    "plannedClues": [
+      {
+        "label": "Citation courte",
+        "kind": "text",
+        "content": "",
+        "instruction": "Court extrait connu, a limiter a une phrase breve."
+      },
+      {
+        "label": "Indice narratif",
+        "kind": "text",
+        "content": "",
+        "instruction": "Theme, lieu, objet ou situation centrale sans donner le titre."
+      },
+      {
+        "label": "Indice auteur ou epoque",
+        "kind": "text",
+        "content": "",
+        "instruction": "Auteur, mouvement, epoque ou contexte, selon la difficulte voulue."
+      }
+    ],
+    "downloadedSources": [],
+    "webSuggestions": [
+      {
+        "provider": "Google Books",
+        "kind": "search",
+        "url": "https://www.google.com/search?q=site%3Abooks.google.com+Guerre%20et%20Paix%20auteur%20%3A%20L%C3%A9on%20Tolsto%C3%AF",
+        "note": "Recherche de notice ou apercu livre.",
+        "verificationRequired": true
+      },
+      {
+        "provider": "Wikisource",
+        "kind": "search",
+        "url": "https://www.google.com/search?q=site%3Afr.wikisource.org+Guerre%20et%20Paix%20auteur%20%3A%20L%C3%A9on%20Tolsto%C3%AF",
+        "note": "Recherche texte libre si l oeuvre est dans le domaine public.",
+        "verificationRequired": true
+      }
+    ],
+    "processedAssets": [],
+    "notes": [
+      "Le script ne recupere pas automatiquement de contenus proteges.",
+      "Suggestions specialisees generees depuis TMDB, jeuxvideo.com ou YouTube selon le type d'oeuvre.",
+      "Verifiez toujours la pertinence, la licence et l'attribution avant d'utiliser une source dans le quiz."
+    ]
+  }
+]

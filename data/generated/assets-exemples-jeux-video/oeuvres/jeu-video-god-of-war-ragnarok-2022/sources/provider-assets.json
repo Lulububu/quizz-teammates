@@ -1,0 +1,32 @@
+[
+  {
+    "provider": "Steam CDN",
+    "kind": "image",
+    "url": "https://cdn.akamai.steamstatic.com/steam/apps/2322010/header.jpg",
+    "localPath": "data/generated/assets-exemples-jeux-video/oeuvres/jeu-video-god-of-war-ragnarok-2022/sources/steam-header.jpg",
+    "note": "Image header Steam.",
+    "verificationRequired": true,
+    "appId": 2322010,
+    "title": "God of War Ragnarök"
+  },
+  {
+    "provider": "Steam CDN",
+    "kind": "image",
+    "url": "https://cdn.akamai.steamstatic.com/steam/apps/2322010/capsule_616x353.jpg",
+    "localPath": "data/generated/assets-exemples-jeux-video/oeuvres/jeu-video-god-of-war-ragnarok-2022/sources/steam-capsule.jpg",
+    "note": "Capsule Steam.",
+    "verificationRequired": true,
+    "appId": 2322010,
+    "title": "God of War Ragnarök"
+  },
+  {
+    "provider": "Steam CDN",
+    "kind": "image",
+    "url": "https://cdn.akamai.steamstatic.com/steam/apps/2322010/library_hero.jpg",
+    "localPath": "data/generated/assets-exemples-jeux-video/oeuvres/jeu-video-god-of-war-ragnarok-2022/sources/steam-library-hero.jpg",
+    "note": "Hero Steam.",
+    "verificationRequired": true,
+    "appId": 2322010,
+    "title": "God of War Ragnarök"
+  }
+]

@@ -1,0 +1,1484 @@
+{
+  "title": "Quiz sondage - 3 œuvres préférées",
+  "description": "Généré automatiquement depuis Vos 3 oeuvres préférés(1-18).xlsx. Les indices sont à relire avant animation.",
+  "sequenceMode": "works-first",
+  "hidePlayerNames": true,
+  "rounds": [
+    {
+      "title": "Manche 1",
+      "person": {
+        "name": "Dabot Louis",
+        "answerMode": "choices",
+        "options": [
+          "Bonnefont Julien",
+          "Alexis PAPAGNO",
+          "Dabot Louis",
+          "Ombeline Rossi"
+        ],
+        "correctOptionIndex": 2
+      },
+      "works": [
+        {
+          "title": "World of Warcraft",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Super Baseball 2020",
+            "Lander",
+            "Battlefield 3",
+            "World of Warcraft"
+          ],
+          "correctOptionIndex": 3,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : jeu vidéo, 2004, studio : Blizzard Entertainment"
+            }
+          ]
+        },
+        {
+          "title": "Fondation",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Fondation",
+            "Sirius",
+            "Le Trajet",
+            "Benoît Misère"
+          ],
+          "correctOptionIndex": 0,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : livre, 1942, auteur : Isaac Asimov"
+            }
+          ]
+        },
+        {
+          "title": "Gladiator",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Moonrise Kingdom",
+            "Gladiator",
+            "La Nuit de l'iguane",
+            "Entretien avec un vampire"
+          ],
+          "correctOptionIndex": 1,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : film, 2000, réalisateur : Ridley Scott"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 2",
+      "person": {
+        "name": "Benjamin BORDELET",
+        "answerMode": "choices",
+        "options": [
+          "Bocéno Susie",
+          "Lambert Emilie",
+          "Briand Samuel",
+          "Benjamin BORDELET"
+        ],
+        "correctOptionIndex": 3
+      },
+      "works": [
+        {
+          "title": "Demon Days",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Demon Days",
+            "THRAK",
+            "Pump Up the Valuum",
+            "Songs of Faith and Devotion"
+          ],
+          "correctOptionIndex": 0,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Fury",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Aladin",
+            "Crocodiles, amis pour la vie",
+            "Easy Girl",
+            "Fury"
+          ],
+          "correctOptionIndex": 3,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Gran Turismo 4",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Gran Turismo 4",
+            "Hello Kitty: Big City Dreams",
+            "Assassin's Creed",
+            "Shin Megami Tensei: Devil Summoner - Raidou Kuzunoha vs. The Soulless Army"
+          ],
+          "correctOptionIndex": 0,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : jeu vidéo, 2004, studio : Polyphony Digital"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 3",
+      "person": {
+        "name": "Briand Samuel",
+        "answerMode": "choices",
+        "options": [
+          "Briand Samuel",
+          "Yoann Colas",
+          "Makanga Elvie",
+          "Dabot Louis"
+        ],
+        "correctOptionIndex": 0
+      },
+      "works": [
+        {
+          "title": "Elden Ring",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Escape from Bug Island!",
+            "Elden Ring",
+            "NHL Eastside Hockey Manager",
+            "New Japan Pro Wrestling: Tōhkon Road Brave Spirits"
+          ],
+          "correctOptionIndex": 1,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Je suis une légende",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Je suis une légende",
+            "Prince of Persia : Les Sables du Temps",
+            "Trois Extrêmes",
+            "Westler"
+          ],
+          "correctOptionIndex": 0,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : film, 2007, réalisateur : Francis Lawrence"
+            }
+          ]
+        },
+        {
+          "title": "Grand Theft Auto V",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Bastion",
+            "Toy Commander",
+            "The Sentinel",
+            "Grand Theft Auto V"
+          ],
+          "correctOptionIndex": 3,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : jeu vidéo, 2013, studio : Rockstar Leeds"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 4",
+      "person": {
+        "name": "Yoann Colas",
+        "answerMode": "choices",
+        "options": [
+          "Johanna Guichard",
+          "Yoann Colas",
+          "Benjamin BORDELET",
+          "Jean-Baptiste Billaud"
+        ],
+        "correctOptionIndex": 1
+      },
+      "works": [
+        {
+          "title": "Deux ans de vacances",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "La Planète des dinosaures",
+            "J comme jugement",
+            "Deux ans de vacances",
+            "Édifices ardents"
+          ],
+          "correctOptionIndex": 2,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : livre, 1888, auteur : Jules Verne"
+            }
+          ]
+        },
+        {
+          "title": "Summertime",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Houses of the Holy",
+            "Dare",
+            "Summertime",
+            "Live in Mexico City"
+          ],
+          "correctOptionIndex": 2,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Aladdin",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Aladdin",
+            "Les Démons de la liberté",
+            "Ma femme est un ange",
+            "Le Verdict"
+          ],
+          "correctOptionIndex": 0,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : film, 1986, réalisateur : Bruno Corbucci"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 5",
+      "person": {
+        "name": "Fabien",
+        "answerMode": "choices",
+        "options": [
+          "Fabien",
+          "Thibault Brouassin",
+          "Bocéno Susie",
+          "Ombeline Rossi"
+        ],
+        "correctOptionIndex": 0
+      },
+      "works": [
+        {
+          "title": "Jungle - Tash Sultana",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Nää vuodet 1997-2003",
+            "Paid tha Cost to Be da Bo$$",
+            "Hair",
+            "Jungle - Tash Sultana"
+          ],
+          "correctOptionIndex": 3,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Django Unchained",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Les Démons du maïs 3 : Les Moissons de la terreur",
+            "Le train sifflera trois fois",
+            "Django Unchained",
+            "titanic"
+          ],
+          "correctOptionIndex": 2,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : film, 2012, réalisateur : Quentin Tarantino"
+            }
+          ]
+        },
+        {
+          "title": "1984",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "L'Empire des anges",
+            "Jésus-Christ en Flandre",
+            "1984",
+            "Millenium"
+          ],
+          "correctOptionIndex": 2,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : livre, 1948, auteur : George Orwell"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 6",
+      "person": {
+        "name": "Bardier Alice",
+        "answerMode": "choices",
+        "options": [
+          "Bocéno Susie",
+          "Makanga Elvie",
+          "LAJNEF Yousri",
+          "Bardier Alice"
+        ],
+        "correctOptionIndex": 3
+      },
+      "works": [
+        {
+          "title": "Millénium",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Millénium",
+            "Henri le Letton",
+            "Le profit avant l'homme",
+            "Armoured Train 14-69"
+          ],
+          "correctOptionIndex": 0,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : livre, 1983, auteur : John Varley"
+            }
+          ]
+        },
+        {
+          "title": "Blade Runner",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Die Hard 4 : Retour en enfer",
+            "Shakespeare in Love",
+            "Rois et Reine",
+            "Blade Runner"
+          ],
+          "correctOptionIndex": 3,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : film, 1982, réalisateur : Ridley Scott"
+            }
+          ]
+        },
+        {
+          "title": "Stardew Valley",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Stardew Valley",
+            "Tennis for Two",
+            "Archlord",
+            "Dragon Ball Z: Infinite World"
+          ],
+          "correctOptionIndex": 0,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 7",
+      "person": {
+        "name": "Makanga Elvie",
+        "answerMode": "choices",
+        "options": [
+          "Makanga Elvie",
+          "Alexis PAPAGNO",
+          "Ombeline Rossi",
+          "Dabot Louis"
+        ],
+        "correctOptionIndex": 0
+      },
+      "works": [
+        {
+          "title": "Plus malin que le diable",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Roderick Hudson",
+            "Plus malin que le diable",
+            "Au cœur du labyrinthe",
+            "Drayman Henschel"
+          ],
+          "correctOptionIndex": 1,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Titanic",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Titanic",
+            "La Femme au portrait",
+            "Le Monde de Narnia : Le Prince Caspian",
+            "Charlie Chan en Égypte"
+          ],
+          "correctOptionIndex": 0,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : film, 1997, réalisateur : James Cameron"
+            }
+          ]
+        },
+        {
+          "title": "killing me softly with his song",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Morrison Hotel",
+            "25",
+            "Siamese Singles",
+            "killing me softly with his song"
+          ],
+          "correctOptionIndex": 3,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 8",
+      "person": {
+        "name": "Alexis PAPAGNO",
+        "answerMode": "choices",
+        "options": [
+          "Capucine BECHEMIN",
+          "Dabot Louis",
+          "Alexis PAPAGNO",
+          "Bocéno Susie"
+        ],
+        "correctOptionIndex": 2
+      },
+      "works": [
+        {
+          "title": "Red Dead Redemption 2",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Red Dead Redemption 2",
+            "Taz in Escape from Mars",
+            "Spindizzy",
+            "70's Robot Anime: Geppy-X"
+          ],
+          "correctOptionIndex": 0,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Outer Wilds",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "The F.A. Premier League Football Manager 2000",
+            "Outer Wilds",
+            "Locoland",
+            "Castle Adventure"
+          ],
+          "correctOptionIndex": 1,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Shutter Island",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Shutter Island",
+            "Five Star Final",
+            "Les Infiltrés",
+            "Frankenstein Junior"
+          ],
+          "correctOptionIndex": 0,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : film, 2010, réalisateur : Martin Scorsese"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 9",
+      "person": {
+        "name": "Jean-Baptiste Billaud",
+        "answerMode": "choices",
+        "options": [
+          "Jean-Baptiste Billaud",
+          "LAJNEF Yousri",
+          "Bocéno Susie",
+          "Dabot Louis"
+        ],
+        "correctOptionIndex": 0
+      },
+      "works": [
+        {
+          "title": "Knights of Cydonia",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Run This Town",
+            "Nirvana",
+            "Une Année",
+            "Knights of Cydonia"
+          ],
+          "correctOptionIndex": 3,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Princesse Mononoké",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Aladin",
+            "Eyes Wide Shut",
+            "Princesse Mononoké",
+            "La Revanche de Lassie"
+          ],
+          "correctOptionIndex": 2,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Red Dead Redemption 2",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Bad Piggies",
+            "Air Combat",
+            "Red Dead Redemption 2",
+            "Yu-Gi-Oh! Duel des ténèbres"
+          ],
+          "correctOptionIndex": 2,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 10",
+      "person": {
+        "name": "Ombeline Rossi",
+        "answerMode": "choices",
+        "options": [
+          "Benjamin BORDELET",
+          "Yoann Colas",
+          "Makanga Elvie",
+          "Ombeline Rossi"
+        ],
+        "correctOptionIndex": 3
+      },
+      "works": [
+        {
+          "title": "Diablo II",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Warframe",
+            "Legacy of Kain: Soul Reaver",
+            "Diablo II",
+            "Monster Jam: Maximum Destruction"
+          ],
+          "correctOptionIndex": 2,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : jeu vidéo, 2000, studio : Blizzard North"
+            }
+          ]
+        },
+        {
+          "title": "La Horde du Contrevent",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Alyosha the Pot",
+            "Bookworm, Run!",
+            "Sharpe's Trafalgar",
+            "La Horde du Contrevent"
+          ],
+          "correctOptionIndex": 3,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Marillion",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Marillion",
+            "In Through the Out Door",
+            "1019",
+            "Radio Musicola"
+          ],
+          "correctOptionIndex": 0,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 11",
+      "person": {
+        "name": "Lambert Emilie",
+        "answerMode": "choices",
+        "options": [
+          "Benjamin BORDELET",
+          "Johanna Guichard",
+          "Yoann Colas",
+          "Lambert Emilie"
+        ],
+        "correctOptionIndex": 3
+      },
+      "works": [
+        {
+          "title": "Guerre et Paix",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "La Mort heureuse",
+            "La Forêt sombre",
+            "Guerre et Paix",
+            "Gatsby le Magnifique"
+          ],
+          "correctOptionIndex": 2,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : livre, 1863, auteur : Léon Tolstoï"
+            }
+          ]
+        },
+        {
+          "title": "Animal Crossing",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Joe and Mac: Caveman Ninja",
+            "Thunder & Lightning",
+            "Metro 2033",
+            "Animal Crossing"
+          ],
+          "correctOptionIndex": 3,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : jeu vidéo, 2001, studio : Nintendo Entertainment Analysis and Development"
+            }
+          ]
+        },
+        {
+          "title": "Big Fish",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Big Fish",
+            "La Grande Combine",
+            "Les Dents de la mer",
+            "L'Enfant d'en haut"
+          ],
+          "correctOptionIndex": 0,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : film, 2003, réalisateur : Tim Burton"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 12",
+      "person": {
+        "name": "Thibault Brouassin",
+        "answerMode": "choices",
+        "options": [
+          "Thibault Brouassin",
+          "Bonnefont Julien",
+          "Bocéno Susie",
+          "LAJNEF Yousri"
+        ],
+        "correctOptionIndex": 0
+      },
+      "works": [
+        {
+          "title": "Star Wars",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Le Monde de Narnia : L'Odyssée du Passeur d'Aurore",
+            "The Flying Scotsman",
+            "Dommage que tu sois une canaille",
+            "Star Wars"
+          ],
+          "correctOptionIndex": 3,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Pokémon",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Pokémon",
+            "Grandia: Digital Museum",
+            "Kirby Super Star",
+            "Tony Hawk: Shred"
+          ],
+          "correctOptionIndex": 0,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Harry Potter",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "The Catch Trap",
+            "Harry Potter",
+            "Le Liseur",
+            "Le champ de lin"
+          ],
+          "correctOptionIndex": 1,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 13",
+      "person": {
+        "name": "Stohr Valérie",
+        "answerMode": "choices",
+        "options": [
+          "Benjamin BORDELET",
+          "Stohr Valérie",
+          "Makanga Elvie",
+          "Capucine BECHEMIN"
+        ],
+        "correctOptionIndex": 1
+      },
+      "works": [
+        {
+          "title": "The Scientist",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Beauty and a Beat",
+            "Half-Breed",
+            "The Scientist",
+            "Better Than You"
+          ],
+          "correctOptionIndex": 2,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Concerto pour clarinette de Mozart",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Light My Fire",
+            "Ses plus grands succès",
+            "Concerto pour clarinette de Mozart",
+            "Let Me Go, Rock 'n' Roll"
+          ],
+          "correctOptionIndex": 2,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Les Cahiers d'Esther",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Les Cahiers d'Esther",
+            "Le Souffle de la guerre",
+            "1635: The Eastern Front",
+            "Les Trois Garrideb"
+          ],
+          "correctOptionIndex": 0,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 14",
+      "person": {
+        "name": "Bocéno Susie",
+        "answerMode": "choices",
+        "options": [
+          "Bocéno Susie",
+          "Bonnefont Julien",
+          "Ombeline Rossi",
+          "Fabien"
+        ],
+        "correctOptionIndex": 0
+      },
+      "works": [
+        {
+          "title": "Delivery - Babyshambles",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Black Cat",
+            "Delivery - Babyshambles",
+            "Gold",
+            "Diamonds"
+          ],
+          "correctOptionIndex": 1,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Friends",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Re-Animator",
+            "Claques sanglantes",
+            "Friends",
+            "La Loi du sang"
+          ],
+          "correctOptionIndex": 2,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Les sept soeurs - Lucinda Riley",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "A Soldier's Daughter Never Cries",
+            "Dictionnaire de Grimm",
+            "Entretien avec un vampire",
+            "Les sept soeurs - Lucinda Riley"
+          ],
+          "correctOptionIndex": 3,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 15",
+      "person": {
+        "name": "Capucine BECHEMIN",
+        "answerMode": "choices",
+        "options": [
+          "Bonnefont Julien",
+          "Ombeline Rossi",
+          "Yoann Colas",
+          "Capucine BECHEMIN"
+        ],
+        "correctOptionIndex": 3
+      },
+      "works": [
+        {
+          "title": "Là-haut",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Là-haut",
+            "40 ans, toujours puceau",
+            "Œdipe roi",
+            "Ready to Rumble"
+          ],
+          "correctOptionIndex": 0,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Slipping Through My Fingers",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Foiled",
+            "Thinking of You",
+            "Dirty Mind",
+            "Slipping Through My Fingers"
+          ],
+          "correctOptionIndex": 3,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "I Can Do It with a Broken Heart",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "I Can Do It with a Broken Heart",
+            "Bad Habits",
+            "Björk - Greatest Hits",
+            "Screaming Bloody Murder"
+          ],
+          "correctOptionIndex": 0,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 16",
+      "person": {
+        "name": "Bonnefont Julien",
+        "answerMode": "choices",
+        "options": [
+          "Capucine BECHEMIN",
+          "Briand Samuel",
+          "Bonnefont Julien",
+          "Dabot Louis"
+        ],
+        "correctOptionIndex": 2
+      },
+      "works": [
+        {
+          "title": "Forrest Gump",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Riders",
+            "Le Célibataire",
+            "Tideland",
+            "Forrest Gump"
+          ],
+          "correctOptionIndex": 3,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : film, 1994, réalisateur : Robert Zemeckis"
+            }
+          ]
+        },
+        {
+          "title": "God of War Ragnarök",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "God of War Ragnarök",
+            "Legacy of Kain: Soul Reaver",
+            "Hebereke's Popoitto",
+            "Crash Bandicoot XS"
+          ],
+          "correctOptionIndex": 0,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Et il me parla de cerisiers, de poussières et d'une montagne",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Rouge Brésil",
+            "Et il me parla de cerisiers, de poussières et d'une montagne",
+            "Désert solitaire",
+            "Pnine"
+          ],
+          "correctOptionIndex": 1,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 17",
+      "person": {
+        "name": "Johanna Guichard",
+        "answerMode": "choices",
+        "options": [
+          "Bocéno Susie",
+          "Johanna Guichard",
+          "Benjamin BORDELET",
+          "Ombeline Rossi"
+        ],
+        "correctOptionIndex": 1
+      },
+      "works": [
+        {
+          "title": "The Nights",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "The Nights",
+            "Jay",
+            "Kuře v hodinkách",
+            "Forever"
+          ],
+          "correctOptionIndex": 0,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : musique"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Gossip Girl",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Recep İvedik 2",
+            "Frisson d'amour",
+            "Gossip Girl",
+            "Chère Brigitte"
+          ],
+          "correctOptionIndex": 2,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Friends",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Meurs un autre jour",
+            "Ardhanaari",
+            "Friends",
+            "Berberian Sound Studio"
+          ],
+          "correctOptionIndex": 2,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Manche 18",
+      "person": {
+        "name": "LAJNEF Yousri",
+        "answerMode": "choices",
+        "options": [
+          "LAJNEF Yousri",
+          "Dabot Louis",
+          "Fabien",
+          "Briand Samuel"
+        ],
+        "correctOptionIndex": 0
+      },
+      "works": [
+        {
+          "title": "Le Crime de l'Orient-Express",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "La République",
+            "Le Crime de l'Orient-Express",
+            "Le mystère de l'Étoile Polaire",
+            "Eugène Onéguine"
+          ],
+          "correctOptionIndex": 1,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : livre"
+            },
+            {
+              "kind": "text",
+              "content": "Repère : livre, 1934, auteur : Agatha Christie"
+            }
+          ]
+        },
+        {
+          "title": "Hamnet",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Hamnet",
+            "The Curse of the Yellow Snake",
+            "Be Cool",
+            "Sous le signe de Monte-Cristo"
+          ],
+          "correctOptionIndex": 0,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : film"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        },
+        {
+          "title": "Hollow Knight",
+          "kind": "other",
+          "answerMode": "choices",
+          "options": [
+            "Tōgi Ō: King Colossus",
+            "Blacklight: Retribution",
+            "LFP Manager 12",
+            "Hollow Knight"
+          ],
+          "correctOptionIndex": 3,
+          "clues": [
+            {
+              "kind": "text",
+              "content": "Type : jeu vidéo"
+            },
+            {
+              "kind": "text",
+              "content": "Indice à compléter"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+person;workNumber;rawType;normalizedType;rawTitle;normalizedTitle;dictionaryMatch;needsReview;note
+Dabot Louis;1;Jeu vidéo;jeu vidéo;World of Warcraft;World of Warcraft;World of Warcraft (jeu vidéo, 2004, studio : Blizzard Entertainment);non;
+Dabot Louis;2;Livre;livre;Le Cycle de Fondation (Asimov);Fondation;Fondation (livre, 1942, auteur : Isaac Asimov);non;Alias sondage vers Fondation, à valider si la réponse attendue doit être le cycle complet.
+Dabot Louis;3;Film;film;Gladiator;Gladiator;Gladiator (film, 2000, réalisateur : Ridley Scott);non;
+Benjamin BORDELET;1;Musique;musique;L'album : Deamon Days, de Gorillaz;Demon Days;;oui;Correction orthographique Deamon -> Demon.
+Benjamin BORDELET;2;Film;film;Fury de David Ayer;Fury;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Benjamin BORDELET;3;Jeu vidéo;jeu vidéo;Gran Turismo 4 sur PS2;Gran Turismo 4;Gran Turismo 4 (jeu vidéo, 2004, studio : Polyphony Digital);non;
+Briand Samuel;1;Jeu vidéo;jeu vidéo;Elden Ring;Elden Ring;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Briand Samuel;2;Film;film;Je suis une légende;Je suis une légende;Je suis une légende (film, 2007, réalisateur : Francis Lawrence);non;
+Briand Samuel;3;Jeu vidéo;jeu vidéo;GTA 5;Grand Theft Auto V;Grand Theft Auto V (jeu vidéo, 2013, studio : Rockstar Leeds, Rockstar London, Rockstar New England);non;
+Yoann Colas;1;Livre;livre;Deux ans de vacances - Jules Vernes;Deux ans de vacances;Deux ans de vacances (livre, 1888, auteur : Jules Verne);non;Correction Jules Vernes -> Jules Verne.
+Yoann Colas;2;Musique;musique;Summertime - Ella Fitzgerald & Louis Armstrong;Summertime;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Yoann Colas;3;Film;film;Aladin - Disney;Aladdin;Aladdin (film, 1986, réalisateur : Bruno Corbucci);non;Alias vers le film Disney.
+Fabien;1;Musique;musique;Jungle - Tash Sultana;Jungle - Tash Sultana;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Fabien;2;Film;film;django unchained;Django Unchained;Django Unchained (film, 2012, réalisateur : Quentin Tarantino);non;
+Fabien;3;Livre;livre;1984;1984;1984 (livre, 1948, auteur : George Orwell);non;
+Bardier Alice;1;Livre;livre;Millenium;Millénium;Millénium (livre, 1983, auteur : John Varley);oui;Titre de série : vérifier le tome attendu.
+Bardier Alice;2;Film;film;Blade Runner;Blade Runner;Blade Runner (film, 1982, réalisateur : Ridley Scott);non;
+Bardier Alice;3;Jeu vidéo;jeu vidéo;Stardew Valley;Stardew Valley;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Makanga Elvie;1;Livre;livre;Plus malin que le diable;Plus malin que le diable;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Makanga Elvie;2;Film;film;titanic;Titanic;Titanic (film, 1997, réalisateur : James Cameron);non;
+Makanga Elvie;3;Musique;musique;killing me softly with his song;killing me softly with his song;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Alexis PAPAGNO;1;Jeu vidéo;jeu vidéo;Red Dead Redemption 2;Red Dead Redemption 2;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Alexis PAPAGNO;2;Jeu vidéo;jeu vidéo;Outer Wilds;Outer Wilds;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Alexis PAPAGNO;3;Film;film;Shutter Island;Shutter Island;Shutter Island (film, 2010, réalisateur : Martin Scorsese);non;
+Jean-Baptiste Billaud;1;Musique;musique;Muse - Knights of Cydonia;Knights of Cydonia;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Jean-Baptiste Billaud;2;Film;film;Princesse Mononoké (Hayao Miyazaki, Studio Ghibli);Princesse Mononoké;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Jean-Baptiste Billaud;3;Jeu vidéo;jeu vidéo;Red Dead Redemption II;Red Dead Redemption 2;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Ombeline Rossi;1;Jeu vidéo;jeu vidéo;Diablo II;Diablo II;Diablo II (jeu vidéo, 2000, studio : Blizzard North);non;
+Ombeline Rossi;2;Livre;livre;La Horde du Contrevent;La Horde du Contrevent;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Ombeline Rossi;3;Musique;musique;Marillion;Marillion;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Lambert Emilie;1;Livre;livre;Guerre et Paix;Guerre et Paix;Guerre et Paix (livre, 1863, auteur : Léon Tolstoï);non;
+Lambert Emilie;2;Jeu vidéo;jeu vidéo;Animal Crossing;Animal Crossing;Animal Crossing (jeu vidéo, 2001, studio : Nintendo Entertainment Analysis and Development);non;
+Lambert Emilie;3;Film;film;Big Fish;Big Fish;Big Fish (film, 2003, réalisateur : Tim Burton);non;
+Thibault Brouassin;1;Film;film;Star Wars;Star Wars;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Thibault Brouassin;2;Jeu vidéo;jeu vidéo;Pokémon;Pokémon;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Thibault Brouassin;3;Livre;livre;Harry Potter;Harry Potter;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Stohr Valérie;1;Musique;musique;the scientist (Coldplay);The Scientist;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Stohr Valérie;2;Musique;musique;concerto pour clarinette (mozart);Concerto pour clarinette de Mozart;;oui;Œuvre classique : libellé à confirmer.
+Stohr Valérie;3;Livre;livre;Les cahier d'Ester (Riad Satouf);Les Cahiers d'Esther;;oui;Correction orthographique à valider.
+Bocéno Susie;1;Musique;musique;Delivery - Babyshambles;Delivery - Babyshambles;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Bocéno Susie;2;Film;film;Friends;Friends;;oui;Série classée comme film dans le sondage.
+Bocéno Susie;3;Livre;livre;Les sept soeurs - Lucinda Riley;Les sept soeurs - Lucinda Riley;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Capucine BECHEMIN;1;Film;film;Là-haut - Pixar (les 4 premières minutes);Là-haut;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Capucine BECHEMIN;2;Musique;musique;Slipping through my fingers - ABBA;Slipping Through My Fingers;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Capucine BECHEMIN;3;Musique;musique;I can do it with a broken heart - Taylor Swift;I Can Do It with a Broken Heart;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Bonnefont Julien;1;Film;film;Forrest Gump;Forrest Gump;Forrest Gump (film, 1994, réalisateur : Robert Zemeckis);non;
+Bonnefont Julien;2;Jeu vidéo;jeu vidéo;God of War Ragnarök;God of War Ragnarök;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Bonnefont Julien;3;Livre;livre;Et il me parla de cerisiers, de poussières et d'une montagne;Et il me parla de cerisiers, de poussières et d'une montagne;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Johanna Guichard;1;Musique;musique;Avicii - The nights;The Nights;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+Johanna Guichard;2;Film;film;Gossip Girl - Tome 8;Gossip Girl;;oui;Le sondage indique film mais le libellé mentionne un tome.
+Johanna Guichard;3;Film;film;Friends - Saison 5;Friends;;oui;Saison précise : vérifier si la réponse attendue doit être Friends ou Saison 5.
+LAJNEF Yousri;1;Livre;livre;Le crime de l'Orient-Express;Le Crime de l'Orient-Express;Le Crime de l'Orient-Express (livre, 1934, auteur : Agatha Christie);non;
+LAJNEF Yousri;2;Film;film;Hamnet;Hamnet;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.
+LAJNEF Yousri;3;Jeu vidéo;jeu vidéo;Hollow Knight;Hollow Knight;;oui;Aucune correspondance fiable trouvée dans le dictionnaire.

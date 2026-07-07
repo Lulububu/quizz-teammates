@@ -18,6 +18,7 @@ import {
   createRoom,
   deleteAnswerDictionary,
   deleteQuiz,
+  duplicateQuiz,
   findPlayerByNickname,
   getAnswerCount,
   getAnswerStats,
@@ -64,9 +65,10 @@ const io = new Server(server, {
 });
 const questionDurationMs = 20_000;
 const revealTimers = new Map<string, NodeJS.Timeout>();
+const jsonBodyLimit = process.env.JSON_BODY_LIMIT ?? '25mb';
 
 app.use(cors());
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: jsonBodyLimit }));
 
 const quizSchema = z.object({
   title: z.string().min(1),
@@ -210,9 +212,9 @@ app.post('/api/quizzes', requireAdmin, asyncRoute(async (req, res) => {
     res.status(400).json(validationErrorResponse(parsed.error.issues));
     return;
   }
-  const dictionaryError = await validateQuizAutocompleteAnswers(parsed.data as QuizInput, req.adminUser!.id);
-  if (dictionaryError) {
-    res.status(400).json(validationErrorResponse([dictionaryError]));
+  const dictionaryErrors = await validateQuizAutocompleteAnswers(parsed.data as QuizInput, req.adminUser!.id);
+  if (dictionaryErrors.length > 0) {
+    res.status(400).json(validationErrorResponse(dictionaryErrors));
     return;
   }
   res.status(201).json(await createQuiz(parsed.data as QuizInput, req.adminUser!.id));
@@ -242,9 +244,9 @@ app.put('/api/quizzes/:quizId', requireAdmin, asyncRoute(async (req, res) => {
     res.status(400).json(validationErrorResponse(parsed.error.issues));
     return;
   }
-  const dictionaryError = await validateQuizAutocompleteAnswers(parsed.data as QuizInput, req.adminUser!.id);
-  if (dictionaryError) {
-    res.status(400).json(validationErrorResponse([dictionaryError]));
+  const dictionaryErrors = await validateQuizAutocompleteAnswers(parsed.data as QuizInput, req.adminUser!.id);
+  if (dictionaryErrors.length > 0) {
+    res.status(400).json(validationErrorResponse(dictionaryErrors));
     return;
   }
   const quiz = await updateQuiz(req.params.quizId, parsed.data as QuizInput, req.adminUser!.id);
@@ -253,6 +255,15 @@ app.put('/api/quizzes/:quizId', requireAdmin, asyncRoute(async (req, res) => {
     return;
   }
   res.json(quiz);
+}));
+
+app.post('/api/quizzes/:quizId/duplicate', requireAdmin, asyncRoute(async (req, res) => {
+  const quiz = await duplicateQuiz(req.params.quizId, req.adminUser!.id);
+  if (!quiz) {
+    res.status(404).json({ error: 'Quiz introuvable' });
+    return;
+  }
+  res.status(201).json(quiz);
 }));
 
 app.delete('/api/quizzes/:quizId', requireAdmin, asyncRoute(async (req, res) => {
@@ -296,6 +307,13 @@ if (existsSync(clientDistDir)) {
 }
 
 app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  if (isPayloadTooLargeError(error)) {
+    res.status(413).json({
+      error: 'Payload trop volumineux',
+      details: `La requête dépasse la limite configurée (${jsonBodyLimit}).`,
+    });
+    return;
+  }
   const message = error instanceof Error ? error.message : 'Erreur serveur';
   console.error(error);
   res.status(500).json({
@@ -303,6 +321,15 @@ app.use((error: unknown, _req: express.Request, res: express.Response, _next: ex
     details: process.env.NODE_ENV === 'production' ? undefined : message,
   });
 });
+
+function isPayloadTooLargeError(error: unknown): boolean {
+  return (
+    typeof error === 'object'
+    && error !== null
+    && 'type' in error
+    && (error as { type?: string }).type === 'entity.too.large'
+  );
+}
 
 io.on('connection', (socket) => {
   socket.on('host-room', async (payload: { code: string; idToken?: string }, callback) => {
@@ -786,49 +813,69 @@ type ValidationIssue = {
   message: string;
 };
 
-async function validateQuizAutocompleteAnswers(quiz: QuizInput, ownerUserId: string): Promise<ValidationIssue | undefined> {
+type DictionaryValidationCache = Map<string, Promise<Set<string>>>;
+
+async function validateQuizAutocompleteAnswers(quiz: QuizInput, ownerUserId: string): Promise<ValidationIssue[]> {
+  const issues: ValidationIssue[] = [];
+  const dictionaryCache: DictionaryValidationCache = new Map();
   for (const [roundIndex, round] of quiz.rounds.entries()) {
     const personError = await validateAutocompleteAnswer(
       round.person.answerMode ?? quiz.answerMode ?? 'choices',
       round.person,
       ownerUserId,
+      dictionaryCache,
       `manche ${roundIndex + 1}, personne cible`,
       ['rounds', roundIndex, 'person', 'correctAnswer'],
     );
-    if (personError) return personError;
+    if (personError) issues.push(personError);
 
     for (const [workIndex, work] of round.works.entries()) {
       const workError = await validateAutocompleteAnswer(
         work.answerMode ?? quiz.answerMode ?? 'choices',
         work,
         ownerUserId,
+        dictionaryCache,
         `manche ${roundIndex + 1}, œuvre ${workIndex + 1}`,
         ['rounds', roundIndex, 'works', workIndex, 'correctAnswer'],
       );
-      if (workError) return workError;
+      if (workError) issues.push(workError);
     }
   }
-  return undefined;
+  return issues;
 }
 
 async function validateAutocompleteAnswer(
   answerMode: AnswerMode,
   target: { correctAnswer?: string; dictionaryId?: string },
   ownerUserId: string,
+  dictionaryCache: DictionaryValidationCache,
   label: string,
   path: Array<string | number>,
 ): Promise<ValidationIssue | undefined> {
   if (answerMode !== 'autocomplete') return undefined;
   const answer = target.correctAnswer?.trim() ?? '';
-  const dictionaryValues = await getAnswerDictionaryValues(ownerUserId, target.dictionaryId);
-  const validAnswers = new Set(dictionaryValues.map(normalizeAnswer));
+  const validAnswers = await getCachedDictionaryAnswers(ownerUserId, target.dictionaryId, dictionaryCache);
   if (!validAnswers.has(normalizeAnswer(answer))) {
     return {
       path,
-      message: `La bonne réponse de ${label} doit être présente dans le dictionnaire sélectionné.`,
+      message: `La bonne réponse de ${label} doit être présente dans le dictionnaire sélectionné : "${answer}".`,
     };
   }
   return undefined;
+}
+
+function getCachedDictionaryAnswers(
+  ownerUserId: string,
+  dictionaryId: string | undefined,
+  dictionaryCache: DictionaryValidationCache,
+): Promise<Set<string>> {
+  const cacheKey = dictionaryId || '__all_dictionaries__';
+  const cached = dictionaryCache.get(cacheKey);
+  if (cached) return cached;
+  const promise = getAnswerDictionaryValues(ownerUserId, dictionaryId)
+    .then((values) => new Set(values.map(normalizeAnswer)));
+  dictionaryCache.set(cacheKey, promise);
+  return promise;
 }
 
 function validationErrorResponse(issues: ValidationIssue[] | z.ZodIssue[]) {

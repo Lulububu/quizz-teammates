@@ -1,0 +1,16 @@
+[
+  {
+    "provider": "jeuxvideo.com",
+    "kind": "search",
+    "url": "https://www.jeuxvideo.com/recherche.php?q=Animal%20Crossing%202001",
+    "note": "Recherche jeuxvideo.com pour page, images ou videos du jeu.",
+    "verificationRequired": true
+  },
+  {
+    "provider": "jeuxvideo.com",
+    "kind": "google-search",
+    "url": "https://www.google.com/search?q=site%3Ajeuxvideo.com+Animal%20Crossing%202001",
+    "note": "Recherche ciblee si la recherche interne ne suffit pas.",
+    "verificationRequired": true
+  }
+]

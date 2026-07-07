@@ -1,0 +1,38 @@
+[
+  {
+    "title": "FardierdeCugnot20050111.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/5/56/FardierdeCugnot20050111.jpg",
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:FardierdeCugnot20050111.jpg",
+    "mime": "image/jpeg",
+    "mediaType": "image",
+    "size": 52311,
+    "width": 1085,
+    "height": 600,
+    "licenseShortName": "CC BY-SA 3.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+    "artist": "",
+    "credit": "Own work , 11 January 2005.Photo et photographisme © Roby . Grand format sur demande",
+    "attributionRequired": "true",
+    "localPath": "data/generated/indices-test-download/oeuvres/film-aladdin-1986/sources/free-source-01-fardierdecugnot20050111-jpg.jpg",
+    "source": "Wikimedia Commons",
+    "verificationRequired": true
+  },
+  {
+    "title": "VahidOnline-69177-tehran.webm",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/48/VahidOnline-69177-tehran.webm",
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:VahidOnline-69177-tehran.webm",
+    "mime": "video/webm",
+    "mediaType": "video",
+    "size": 1258621,
+    "width": 324,
+    "height": 480,
+    "licenseShortName": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "artist": "Vahid Online",
+    "credit": "https://t.me/VahidOnline/69177",
+    "attributionRequired": "true",
+    "localPath": "data/generated/indices-test-download/oeuvres/film-aladdin-1986/sources/free-source-02-vahidonline-69177-tehran-webm.webm",
+    "source": "Wikimedia Commons",
+    "verificationRequired": true
+  }
+]

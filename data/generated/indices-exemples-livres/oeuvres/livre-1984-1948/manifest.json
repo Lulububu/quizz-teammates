@@ -1,0 +1,58 @@
+{
+  "title": "1984",
+  "answer": "1984 (livre, 1948, auteur : George Orwell)",
+  "type": "livre",
+  "year": "1948",
+  "attribution": "auteur : George Orwell",
+  "occurrences": [
+    {
+      "round": 5,
+      "work": 3,
+      "person": "Fabien"
+    }
+  ],
+  "folder": "oeuvres/livre-1984-1948",
+  "plannedClues": [
+    {
+      "label": "Citation courte",
+      "kind": "text",
+      "content": "",
+      "instruction": "Court extrait connu, a limiter a une phrase breve."
+    },
+    {
+      "label": "Indice narratif",
+      "kind": "text",
+      "content": "",
+      "instruction": "Theme, lieu, objet ou situation centrale sans donner le titre."
+    },
+    {
+      "label": "Indice auteur ou epoque",
+      "kind": "text",
+      "content": "",
+      "instruction": "Auteur, mouvement, epoque ou contexte, selon la difficulte voulue."
+    }
+  ],
+  "downloadedSources": [],
+  "webSuggestions": [
+    {
+      "provider": "Google Books",
+      "kind": "search",
+      "url": "https://www.google.com/search?q=site%3Abooks.google.com+1984%20auteur%20%3A%20George%20Orwell",
+      "note": "Recherche de notice ou apercu livre.",
+      "verificationRequired": true
+    },
+    {
+      "provider": "Wikisource",
+      "kind": "search",
+      "url": "https://www.google.com/search?q=site%3Afr.wikisource.org+1984%20auteur%20%3A%20George%20Orwell",
+      "note": "Recherche texte libre si l oeuvre est dans le domaine public.",
+      "verificationRequired": true
+    }
+  ],
+  "processedAssets": [],
+  "notes": [
+    "Le script ne recupere pas automatiquement de contenus proteges.",
+    "Suggestions specialisees generees depuis TMDB, jeuxvideo.com ou YouTube selon le type d'oeuvre.",
+    "Verifiez toujours la pertinence, la licence et l'attribution avant d'utiliser une source dans le quiz."
+  ]
+}

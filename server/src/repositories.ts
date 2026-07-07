@@ -152,6 +152,8 @@ export type AnswerRow = {
 const quizzes = firestore.collection('quizzes');
 const rooms = firestore.collection('rooms');
 const answerDictionaries = firestore.collection('answerDictionaries');
+const dictionaryValuesChunkSize = 500;
+const firestoreBatchLimit = 450;
 
 export async function listQuizzes(ownerUserId: string): Promise<QuizRow[]> {
   const snapshot = await quizzes.where('owner_user_id', '==', ownerUserId).get();
@@ -190,11 +192,57 @@ export async function updateQuiz(quizId: string, input: QuizInput, ownerUserId: 
   return getOwnedQuiz(quizId, ownerUserId);
 }
 
+export async function duplicateQuiz(quizId: string, ownerUserId: string): Promise<QuizRow | undefined> {
+  const quiz = await getOwnedQuizForEditing(quizId, ownerUserId);
+  if (!quiz) return undefined;
+  return createQuiz(quizToInput(quiz), ownerUserId);
+}
+
 export async function deleteQuiz(quizId: string, ownerUserId: string): Promise<boolean> {
   if (!(await userOwnsQuiz(quizId, ownerUserId))) return false;
   await deleteRoomsForQuiz(quizId);
   await quizzes.doc(quizId).delete();
   return true;
+}
+
+function quizToInput(quiz: QuizRow): QuizInput {
+  return {
+    title: `${quiz.title} (copie)`,
+    description: quiz.description,
+    answerMode: quiz.answer_mode,
+    sequenceMode: quiz.sequence_mode,
+    hidePlayerNames: quiz.hide_player_names,
+    rounds: (quiz.rounds ?? []).map((round) => ({
+      title: round.title,
+      person: {
+        name: round.person.name,
+        answerMode: round.person.answer_mode,
+        dictionaryId: round.person.dictionary_id,
+        options: round.person.options.map((option) => option.label),
+        correctOptionIndex: correctOptionIndex(round.person.options),
+        correctAnswer: correctAnswer(round.person.options),
+      },
+      works: round.works.map((work) => ({
+        title: work.title,
+        kind: work.kind,
+        answerMode: work.answer_mode,
+        dictionaryId: work.dictionary_id,
+        clues: work.clues.map((clue) => ({ kind: clue.kind as ClueInput['kind'], content: clue.content })),
+        options: work.options.map((option) => option.label),
+        correctOptionIndex: correctOptionIndex(work.options),
+        correctAnswer: correctAnswer(work.options),
+      })),
+    })),
+  };
+}
+
+function correctOptionIndex(options: AnswerOption[]): number {
+  const index = options.findIndex((option) => option.isCorrect === 1);
+  return index >= 0 ? index : 0;
+}
+
+function correctAnswer(options: AnswerOption[]): string {
+  return options.find((option) => option.isCorrect === 1)?.label ?? '';
 }
 
 export async function getQuiz(quizId: string): Promise<QuizRow | undefined> {
@@ -223,22 +271,23 @@ export async function userOwnsQuiz(quizId: string, ownerUserId: string): Promise
 export async function listAnswerDictionaries(ownerUserId: string): Promise<AnswerDictionary[]> {
   const snapshot = await answerDictionaries.where('owner_user_id', '==', ownerUserId).get();
   const ownedQuizzes = await listQuizzes(ownerUserId);
-  return snapshot.docs
-    .map((doc) => {
-      const dictionary = dictionaryFromDoc(doc.id, doc.data());
+  const dictionaries = await Promise.all(
+    snapshot.docs.map(async (doc) => {
+      const dictionary = await dictionaryFromDoc(doc.id, doc.data());
       return {
         ...dictionary,
         usage_count: ownedQuizzes.filter((quiz) => quizUsesDictionary(quiz, dictionary.id)).length,
       };
-    })
-    .sort((a, b) => a.name.localeCompare(b.name));
+    }),
+  );
+  return dictionaries.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export async function getAnswerDictionaryValues(ownerUserId: string, dictionaryId?: string): Promise<string[]> {
   if (dictionaryId) {
     const snapshot = await answerDictionaries.doc(dictionaryId).get();
     if (snapshot.exists && snapshot.data()?.owner_user_id === ownerUserId) {
-      return dictionaryValues(snapshot.data()?.values);
+      return getDictionaryValues(dictionaryId, snapshot.data());
     }
     return [];
   }
@@ -257,17 +306,19 @@ export async function saveAnswerDictionary(
   const dictionary = {
     owner_user_id: ownerUserId,
     name: input.name.trim(),
-    values: uniqueValues,
+    value_count: uniqueValues.length,
     created_at: existing.data()?.created_at ?? new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
   await answerDictionaries.doc(id).set(dictionary);
+  await replaceDictionaryValueChunks(id, uniqueValues);
   return dictionaryFromDoc(id, dictionary);
 }
 
 export async function deleteAnswerDictionary(ownerUserId: string, dictionaryId: string): Promise<boolean> {
   const snapshot = await answerDictionaries.doc(dictionaryId).get();
   if (!snapshot.exists || snapshot.data()?.owner_user_id !== ownerUserId) return false;
+  await deleteDictionaryValueChunks(dictionaryId);
   await answerDictionaries.doc(dictionaryId).delete();
   return true;
 }
@@ -631,15 +682,67 @@ function scrubOptions(options: AnswerOption[], includeCorrectOptions: boolean): 
   return options.map(({ isCorrect: _isCorrect, ...option }) => option);
 }
 
-function dictionaryFromDoc(id: string, data: FirebaseFirestore.DocumentData): AnswerDictionary {
+async function dictionaryFromDoc(id: string, data: FirebaseFirestore.DocumentData): Promise<AnswerDictionary> {
   return {
     id,
     owner_user_id: data.owner_user_id,
     name: typeof data.name === 'string' && data.name.trim() ? data.name : 'Dictionnaire principal',
-    values: dictionaryValues(data.values),
+    values: await getDictionaryValues(id, data),
     created_at: data.created_at,
     updated_at: data.updated_at,
   };
+}
+
+async function getDictionaryValues(id: string, data?: FirebaseFirestore.DocumentData): Promise<string[]> {
+  const chunks = await answerDictionaries.doc(id).collection('valueChunks').orderBy('position').get();
+  if (!chunks.empty) {
+    return chunks.docs.flatMap((doc) => dictionaryValues(doc.data().values));
+  }
+  return dictionaryValues(data?.values);
+}
+
+async function replaceDictionaryValueChunks(dictionaryId: string, values: string[]): Promise<void> {
+  await deleteDictionaryValueChunks(dictionaryId);
+  const chunksRef = answerDictionaries.doc(dictionaryId).collection('valueChunks');
+  const chunks = chunkValues(values, dictionaryValuesChunkSize);
+  let batch = firestore.batch();
+  let operationCount = 0;
+
+  for (const [position, chunk] of chunks.entries()) {
+    batch.set(chunksRef.doc(String(position).padStart(5, '0')), { position, values: chunk });
+    operationCount += 1;
+    if (operationCount >= firestoreBatchLimit) {
+      await batch.commit();
+      batch = firestore.batch();
+      operationCount = 0;
+    }
+  }
+
+  if (operationCount > 0) await batch.commit();
+}
+
+async function deleteDictionaryValueChunks(dictionaryId: string): Promise<void> {
+  const chunks = await answerDictionaries.doc(dictionaryId).collection('valueChunks').get();
+  let batch = firestore.batch();
+  let operationCount = 0;
+  for (const doc of chunks.docs) {
+    batch.delete(doc.ref);
+    operationCount += 1;
+    if (operationCount >= firestoreBatchLimit) {
+      await batch.commit();
+      batch = firestore.batch();
+      operationCount = 0;
+    }
+  }
+  if (operationCount > 0) await batch.commit();
+}
+
+function chunkValues<T>(values: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let index = 0; index < values.length; index += size) {
+    chunks.push(values.slice(index, index + size));
+  }
+  return chunks;
 }
 
 function dictionaryValues(values: unknown): string[] {

@@ -1,0 +1,58 @@
+{
+  "title": "Elden Ring",
+  "answer": "Elden Ring (jeu vidéo, 2022, studio : FromSoftware)",
+  "type": "jeu video",
+  "year": "2022",
+  "attribution": "studio : FromSoftware",
+  "occurrences": [
+    {
+      "round": 3,
+      "work": 1,
+      "person": "Briand Samuel"
+    }
+  ],
+  "folder": "oeuvres/jeu-video-elden-ring-2022",
+  "plannedClues": [
+    {
+      "label": "Son iconique",
+      "kind": "audio",
+      "target": "assets/01-son-iconique.mp3",
+      "instruction": "Effet sonore, jingle ou ambiance tres courte."
+    },
+    {
+      "label": "Theme musical",
+      "kind": "audio",
+      "target": "assets/02-bo-8s.mp3",
+      "instruction": "Extrait de bande originale, environ 8 secondes."
+    },
+    {
+      "label": "Screenshot",
+      "kind": "image",
+      "target": "assets/03-screenshot.jpg",
+      "instruction": "Image de gameplay ou environnement sans interface trop explicite."
+    }
+  ],
+  "downloadedSources": [],
+  "webSuggestions": [
+    {
+      "provider": "jeuxvideo.com",
+      "kind": "search",
+      "url": "https://www.jeuxvideo.com/recherche.php?q=Elden%20Ring%202022",
+      "note": "Recherche jeuxvideo.com pour page, images ou videos du jeu.",
+      "verificationRequired": true
+    },
+    {
+      "provider": "jeuxvideo.com",
+      "kind": "google-search",
+      "url": "https://www.google.com/search?q=site%3Ajeuxvideo.com+Elden%20Ring%202022",
+      "note": "Recherche ciblee si la recherche interne ne suffit pas.",
+      "verificationRequired": true
+    }
+  ],
+  "processedAssets": [],
+  "notes": [
+    "Le script ne recupere pas automatiquement de contenus proteges.",
+    "Suggestions specialisees generees depuis TMDB, jeuxvideo.com ou YouTube selon le type d'oeuvre.",
+    "Verifiez toujours la pertinence, la licence et l'attribution avant d'utiliser une source dans le quiz."
+  ]
+}

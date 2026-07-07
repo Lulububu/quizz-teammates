@@ -1,0 +1,24 @@
+[
+  {
+    "provider": "Open Library",
+    "kind": "image",
+    "url": "https://covers.openlibrary.org/b/id/3082355-L.jpg",
+    "localPath": "data/generated/assets-exemples-livres/oeuvres/livre-deux-ans-de-vacances-1888/sources/openlibrary-cover.jpg",
+    "note": "Couverture Open Library.",
+    "verificationRequired": true,
+    "openLibraryKey": "/works/OL1100004W",
+    "title": "Deux ans de vacances",
+    "authorName": [
+      "Jules Verne"
+    ],
+    "firstPublishYear": 1900
+  },
+  {
+    "provider": "Open Library",
+    "kind": "text",
+    "url": "https://openlibrary.org/works/OL1100004W",
+    "localPath": "data/generated/assets-exemples-livres/oeuvres/livre-deux-ans-de-vacances-1888/assets/indices-livre.txt",
+    "note": "Fichier texte avec indices de travail.",
+    "verificationRequired": true
+  }
+]

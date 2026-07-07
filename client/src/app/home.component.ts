@@ -94,7 +94,10 @@ type DraftQuiz = {
                 <h2>Mes quiz</h2>
                 <p>Créez un salon, reprenez un quiz ou préparez une nouvelle animation.</p>
               </div>
-              <button type="button" (click)="openNewQuiz()">Nouveau quiz</button>
+              <div class="row-actions">
+                <button type="button" class="secondary" (click)="openImportModal()">Importer JSON</button>
+                <button type="button" (click)="openNewQuiz()">Nouveau quiz</button>
+              </div>
             </div>
             @if (quizzes().length === 0) {
               <div class="empty-state">
@@ -121,12 +124,117 @@ type DraftQuiz = {
                   <div class="row-actions">
                     <button type="button" (click)="createRoom(quiz.id)">Créer un salon</button>
                     <button type="button" class="secondary" (click)="editQuiz(quiz.id)">Éditer</button>
+                    <button type="button" class="secondary" (click)="duplicateQuiz(quiz)">Dupliquer</button>
+                    <button type="button" class="secondary" (click)="exportQuiz(quiz.id)">Exporter</button>
                     <button type="button" class="danger ghost" (click)="deleteQuiz(quiz)">Supprimer</button>
                   </div>
                 </article>
               }
             </div>
           </section>
+        }
+
+        @if (importModalOpen()) {
+          <div class="modal-backdrop" role="presentation" (click)="closeImportModal()">
+            <section class="modal-panel import-modal" role="dialog" aria-modal="true" aria-labelledby="import-title" (click)="$event.stopPropagation()">
+              <header class="modal-header">
+                <div>
+                  <p class="eyebrow">Import de quiz</p>
+                  <h2 id="import-title">Importer un JSON</h2>
+                </div>
+                <button type="button" class="secondary" (click)="closeImportModal()" [disabled]="importProcessing()">Fermer</button>
+              </header>
+
+              <div class="import-modal-body">
+                <label>
+                  Dictionnaire œuvres
+                  <select [ngModel]="importDictionaryId()" (ngModelChange)="onImportDictionaryChange($event)">
+                    <option value="">Tous les dictionnaires</option>
+                    @for (dictionary of dictionaries(); track dictionary.id) {
+                      <option [value]="dictionary.id">{{ dictionary.name }}</option>
+                    }
+                  </select>
+                </label>
+
+                <label class="file-drop import-file-drop" [class.is-disabled]="importProcessing()">
+                  <span>{{ importProcessing() ? 'Import en cours…' : 'Sélectionner un fichier JSON' }}</span>
+                  <input type="file" accept="application/json,.json" (change)="importQuizJson($event)" [disabled]="importProcessing()">
+                </label>
+
+                @if (importProcessing()) {
+                  <div class="import-status" role="status">
+                    <span class="loader-dot"></span>
+                    {{ importProgressLabel() }}
+                  </div>
+                  <div class="import-progress" aria-label="Avancement de l'import">
+                    <div class="import-progress-meta">
+                      <span>{{ importProgressLabel() }}</span>
+                      <strong>{{ importProgress() }}%</strong>
+                    </div>
+                    <div class="import-progress-track">
+                      <span [style.width.%]="importProgress()"></span>
+                    </div>
+                  </div>
+                }
+
+                @if (importErrors().length > 0) {
+                  <div class="modal-errors" role="alert">
+                    <strong>Import impossible</strong>
+                    <p>{{ importErrorSummary() }}</p>
+                    @if (importErrors().length > 0) {
+                      <button type="button" class="ghost-toggle" (click)="toggleImportErrorDetails()">
+                        {{ importErrorDetailsOpen() ? 'Masquer le détail' : 'Voir le détail' }}
+                      </button>
+                    }
+                    @if (importErrorDetailsOpen()) {
+                      <div class="modal-error-details">
+                        @for (error of importErrors(); track error) {
+                          <p>{{ error }}</p>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+
+                @if (missingDictionaryValues().length > 0) {
+                  <div class="missing-dictionary-values">
+                    <div>
+                      <strong>{{ missingDictionaryValues().length }} œuvre(s) absente(s) du dictionnaire</strong>
+                      <p>Ajoutez-les au dictionnaire sélectionné, puis relancez l'import du quiz.</p>
+                    </div>
+                    <button
+                      type="button"
+                      class="secondary"
+                      (click)="addMissingValuesToSelectedDictionary()"
+                      [class.is-loading]="addingMissingDictionaryValues()"
+                      [disabled]="addingMissingDictionaryValues() || !importDictionaryId()"
+                    >
+                      {{ addingMissingDictionaryValues() ? 'Ajout…' : 'Ajouter au dictionnaire sélectionné' }}
+                    </button>
+                  </div>
+
+                  <div class="missing-values-table-wrap">
+                    <table class="missing-values-table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Œuvre manquante</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (value of missingDictionaryValues(); track value; let index = $index) {
+                          <tr>
+                            <td>{{ index + 1 }}</td>
+                            <td>{{ value }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                }
+              </div>
+            </section>
+          </div>
         }
 
         @if (adminView() === 'editor') {
@@ -516,8 +624,14 @@ type DraftQuiz = {
     </main>
 
     @if (feedbackMessage()) {
-      <div class="feedback-toast" [class.info]="feedbackTone() === 'info'" role="status" aria-live="polite">
-        <strong>{{ feedbackTone() === 'success' ? 'Action terminée' : 'Information' }}</strong>
+      <div
+        class="feedback-toast"
+        [class.info]="feedbackTone() === 'info'"
+        [class.error]="feedbackTone() === 'error'"
+        role="status"
+        aria-live="polite"
+      >
+        <strong>{{ feedbackTitle() }}</strong>
         <span>{{ feedbackMessage() }}</span>
       </div>
     }
@@ -568,12 +682,21 @@ export class HomeComponent implements OnInit {
   saving = signal(false);
   dictionarySaving = signal(false);
   feedbackMessage = signal('');
-  feedbackTone = signal<'success' | 'info'>('success');
+  feedbackTone = signal<'success' | 'info' | 'error'>('success');
   editingQuizId = signal<string | undefined>(undefined);
   dirty = signal(false);
   collapsedRounds = signal<Record<number, boolean>>({});
   uploadingClues = signal<Record<string, boolean>>({});
   hasUploadInProgress = computed(() => Object.values(this.uploadingClues()).some(Boolean));
+  importModalOpen = signal(false);
+  importProcessing = signal(false);
+  importProgress = signal(0);
+  importProgressLabel = signal('');
+  importDictionaryId = signal('');
+  importErrors = signal<string[]>([]);
+  importErrorDetailsOpen = signal(false);
+  missingDictionaryValues = signal<string[]>([]);
+  addingMissingDictionaryValues = signal(false);
   editingDictionaryId = signal<string | undefined>(undefined);
   dictionaryName = signal('');
   dictionaryText = signal('');
@@ -591,6 +714,7 @@ export class HomeComponent implements OnInit {
   publicRoomCode = '';
   draft: DraftQuiz = this.emptyQuiz();
   private feedbackTimer: ReturnType<typeof setTimeout> | undefined;
+  private importProgressTimer: ReturnType<typeof setInterval> | undefined;
 
   constructor(public api: ApiService) {
     effect(() => {
@@ -813,6 +937,197 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  duplicateQuiz(quiz: Quiz): void {
+    if (!window.confirm(`Dupliquer le quiz "${quiz.title}" ?`)) return;
+    this.api.duplicateQuiz(quiz.id).subscribe({
+      next: (copy) => {
+        this.refresh();
+        this.showFeedback(`Le quiz "${copy.title}" a été créé.`);
+      },
+      error: () => this.message.set('Impossible de dupliquer ce quiz.'),
+    });
+  }
+
+  exportQuiz(quizId: string): void {
+    this.api.getQuizForEditing(quizId).subscribe({
+      next: (quiz) => {
+        const payload = this.toPayload(this.toDraftQuiz(quiz));
+        const blob = new Blob([`${JSON.stringify(payload, null, 2)}\n`], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = this.exportFileName(quiz.title);
+        link.click();
+        URL.revokeObjectURL(url);
+        this.showFeedback(`Le quiz "${quiz.title}" a été exporté.`);
+      },
+      error: () => this.message.set("Impossible d'exporter ce quiz."),
+    });
+  }
+
+  openImportModal(): void {
+    this.clearImportProgressTimer();
+    this.importModalOpen.set(true);
+    this.importProcessing.set(false);
+    this.importProgress.set(0);
+    this.importProgressLabel.set('');
+    this.importErrors.set([]);
+    this.importErrorDetailsOpen.set(false);
+    this.missingDictionaryValues.set([]);
+  }
+
+  closeImportModal(): void {
+    if (this.importProcessing() || this.addingMissingDictionaryValues()) return;
+    this.clearImportProgressTimer();
+    this.importModalOpen.set(false);
+    this.importProgress.set(0);
+    this.importProgressLabel.set('');
+    this.importErrors.set([]);
+    this.importErrorDetailsOpen.set(false);
+    this.missingDictionaryValues.set([]);
+  }
+
+  onImportDictionaryChange(dictionaryId: string): void {
+    this.importDictionaryId.set(dictionaryId);
+  }
+
+  toggleImportErrorDetails(): void {
+    this.importErrorDetailsOpen.update((open) => !open);
+  }
+
+  importErrorSummary(): string {
+    if (this.missingDictionaryValues().length > 0) {
+      return 'Certaines bonnes réponses ne sont pas présentes dans le dictionnaire sélectionné.';
+    }
+    return this.importErrors()[0] ?? "Le fichier n'a pas pu être importé.";
+  }
+
+  private startImportProgress(label: string, progress: number): void {
+    this.clearImportProgressTimer();
+    this.importProcessing.set(true);
+    this.importProgressLabel.set(label);
+    this.importProgress.set(progress);
+    this.importErrors.set([]);
+    this.importErrorDetailsOpen.set(false);
+  }
+
+  private setImportProgress(label: string, progress: number): void {
+    this.importProgressLabel.set(label);
+    this.importProgress.set(Math.max(this.importProgress(), progress));
+  }
+
+  private startImportWaitingProgress(): void {
+    this.clearImportProgressTimer();
+    this.importProgressTimer = setInterval(() => {
+      this.importProgress.update((progress) => Math.min(92, progress + (progress < 75 ? 4 : 1)));
+    }, 900);
+  }
+
+  private finishImportProgress(label: string): void {
+    this.clearImportProgressTimer();
+    this.importProgressLabel.set(label);
+    this.importProgress.set(100);
+  }
+
+  private stopImportProgress(label: string): void {
+    this.clearImportProgressTimer();
+    this.importProgressLabel.set(label);
+    this.importProgress.set(0);
+  }
+
+  private clearImportProgressTimer(): void {
+    if (this.importProgressTimer) clearInterval(this.importProgressTimer);
+    this.importProgressTimer = undefined;
+  }
+
+  importQuizJson(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.startImportProgress('Lecture du fichier JSON…', 8);
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        this.setImportProgress('Préparation du quiz…', 28);
+        const payload = JSON.parse(String(reader.result ?? '')) as unknown;
+        const preparedPayload = this.prepareImportedQuiz(payload);
+        this.importProcessing.set(true);
+        this.importErrors.set([]);
+        this.importErrorDetailsOpen.set(false);
+        this.missingDictionaryValues.set([]);
+        this.setImportProgress('Validation du dictionnaire et création du quiz…', 48);
+        this.startImportWaitingProgress();
+        this.api.createQuiz(preparedPayload).subscribe({
+          next: (quiz) => {
+            this.finishImportProgress('Quiz importé.');
+            this.importProcessing.set(false);
+            this.missingDictionaryValues.set([]);
+            this.importModalOpen.set(false);
+            this.refresh();
+            this.showFeedback(`Le quiz "${quiz.title}" a été importé.`);
+          },
+          error: (error) => {
+            this.stopImportProgress('Import interrompu.');
+            this.importProcessing.set(false);
+            const errors = this.extractFieldErrors(error);
+            this.missingDictionaryValues.set(this.extractMissingDictionaryValues(errors));
+            this.importErrors.set(this.importErrorMessages(errors));
+          },
+        });
+      } catch {
+        this.stopImportProgress('');
+        this.importProcessing.set(false);
+        this.missingDictionaryValues.set([]);
+        this.importErrorDetailsOpen.set(false);
+        this.importErrors.set(['Le fichier sélectionné ne contient pas un JSON de quiz valide.']);
+      } finally {
+        input.value = '';
+      }
+    };
+    reader.onerror = () => {
+      this.stopImportProgress('');
+      this.importProcessing.set(false);
+      this.importErrorDetailsOpen.set(false);
+      this.importErrors.set(['Impossible de lire ce fichier.']);
+      input.value = '';
+    };
+    reader.readAsText(file);
+  }
+
+  addMissingValuesToSelectedDictionary(): void {
+    const dictionaryId = this.importDictionaryId();
+    const missingValues = this.missingDictionaryValues();
+    if (!dictionaryId) {
+      this.importErrorDetailsOpen.set(false);
+      this.importErrors.set(['Sélectionnez un dictionnaire œuvres avant d’ajouter les valeurs manquantes.']);
+      return;
+    }
+    if (missingValues.length === 0 || this.addingMissingDictionaryValues()) return;
+    this.importErrors.set([]);
+    this.importErrorDetailsOpen.set(false);
+    const dictionary = this.dictionaries().find((item) => item.id === dictionaryId);
+    if (!dictionary) {
+      this.importErrors.set(['Le dictionnaire sélectionné est introuvable.']);
+      return;
+    }
+
+    const mergedValues = Array.from(new Set([...dictionary.values, ...missingValues].map((value) => value.trim()).filter(Boolean)));
+    this.addingMissingDictionaryValues.set(true);
+    this.api.saveAnswerDictionary({ id: dictionary.id, name: dictionary.name, values: mergedValues }).subscribe({
+      next: (savedDictionary) => {
+        this.addingMissingDictionaryValues.set(false);
+        this.missingDictionaryValues.set([]);
+        this.importErrors.set([]);
+        this.loadDictionaries();
+        this.showFeedback(`${missingValues.length} valeur(s) ajoutée(s) au dictionnaire "${savedDictionary.name}".`);
+      },
+      error: () => {
+        this.addingMissingDictionaryValues.set(false);
+        this.importErrors.set(["Impossible d'ajouter les valeurs au dictionnaire sélectionné."]);
+      },
+    });
+  }
+
   cancelEdit(): void {
     if (!this.confirmDiscard()) return;
     this.resetForm();
@@ -891,8 +1206,10 @@ export class HomeComponent implements OnInit {
         this.showFeedback('Le dictionnaire a été enregistré.');
         this.dictionarySaving.set(false);
       },
-      error: () => {
-        this.message.set("Impossible d'enregistrer le dictionnaire.");
+      error: (error) => {
+        const errorMessage = this.apiErrorMessage(error, "Impossible d'enregistrer le dictionnaire.");
+        this.message.set(errorMessage);
+        this.showFeedback(errorMessage, 'error');
         this.dictionarySaving.set(false);
       },
     });
@@ -942,11 +1259,30 @@ export class HomeComponent implements OnInit {
     return window.confirm('Abandonner les modifications non enregistrées ?');
   }
 
-  private showFeedback(message: string, tone: 'success' | 'info' = 'success'): void {
+  feedbackTitle(): string {
+    if (this.feedbackTone() === 'error') return 'Action impossible';
+    return this.feedbackTone() === 'success' ? 'Action terminée' : 'Information';
+  }
+
+  private showFeedback(message: string, tone: 'success' | 'info' | 'error' = 'success'): void {
     if (this.feedbackTimer) clearTimeout(this.feedbackTimer);
     this.feedbackTone.set(tone);
     this.feedbackMessage.set(message);
     this.feedbackTimer = setTimeout(() => this.feedbackMessage.set(''), 4200);
+  }
+
+  private apiErrorMessage(error: unknown, fallback: string): string {
+    const response = error as { status?: number; error?: { error?: unknown; details?: unknown; message?: unknown } };
+    const apiError = response.error;
+    const details = typeof apiError?.details === 'string' ? apiError.details : undefined;
+    const message = typeof apiError?.message === 'string' ? apiError.message : undefined;
+    const label = typeof apiError?.error === 'string' ? apiError.error : undefined;
+    if (response.status === 413) {
+      return details
+        ? `Dictionnaire trop volumineux : ${details}`
+        : 'Dictionnaire trop volumineux. Le serveur a refusé la taille de la requête.';
+    }
+    return details ?? message ?? label ?? fallback;
   }
 
   private refresh(): void {
@@ -992,6 +1328,30 @@ export class HomeComponent implements OnInit {
       errors[key] = [...(errors[key] ?? []), issue.message];
     }
     return errors;
+  }
+
+  private importErrorMessages(errors: Record<string, string[]>): string[] {
+    const messages = Object.values(errors).flat();
+    if (messages.length === 0) return ["Impossible d'importer ce fichier JSON."];
+    return messages;
+  }
+
+  private extractMissingDictionaryValues(errors: Record<string, string[]>): string[] {
+    const missingValues = Object.values(errors)
+      .flat()
+      .flatMap((message) => Array.from(message.matchAll(/"([^"]+)"/g), (match) => match[1]?.trim() ?? ''))
+      .filter(Boolean);
+    return Array.from(new Set(missingValues));
+  }
+
+  private exportFileName(title: string): string {
+    const slug = title
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    return `${slug || 'quiz'}.json`;
   }
 
   private toDraftQuiz(quiz: Quiz): DraftQuiz {
@@ -1049,6 +1409,24 @@ export class HomeComponent implements OnInit {
         })),
       })),
     };
+  }
+
+  private prepareImportedQuiz(payload: unknown): unknown {
+    if (!payload || typeof payload !== 'object') throw new Error('Invalid quiz payload');
+    const quiz = structuredClone(payload) as {
+      rounds?: Array<{
+        works?: Array<{ answerMode?: string; dictionaryId?: string }>;
+      }>;
+    };
+    const dictionaryId = this.importDictionaryId();
+    if (dictionaryId) {
+      for (const round of quiz.rounds ?? []) {
+        for (const work of round.works ?? []) {
+          if (work.answerMode === 'autocomplete') work.dictionaryId = dictionaryId;
+        }
+      }
+    }
+    return quiz;
   }
 
   private answerPayload(target: DraftAnswerTarget, fallbackAnswer: string) {

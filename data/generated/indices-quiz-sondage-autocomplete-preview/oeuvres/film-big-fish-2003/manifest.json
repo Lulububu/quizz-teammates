@@ -1,0 +1,40 @@
+{
+  "title": "Big Fish",
+  "answer": "Big Fish (film, 2003, réalisateur : Tim Burton)",
+  "type": "film",
+  "year": "2003",
+  "attribution": "réalisateur : Tim Burton",
+  "occurrences": [
+    {
+      "round": 11,
+      "work": 3,
+      "person": "Lambert Emilie"
+    }
+  ],
+  "folder": "oeuvres/film-big-fish-2003",
+  "plannedClues": [
+    {
+      "label": "Plan discret",
+      "kind": "image",
+      "target": "assets/01-scene-discrete.jpg",
+      "instruction": "Screenshot d un decor, objet, silhouette ou plan non spoiler."
+    },
+    {
+      "label": "Plan reconnaissable",
+      "kind": "image",
+      "target": "assets/02-scene-reconnaissable.jpg",
+      "instruction": "Screenshot plus caracteristique, sans afficher le titre."
+    },
+    {
+      "label": "Extrait bande annonce",
+      "kind": "video",
+      "target": "assets/03-bande-annonce-10s.mp4",
+      "instruction": "Court extrait de bande annonce, sans titre incruste si possible."
+    }
+  ],
+  "processedAssets": [],
+  "notes": [
+    "Le script ne recupere pas automatiquement de contenus proteges.",
+    "Ajoutez vos fichiers source dans sources/ ou referencez une URL autorisee, puis uploadez les assets finaux dans l'application."
+  ]
+}

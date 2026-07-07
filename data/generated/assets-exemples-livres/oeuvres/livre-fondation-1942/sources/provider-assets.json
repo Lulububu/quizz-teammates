@@ -1,0 +1,24 @@
+[
+  {
+    "provider": "Open Library",
+    "kind": "image",
+    "url": "https://covers.openlibrary.org/b/id/13110557-L.jpg",
+    "localPath": "data/generated/assets-exemples-livres/oeuvres/livre-fondation-1942/sources/openlibrary-cover.jpg",
+    "note": "Couverture Open Library.",
+    "verificationRequired": true,
+    "openLibraryKey": "/works/OL32890850W",
+    "title": "Prélude à Fondation",
+    "authorName": [
+      "Isaac Asimov"
+    ],
+    "firstPublishYear": 1989
+  },
+  {
+    "provider": "Open Library",
+    "kind": "text",
+    "url": "https://openlibrary.org/works/OL32890850W",
+    "localPath": "data/generated/assets-exemples-livres/oeuvres/livre-fondation-1942/assets/indices-livre.txt",
+    "note": "Fichier texte avec indices de travail.",
+    "verificationRequired": true
+  }
+]

@@ -4,6 +4,8 @@ dist/
 data/*
 !data/dictionnaires/
 !data/dictionnaires/*.txt
+!data/generated/
+!data/generated/*
 npm-debug.log*
 .DS_Store
 .env

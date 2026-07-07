@@ -1,0 +1,68 @@
+{
+  "title": "1984",
+  "answer": "1984 (livre, 1948, auteur : George Orwell)",
+  "type": "livre",
+  "year": "1948",
+  "attribution": "auteur : George Orwell",
+  "occurrences": [
+    {
+      "round": 5,
+      "work": 3,
+      "person": "Fabien"
+    }
+  ],
+  "folder": "oeuvres/livre-1984-1948",
+  "plannedClues": [
+    {
+      "label": "Citation courte",
+      "kind": "text",
+      "content": "",
+      "instruction": "Court extrait connu, a limiter a une phrase breve."
+    },
+    {
+      "label": "Indice narratif",
+      "kind": "text",
+      "content": "",
+      "instruction": "Theme, lieu, objet ou situation centrale sans donner le titre."
+    },
+    {
+      "label": "Indice auteur ou epoque",
+      "kind": "text",
+      "content": "",
+      "instruction": "Auteur, mouvement, epoque ou contexte, selon la difficulte voulue."
+    }
+  ],
+  "downloadedSources": [],
+  "webSuggestions": [],
+  "providerAssets": [
+    {
+      "provider": "Open Library",
+      "kind": "image",
+      "url": "https://covers.openlibrary.org/b/id/8745958-L.jpg",
+      "localPath": "data/generated/assets-exemples-livres/oeuvres/livre-1984-1948/sources/openlibrary-cover.jpg",
+      "note": "Couverture Open Library.",
+      "verificationRequired": true,
+      "openLibraryKey": "/works/OL11326416W",
+      "title": "1984 (adaptation)",
+      "authorName": [
+        "Michael Dean",
+        "George Orwell"
+      ],
+      "firstPublishYear": 2003
+    },
+    {
+      "provider": "Open Library",
+      "kind": "text",
+      "url": "https://openlibrary.org/works/OL11326416W",
+      "localPath": "data/generated/assets-exemples-livres/oeuvres/livre-1984-1948/assets/indices-livre.txt",
+      "note": "Fichier texte avec indices de travail.",
+      "verificationRequired": true
+    }
+  ],
+  "processedAssets": [],
+  "notes": [
+    "Le script ne recupere pas automatiquement de contenus proteges.",
+    "Assets telecharges depuis des fournisseurs API quand disponibles.",
+    "Verifiez toujours la pertinence, la licence et l'attribution avant d'utiliser une source dans le quiz."
+  ]
+}

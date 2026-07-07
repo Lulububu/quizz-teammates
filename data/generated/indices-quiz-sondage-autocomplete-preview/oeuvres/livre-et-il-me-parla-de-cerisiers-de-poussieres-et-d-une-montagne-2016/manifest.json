@@ -1,0 +1,40 @@
+{
+  "title": "Et il me parla de cerisiers, de poussières et d'une montagne",
+  "answer": "Et il me parla de cerisiers, de poussières et d'une montagne (livre, 2016, auteur : Antoine Paje)",
+  "type": "livre",
+  "year": "2016",
+  "attribution": "auteur : Antoine Paje",
+  "occurrences": [
+    {
+      "round": 16,
+      "work": 3,
+      "person": "Bonnefont Julien"
+    }
+  ],
+  "folder": "oeuvres/livre-et-il-me-parla-de-cerisiers-de-poussieres-et-d-une-montagne-2016",
+  "plannedClues": [
+    {
+      "label": "Citation courte",
+      "kind": "text",
+      "content": "",
+      "instruction": "Court extrait connu, a limiter a une phrase breve."
+    },
+    {
+      "label": "Indice narratif",
+      "kind": "text",
+      "content": "",
+      "instruction": "Theme, lieu, objet ou situation centrale sans donner le titre."
+    },
+    {
+      "label": "Indice auteur ou epoque",
+      "kind": "text",
+      "content": "",
+      "instruction": "Auteur, mouvement, epoque ou contexte, selon la difficulte voulue."
+    }
+  ],
+  "processedAssets": [],
+  "notes": [
+    "Le script ne recupere pas automatiquement de contenus proteges.",
+    "Ajoutez vos fichiers source dans sources/ ou referencez une URL autorisee, puis uploadez les assets finaux dans l'application."
+  ]
+}

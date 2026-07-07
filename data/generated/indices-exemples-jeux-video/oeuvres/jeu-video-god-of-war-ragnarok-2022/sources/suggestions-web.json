@@ -1,0 +1,16 @@
+[
+  {
+    "provider": "jeuxvideo.com",
+    "kind": "search",
+    "url": "https://www.jeuxvideo.com/recherche.php?q=God%20of%20War%20Ragnar%C3%B6k%202022",
+    "note": "Recherche jeuxvideo.com pour page, images ou videos du jeu.",
+    "verificationRequired": true
+  },
+  {
+    "provider": "jeuxvideo.com",
+    "kind": "google-search",
+    "url": "https://www.google.com/search?q=site%3Ajeuxvideo.com+God%20of%20War%20Ragnar%C3%B6k%202022",
+    "note": "Recherche ciblee si la recherche interne ne suffit pas.",
+    "verificationRequired": true
+  }
+]

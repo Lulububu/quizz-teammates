@@ -1,0 +1,40 @@
+{
+  "title": "Les Cahiers d'Esther",
+  "answer": "Les Cahiers d'Esther (livre, 2016, auteur : Riad Sattouf)",
+  "type": "livre",
+  "year": "2016",
+  "attribution": "auteur : Riad Sattouf",
+  "occurrences": [
+    {
+      "round": 13,
+      "work": 3,
+      "person": "Stohr Valérie"
+    }
+  ],
+  "folder": "oeuvres/livre-les-cahiers-d-esther-2016",
+  "plannedClues": [
+    {
+      "label": "Citation courte",
+      "kind": "text",
+      "content": "",
+      "instruction": "Court extrait connu, a limiter a une phrase breve."
+    },
+    {
+      "label": "Indice narratif",
+      "kind": "text",
+      "content": "",
+      "instruction": "Theme, lieu, objet ou situation centrale sans donner le titre."
+    },
+    {
+      "label": "Indice auteur ou epoque",
+      "kind": "text",
+      "content": "",
+      "instruction": "Auteur, mouvement, epoque ou contexte, selon la difficulte voulue."
+    }
+  ],
+  "processedAssets": [],
+  "notes": [
+    "Le script ne recupere pas automatiquement de contenus proteges.",
+    "Ajoutez vos fichiers source dans sources/ ou referencez une URL autorisee, puis uploadez les assets finaux dans l'application."
+  ]
+}

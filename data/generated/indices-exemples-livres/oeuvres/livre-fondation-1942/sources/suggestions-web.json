@@ -1,0 +1,16 @@
+[
+  {
+    "provider": "Google Books",
+    "kind": "search",
+    "url": "https://www.google.com/search?q=site%3Abooks.google.com+Fondation%20auteur%20%3A%20Isaac%20Asimov",
+    "note": "Recherche de notice ou apercu livre.",
+    "verificationRequired": true
+  },
+  {
+    "provider": "Wikisource",
+    "kind": "search",
+    "url": "https://www.google.com/search?q=site%3Afr.wikisource.org+Fondation%20auteur%20%3A%20Isaac%20Asimov",
+    "note": "Recherche texte libre si l oeuvre est dans le domaine public.",
+    "verificationRequired": true
+  }
+]
