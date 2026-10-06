@@ -1,0 +1,9 @@
+{
+  "name": "quizz-teammates-performance",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Artillery runner for game load tests",
+  "dependencies": {
+    "artillery": "2.0.21"
+  }
+}

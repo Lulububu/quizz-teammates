@@ -1,0 +1,11 @@
+config:
+  target: http://localhost:3000
+  phases:
+    - duration: 8
+      arrivalCount: 30
+      name: Joueurs rejoignant le salon
+  processor: ./performance-artillery-player.mjs
+scenarios:
+  - name: Partie complete
+    flow:
+      - function: runPlayer

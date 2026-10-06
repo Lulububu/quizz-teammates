@@ -49,6 +49,33 @@ Le fichier `render.yaml` decrit un service web gratuit qui construit Angular + E
 
 Sur Render, ajoutez les variables Firebase et Cloudinary listees dans `.env.example`. Dans Firebase Authentication, ajoutez aussi le domaine Render dans les domaines autorises.
 
+### Test de charge du jeu (Render)
+
+`npm run perf:game` utilise **Artillery** pour lancer 30 joueurs virtuels et mesurer les temps de connexion, d'entree, d'envoi et de resultat. Un organisateur automatise cree un salon, lance le quiz et avance apres chaque revelation. Les joueurs verifient la correction, les points, les resultats et le classement final. Chaque execution cree un salon et des ecritures Firestore : utilisez un quiz de test avec au moins une manche sur le deploiement cible. Lancez le test depuis votre ordinateur, contre l'URL Render, pas sur le service Render lui-meme.
+
+Installez l'outil de charge une seule fois avec `npm run perf:setup` (Node.js 20 ou plus). Il est isole dans `performance/` et n'est pas installe par la construction du site sur Render.
+Vous pouvez vérifier l'installation sans Firebase ni Render avec `npm run perf:smoke` ; ce contrôle local utilise deux joueurs et un serveur simulé.
+Pour un lancement depuis ce workspace, vous pouvez aussi placer les trois variables `PERF_BASE_URL`, `PERF_QUIZ_ID` et `PERF_ADMIN_TOKEN` dans `.env.perf.local` : le contrôleur charge ce fichier automatiquement et Git l'ignore. `PERF_ADMIN_TOKEN` accepte le jeton seul ou précédé de `Bearer `.
+
+```bash
+export PERF_BASE_URL=https://votre-service.onrender.com
+export PERF_QUIZ_ID=identifiant-du-quiz-de-test
+export PERF_ADMIN_TOKEN=jeton-id-firebase-du-proprietaire
+export PERF_REPORT=/tmp/rapport-jeu-artillery.json
+npm run perf:game
+```
+
+Pour comparer une charge normale et des reponses plus etalees dans le temps :
+
+```bash
+PERF_PLAYERS=30 PERF_LAG_MS=800 PERF_REPORT=/tmp/rapport-jeu-standard.json npm run perf:game
+PERF_PLAYERS=30 PERF_LAG_MS=3000 PERF_REPORT=/tmp/rapport-jeu-lent.json npm run perf:game
+```
+
+Le jeton est le **Firebase ID token** du compte proprietaire du quiz, et non une cle API Firebase. Une fois connecte a l'application, il est consultable dans les outils de developpement du navigateur, sous Application > IndexedDB > `firebaseLocalStorageDb` > `firebaseLocalStorage` > `stsTokenManager.accessToken`. C'est un secret temporaire : ne le placez pas dans le depot et renouvelez-le s'il expire. Les joueurs du test rejoignent le salon sans compte. Artillery enregistre le rapport JSON indique par `PERF_REPORT` et donne un code de sortie non nul si un joueur ou un controle metier echoue. Le scenario detaille precedent reste disponible avec `npm run perf:game:consistency` (options `--players`, `--lag-ms`, `--report`). Le delai d'envoi simule une latence et des temps de reaction variables ; pour mesurer l'effet d'une mauvaise connexion reelle, executez aussi le test depuis un reseau distant ou avec un proxy de limitation reseau. Aucun des deux tests ne mesure le rendu graphique dans un navigateur.
+
+Le scenario d'autocompletion recherche une valeur dans les suggestions visibles, la selectionne, puis l'envoie comme le ferait le joueur. Les mauvaises reponses sont elles aussi choisies dans le dictionnaire. L'organisateur attend que toutes les reponses soient comptabilisees avant de passer au resultat suivant, qui reste affiche 3 secondes (`PERF_REVEAL_MS` pour ajuster). Le seuil par defaut du temps de reception du resultat est de 10 secondes au p95 (`PERF_RESULT_P95_MAX_MS` pour l'ajuster). Le rapport doit aussi compter 30 joueurs virtuels termines, aucune erreur et un resultat pour chaque joueur et chaque question. Ce test Socket.IO ne simule pas un clic dans un navigateur et ne mesure pas le rendu graphique.
+
 ## Thèmes visuels
 
 Le thème actif est choisi côté serveur avec la variable `APP_THEME` :

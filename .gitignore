@@ -9,3 +9,4 @@ data/*
 npm-debug.log*
 .DS_Store
 .env
+.env.perf.local

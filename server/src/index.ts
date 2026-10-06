@@ -19,7 +19,6 @@ import {
   deleteAnswerDictionary,
   deleteQuiz,
   duplicateQuiz,
-  findPlayerByNickname,
   getAnswerCount,
   getAnswerStats,
   getAnswerDictionaryValues,
@@ -33,7 +32,6 @@ import {
   getQuiz,
   getQuizWithAnswers,
   getRoomByCode,
-  getSelectedOption,
   hasAnswered,
   listAnswerDictionaries,
   listQuizzes,
@@ -48,6 +46,7 @@ import {
   type AnswerMode,
   type QuestionReference,
   type QuizInput,
+  type RoomRow,
 } from './repositories.js';
 
 const app = express();
@@ -65,6 +64,19 @@ const io = new Server(server, {
 });
 const questionDurationMs = 20_000;
 const revealTimers = new Map<string, NodeJS.Timeout>();
+const roomUpdateTimers = new Map<string, NodeJS.Timeout>();
+const roomStateRevisions = new Map<string, number>();
+const roomStateEmissions = new Map<string, number>();
+const revealingRooms = new Set<string>();
+const answerUpdates = new Map<string, {
+  questionIndex: number;
+  roundId: string;
+  targetType: 'work' | 'person';
+  targetId: string;
+  timer?: NodeJS.Timeout;
+  running: boolean;
+  dirty: boolean;
+}>();
 const jsonBodyLimit = process.env.JSON_BODY_LIMIT ?? '25mb';
 
 app.use(cors());
@@ -293,7 +305,6 @@ app.get('/api/rooms/:code', asyncRoute(async (req, res) => {
   const joinUrl = `${req.protocol}://${req.get('host')}/join/${room.code}`;
   res.json({
     ...room,
-    leaderboard: await getLeaderboard(room.code),
     gameState: await getGameState(room.code, false),
     qrCodeDataUrl: await QRCode.toDataURL(joinUrl),
   });
@@ -363,16 +374,25 @@ io.on('connection', (socket) => {
       callback?.({ ok: false, error: 'Le pseudo doit contenir entre 2 et 24 caractères' });
       return;
     }
-    if (await findPlayerByNickname(room.code, nickname)) {
+    const existingPlayers = await getPlayers(room.code);
+    if (existingPlayers.some((player) => player.nickname.trim().toLocaleLowerCase('fr-FR') === nickname.toLocaleLowerCase('fr-FR'))) {
       callback?.({ ok: false, error: 'Ce pseudo est déjà utilisé dans ce salon' });
       return;
     }
 
-    const player = await addPlayer(room.code, nickname);
     socket.join(room.code);
+    let player;
+    try {
+      player = await addPlayer(room.code, nickname, existingPlayers);
+    } catch (error) {
+      socket.leave(room.code);
+      console.error('Inscription du joueur impossible', error);
+      callback?.({ ok: false, error: 'Impossible de rejoindre le salon' });
+      return;
+    }
     socket.join(playerChannel(player.id));
-    await emitGameState(room.code, false);
-    callback?.({ ok: true, playerId: player.id, player, room, gameState: await getGameState(room.code, false) });
+    callback?.({ ok: true, playerId: player.id, player, room, gameState: await getLobbyGameState(room, existingPlayers.length + 1) });
+    scheduleRoomState(room.code);
   });
 
   socket.on('resume-player', async (payload: { code: string; playerId: string }, callback) => {
@@ -504,7 +524,7 @@ io.on('connection', (socket) => {
       callback,
     ) => {
       const room = await getRoomByCode(payload.code);
-      const activeQuestion = room ? await getActiveQuestion(room, true) : undefined;
+      const activeQuestion = room ? await getActiveQuestion(room, true, false) : undefined;
       if (!room || !activeQuestion) {
         callback?.({ ok: false, error: 'Salon introuvable' });
         return;
@@ -526,17 +546,12 @@ io.on('connection', (socket) => {
         return;
       }
 
-      const selectedOption = await getSelectedOption(
-        room.quiz_id,
-        payload.roundId,
-        payload.targetType,
-        payload.targetId,
-        payload.optionId ?? '',
-      );
-
       const submittedValue = payload.value?.trim() ?? '';
       const correctOption = activeQuestion.correctOption;
       const isAutocomplete = activeQuestion.answerMode === 'autocomplete';
+      const selectedOption = isAutocomplete
+        ? undefined
+        : activeQuestion.options.find((option) => option.id === payload.optionId);
 
       if (!isAutocomplete && !selectedOption) {
         callback?.({ ok: false, error: 'Option introuvable' });
@@ -563,7 +578,7 @@ io.on('connection', (socket) => {
 
       const isCorrect = isAutocomplete
         ? normalizeAnswer(submittedValue) === normalizeAnswer(correctOption?.label ?? '')
-        : selectedOption?.isCorrect === 1;
+        : selectedOption?.id === correctOption?.id;
       const points = isCorrect ? calculatePoints(payload.targetType, room.question_started_at, room.question_ends_at) : 0;
 
       await recordAnswer(room.code, {
@@ -577,14 +592,95 @@ io.on('connection', (socket) => {
         answered_at: new Date().toISOString(),
       });
 
-      await emitGameState(room.code);
-      if (await allPlayersAnswered(room.code, payload.roundId, payload.targetType, payload.targetId)) {
-        await revealQuestion(room.code);
-      }
       callback?.({ ok: true, isCorrect, points });
+      scheduleAnswerUpdate(room.code, room.current_question_index, payload.roundId, payload.targetType, payload.targetId);
     },
   );
 });
+
+async function getLobbyGameState(room: RoomRow, playerCount: number) {
+  const quiz = room.question_order ? undefined : await getQuiz(room.quiz_id);
+  return {
+    status: 'lobby' as const,
+    currentQuestionIndex: room.current_question_index,
+    totalQuestions: room.question_order?.length ?? getQuestionCount(quiz as QuizWithRounds | undefined),
+    questionStartedAt: null,
+    questionEndsAt: null,
+    finalRevealStartedAt: null,
+    playerCount,
+    answerCount: 0,
+    answerStats: undefined,
+    leaderboard: [],
+    topLeaderboard: [],
+    players: [],
+    hidePlayerNames: room.hide_player_names ?? quiz?.hide_player_names ?? false,
+    activeQuestion: undefined,
+  };
+}
+
+function invalidateRoomState(code: string): void {
+  roomStateRevisions.set(code, (roomStateRevisions.get(code) ?? 0) + 1);
+  const roomTimer = roomUpdateTimers.get(code);
+  if (roomTimer) clearTimeout(roomTimer);
+  roomUpdateTimers.delete(code);
+  const answerUpdate = answerUpdates.get(code);
+  if (answerUpdate?.timer) clearTimeout(answerUpdate.timer);
+  answerUpdates.delete(code);
+}
+
+function scheduleRoomState(code: string): void {
+  if (roomUpdateTimers.has(code)) return;
+  roomUpdateTimers.set(code, setTimeout(() => {
+    roomUpdateTimers.delete(code);
+    void emitGameState(code).catch(console.error);
+  }, 150));
+}
+
+function scheduleAnswerUpdate(
+  code: string,
+  questionIndex: number,
+  roundId: string,
+  targetType: 'work' | 'person',
+  targetId: string,
+): void {
+  let update = answerUpdates.get(code);
+  if (!update || update.questionIndex !== questionIndex) {
+    update = { questionIndex, roundId, targetType, targetId, running: false, dirty: false };
+    answerUpdates.set(code, update);
+  }
+  update.dirty = true;
+  if (update.running || update.timer) return;
+  const pending = update;
+  pending.timer = setTimeout(() => {
+    pending.timer = undefined;
+    void flushAnswerUpdate(code, pending);
+  }, 150);
+}
+
+async function flushAnswerUpdate(code: string, update: NonNullable<ReturnType<typeof answerUpdates.get>>): Promise<void> {
+  update.running = true;
+  update.dirty = false;
+  try {
+    const room = await getRoomByCode(code);
+    if (room?.status !== 'question' || room.current_question_index !== update.questionIndex) return;
+    if (await allPlayersAnswered(code, update.roundId, update.targetType, update.targetId)) {
+      await revealQuestion(code);
+    } else {
+      await emitGameState(code);
+    }
+  } catch (error) {
+    console.error('Mise à jour des réponses impossible', error);
+  } finally {
+    update.running = false;
+    if (answerUpdates.get(code) !== update) return;
+    if (update.dirty) {
+      answerUpdates.delete(code);
+      scheduleAnswerUpdate(code, update.questionIndex, update.roundId, update.targetType, update.targetId);
+    } else {
+      answerUpdates.delete(code);
+    }
+  }
+}
 
 async function activateQuestion(code: string, questionIndex: number) {
   const room = await getRoomByCode(code);
@@ -594,6 +690,7 @@ async function activateQuestion(code: string, questionIndex: number) {
   const quiz = (await getQuiz(room.quiz_id)) as QuizWithRounds | undefined;
   const questionCount = room.question_order?.length ?? getQuestionCount(quiz);
   if (questionIndex >= questionCount) {
+    invalidateRoomState(room.code);
     clearRevealTimer(room.code);
     await updateRoomQuestion(room.code, questionIndex, new Date().toISOString(), null, 'finished');
     await emitGameState(room.code);
@@ -602,13 +699,14 @@ async function activateQuestion(code: string, questionIndex: number) {
 
   const startedAt = new Date();
   const endsAt = new Date(startedAt.getTime() + questionDurationMs);
+  invalidateRoomState(room.code);
   await updateRoomQuestion(room.code, questionIndex, startedAt.toISOString(), endsAt.toISOString());
 
   clearRevealTimer(room.code);
   revealTimers.set(
     room.code,
     setTimeout(() => {
-      void revealQuestion(room.code);
+      void revealQuestion(room.code).catch(console.error);
     }, questionDurationMs),
   );
   await emitGameState(room.code, true);
@@ -616,17 +714,41 @@ async function activateQuestion(code: string, questionIndex: number) {
 }
 
 async function revealQuestion(code: string): Promise<void> {
-  const room = await getRoomByCode(code);
-  if (!room || room.status !== 'question') return;
-  await updateRoomStatus(room.code, 'reveal');
-  clearRevealTimer(code);
-  await emitPlayerResults(code);
-  await emitGameState(code, false);
+  if (revealingRooms.has(code)) return;
+  revealingRooms.add(code);
+  try {
+    const room = await getRoomByCode(code);
+    if (!room || room.status !== 'question') return;
+    invalidateRoomState(room.code);
+    await updateRoomStatus(room.code, 'reveal');
+    clearRevealTimer(code);
+    await emitPlayerResults(code);
+    await emitGameState(code, false);
+  } finally {
+    revealingRooms.delete(code);
+  }
 }
 
 async function emitGameState(code: string, includeSuggestions = false): Promise<void> {
-  io.to(code).emit('game-state', await getGameState(code, false, includeSuggestions));
-  io.to(hostChannel(code)).emit('host-game-state', await getGameState(code, true, false));
+  const revision = roomStateRevisions.get(code) ?? 0;
+  const emission = (roomStateEmissions.get(code) ?? 0) + 1;
+  roomStateEmissions.set(code, emission);
+  const hostState = await getGameState(code, true, includeSuggestions);
+  if (!hostState || revision !== (roomStateRevisions.get(code) ?? 0) || emission !== roomStateEmissions.get(code)) return;
+  const playerState = {
+    ...hostState,
+    leaderboard: hostState.status === 'finished' ? hostState.leaderboard : [],
+    topLeaderboard: [],
+    players: [],
+    activeQuestion: hostState.activeQuestion
+      ? { ...hostState.activeQuestion, correctOption: hostState.status === 'question' ? undefined : hostState.activeQuestion.correctOption }
+      : undefined,
+  };
+  const hostQuestion = hostState.activeQuestion
+    ? { ...hostState.activeQuestion, suggestions: [] }
+    : undefined;
+  io.to(code).emit('game-state', playerState);
+  io.to(hostChannel(code)).emit('host-game-state', { ...hostState, activeQuestion: hostQuestion });
 }
 
 function clearRevealTimer(code: string): void {
@@ -638,9 +760,17 @@ function clearRevealTimer(code: string): void {
 async function getGameState(code: string, includeAnswer: boolean, includeSuggestions = true) {
   const room = await getRoomByCode(code);
   if (!room) return undefined;
-  const activeQuestion = await getActiveQuestion(room, includeAnswer, includeSuggestions);
-  const quiz = (await getQuiz(room.quiz_id)) as QuizWithRounds | undefined;
-  const rawLeaderboard = room.status === 'finished' || includeAnswer ? await getLeaderboard(room.code) : [];
+  const [quiz, rawLeaderboard] = await Promise.all([
+    includeAnswer || room.status === 'reveal' || room.status === 'finished'
+      ? getQuizWithAnswers(room.quiz_id)
+      : getQuiz(room.quiz_id),
+    room.status === 'finished' || includeAnswer ? getLeaderboard(room.code) : Promise.resolve([]),
+  ]) as [QuizWithRounds | undefined, Awaited<ReturnType<typeof getLeaderboard>>];
+  const activeQuestionPromise = getActiveQuestion(room, includeAnswer, includeSuggestions, quiz);
+  const playerCountPromise = room.status === 'finished' || includeAnswer
+    ? Promise.resolve(rawLeaderboard.length)
+    : getPlayerCount(room.code);
+  const [activeQuestion, playerCount] = await Promise.all([activeQuestionPromise, playerCountPromise]);
   const hidePlayerNames = room.hide_player_names ?? quiz?.hide_player_names ?? false;
   const leaderboard = hidePlayerNames
     ? anonymizeLeaderboard(rawLeaderboard, includeAnswer || room.status === 'finished')
@@ -655,12 +785,12 @@ async function getGameState(code: string, includeAnswer: boolean, includeSuggest
     questionStartedAt: room.question_started_at,
     questionEndsAt: room.question_ends_at,
     finalRevealStartedAt: room.status === 'finished' ? room.question_started_at : null,
-    playerCount: await getPlayerCount(room.code),
+    playerCount,
     answerCount: answerStats?.total ?? 0,
     answerStats,
     leaderboard,
     topLeaderboard: includeAnswer ? leaderboard.slice(0, 5) : [],
-    players: includeAnswer ? await getPlayers(room.code) : [],
+    players: includeAnswer ? [...rawLeaderboard].sort((a, b) => (a.joined_at ?? '').localeCompare(b.joined_at ?? '')) : [],
     hidePlayerNames,
     activeQuestion,
   };
@@ -674,10 +804,11 @@ async function getActiveQuestion(
     question_order?: QuestionReference[];
   },
   includeAnswer: boolean,
-  includeSuggestions = true,
+  includeSuggestions = false,
+  providedQuiz?: QuizWithRounds,
 ) {
   const shouldIncludeAnswer = includeAnswer || room.status === 'reveal' || room.status === 'finished';
-  const quiz = (await (shouldIncludeAnswer ? getQuizWithAnswers(room.quiz_id) : getQuiz(room.quiz_id))) as
+  const quiz = (providedQuiz ?? await (shouldIncludeAnswer ? getQuizWithAnswers(room.quiz_id) : getQuiz(room.quiz_id))) as
     | QuizWithRounds
     | undefined;
   if (!quiz) return undefined;
@@ -894,28 +1025,30 @@ async function allPlayersAnswered(
   targetType: 'work' | 'person',
   targetId: string,
 ): Promise<boolean> {
-  const playerCount = await getPlayerCount(code);
+  const [playerCount, answerCount] = await Promise.all([
+    getPlayerCount(code),
+    getAnswerCount(code, roundId, targetType, targetId),
+  ]);
   if (playerCount === 0) return false;
-  return (await getAnswerCount(code, roundId, targetType, targetId)) >= playerCount;
+  return answerCount >= playerCount;
 }
 
 async function emitPlayerResults(code: string): Promise<void> {
   const room = await getRoomByCode(code);
-  const question = room ? await getActiveQuestion(room, true) : undefined;
+  const question = room ? await getActiveQuestion(room, true, false) : undefined;
   if (!room || !question) return;
 
   const leaderboard = await getLeaderboard(room.code);
-  const players = await getPlayers(room.code);
-  for (const player of players) {
+  await Promise.all(leaderboard.map(async (player, index) => {
     const answer = await getPlayerAnswer(room.code, player.id, question.roundId, question.targetType, question.targetId);
     io.to(playerChannel(player.id)).emit('player-result', {
       isCorrect: answer?.isCorrect === 1,
       points: answer?.points ?? 0,
-      rank: leaderboard.findIndex((entry) => entry.id === player.id) + 1,
+      rank: index + 1,
       totalPlayers: leaderboard.length,
-      totalScore: leaderboard.find((entry) => entry.id === player.id)?.score ?? 0,
+      totalScore: player.score,
     });
-  }
+  }));
 }
 
 function hostChannel(code: string): string {

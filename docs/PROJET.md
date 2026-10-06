@@ -124,12 +124,14 @@ La mecanique differenciee du quiz est la suivante : pour chaque manche, les joue
 - [x] Migration de SQLite vers Firestore pour un deploiement Render sans disque persistant.
 - [x] Configuration Render via `render.yaml`.
 - [x] Upload signe et stockage Cloudinary des indices image, audio et video.
+- [x] Optimisation du jeu temps reel : diffusions regroupees, lectures Firestore evitees et accuse de reponse apres enregistrement.
 - [ ] Interface avancee d'animation question par question.
 - [ ] Tests automatises.
 
 ## Validation technique
 
 - `npm run typecheck` passe.
+- Test de charge local Artillery apres optimisation : 30 joueurs, 4 questions, 120 resultats recus, aucun echec. Accuse de reponse p95 1,4 s et resultat p95 2,6 s. Le quiz temporaire a ete supprime. Une validation sur Render reste a faire apres deploiement.
 - Le serveur Express tourne sur `http://localhost:3000`.
 - Le salon de demo QCM cree pendant la validation a le code `1WQLMA`.
 - Le parcours teste : creation d'un quiz QCM, creation d'un salon, lancement de partie, reponse QCM correcte, scoring, revelation automatique apres timer et affichage animateur dans le navigateur integre.

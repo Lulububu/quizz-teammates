@@ -373,9 +373,9 @@ export async function updateRoomPlayerNamesVisibility(code: string, hidePlayerNa
   await rooms.doc(code).update({ hide_player_names: hidePlayerNames });
 }
 
-export async function addPlayer(code: string, nickname: string): Promise<PlayerScore> {
+export async function addPlayer(code: string, nickname: string, existingPlayers?: PlayerScore[]): Promise<PlayerScore> {
   const id = randomUUID();
-  const avatar = await getAvailablePlayerAvatar(code);
+  const avatar = await getAvailablePlayerAvatar(code, existingPlayers);
   const player = {
     id,
     nickname,
@@ -620,9 +620,9 @@ function quizFromDoc(id: string, data: FirebaseFirestore.DocumentData, includeCo
   };
 }
 
-async function getAvailablePlayerAvatar(code: string): Promise<string> {
-  const snapshot = await rooms.doc(code).collection('players').get();
-  const used = new Set(snapshot.docs.map((doc) => String(doc.data().avatar ?? '')));
+async function getAvailablePlayerAvatar(code: string, existingPlayers?: PlayerScore[]): Promise<string> {
+  const players = existingPlayers ?? await getPlayers(code);
+  const used = new Set(players.map((player) => player.avatar));
   const available = PLAYER_AVATARS.filter((avatar) => !used.has(avatar));
   const pool = available.length > 0 ? available : PLAYER_AVATARS;
   return pool[Math.floor(Math.random() * pool.length)];
