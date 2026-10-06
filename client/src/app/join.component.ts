@@ -5,6 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ApiService } from './api.service';
 import { AnswerSearchComponent } from './answer-search.component';
 import { finalPlayerName, getFinalRevealState } from './final-reveal';
+import { visibleClueCount } from './clue-timing';
 import { Clue, GameState, Room } from './types';
 
 @Component({
@@ -422,7 +423,7 @@ export class JoinComponent implements OnInit, OnDestroy {
   visibleClues(state: GameState): Clue[] {
     const clues = state.activeQuestion?.clues ?? [];
     if (state.status !== 'question') return clues;
-    return clues.slice(0, this.visibleClueCount(state, clues.length));
+    return clues.slice(0, visibleClueCount(state, this.now(), clues.length));
   }
 
   isImageUrl(value: string): boolean {
@@ -467,13 +468,6 @@ export class JoinComponent implements OnInit, OnDestroy {
     this.messageIsError.set(error);
   }
 
-  private visibleClueCount(state: GameState, clueCount: number): number {
-    if (clueCount <= 1 || !state.questionStartedAt || !state.questionEndsAt) return Math.max(1, clueCount);
-    const started = new Date(state.questionStartedAt).getTime();
-    const ends = new Date(state.questionEndsAt).getTime();
-    const interval = Math.max(1, ends - started) / clueCount;
-    return Math.max(1, Math.min(clueCount, Math.floor(Math.max(0, this.now() - started) / interval) + 1));
-  }
 }
 
 function isLikelyImage(value: string): boolean {

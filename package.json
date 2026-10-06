@@ -21,6 +21,7 @@
     "perf:game:consistency": "node scripts/performance-game.mjs",
     "perf:setup": "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm --prefix performance ci",
     "perf:smoke": "node scripts/performance-artillery-smoke.mjs",
+    "test:timing": "tsx --test tests/game-timing.test.ts",
     "typecheck": "tsc -p server/tsconfig.json --noEmit && npx --no-install ng build --configuration development",
     "lint": "npm run typecheck"
   },

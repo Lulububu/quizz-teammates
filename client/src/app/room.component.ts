@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from './api.service';
+import { visibleClueCount } from './clue-timing';
 import { finalPlayerName, getFinalRevealState } from './final-reveal';
 import { Clue, GameState, Room } from './types';
 
@@ -61,7 +62,11 @@ import { Clue, GameState, Room } from './types';
             }
           </section>
         }
-        <section class="final-ranking">
+        <section
+          class="final-ranking"
+          [class.ranking-pending]="!finalReveal().complete"
+          [attr.aria-hidden]="!finalReveal().complete"
+        >
           <h2>Classement complet</h2>
           <ol class="leaderboard">
             @for (player of api.gameState()?.leaderboard || []; track player.id; let index = $index) {
@@ -203,7 +208,11 @@ import { Clue, GameState, Room } from './types';
                   }
                 </ol>
                 <button type="button" (click)="nextQuestion()" [disabled]="commandPending()">
-                  {{ commandPending() ? 'Chargement…' : 'Question suivante' }}
+                  {{ commandPending()
+                    ? 'Chargement…'
+                    : state.currentQuestionIndex + 1 >= state.totalQuestions
+                      ? 'Voir les résultats'
+                      : 'Question suivante' }}
                 </button>
               }
             </article>
@@ -377,7 +386,7 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
   visibleClues(state: GameState): Clue[] {
     const clues = state.activeQuestion?.clues ?? [];
     if (state.status !== 'question') return clues;
-    return clues.slice(0, this.visibleClueCount(state, clues.length));
+    return clues.slice(0, visibleClueCount(state, this.now(), clues.length));
   }
 
   previousClues(state: GameState): Clue[] {
@@ -416,13 +425,6 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  private visibleClueCount(state: GameState, clueCount: number): number {
-    if (clueCount <= 1 || !state.questionStartedAt || !state.questionEndsAt) return Math.max(1, clueCount);
-    const started = new Date(state.questionStartedAt).getTime();
-    const ends = new Date(state.questionEndsAt).getTime();
-    const interval = Math.max(1, ends - started) / clueCount;
-    return Math.max(1, Math.min(clueCount, Math.floor(Math.max(0, this.now() - started) / interval) + 1));
-  }
 }
 
 function isLikelyImage(value: string): boolean {

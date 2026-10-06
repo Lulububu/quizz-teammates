@@ -62,8 +62,11 @@ const io = new Server(server, {
     origin: true,
   },
 });
-const questionDurationMs = 20_000;
+const questionDurationMs = 40_000;
 const revealTimers = new Map<string, NodeJS.Timeout>();
+const dictionaryCache = new Map<string, { values: Promise<string[]>; expiresAt: number }>();
+const dictionaryCacheTtlMs = 15 * 60_000;
+const dictionaryCacheLimit = 3;
 const roomUpdateTimers = new Map<string, NodeJS.Timeout>();
 const roomStateRevisions = new Map<string, number>();
 const roomStateEmissions = new Map<string, number>();
@@ -188,6 +191,7 @@ app.post('/api/answer-dictionaries', requireAdmin, asyncRoute(async (req, res) =
     res.status(404).json({ error: 'Dictionnaire introuvable' });
     return;
   }
+  invalidateDictionaryCache(req.adminUser!.id);
   res.status(201).json(dictionary);
 }));
 
@@ -202,6 +206,7 @@ app.put('/api/answer-dictionaries/:dictionaryId', requireAdmin, asyncRoute(async
     res.status(404).json({ error: 'Dictionnaire introuvable' });
     return;
   }
+  invalidateDictionaryCache(req.adminUser!.id);
   res.json(dictionary);
 }));
 
@@ -211,6 +216,7 @@ app.delete('/api/answer-dictionaries/:dictionaryId', requireAdmin, asyncRoute(as
     res.status(404).json({ error: 'Dictionnaire introuvable' });
     return;
   }
+  invalidateDictionaryCache(req.adminUser!.id);
   res.status(204).send();
 }));
 
@@ -293,7 +299,9 @@ app.post('/api/quizzes/:quizId/rooms', requireAdmin, asyncRoute(async (req, res)
     res.status(404).json({ error: 'Quiz introuvable' });
     return;
   }
-  res.status(201).json(await createRoom(req.params.quizId));
+  const room = await createRoom(req.params.quizId);
+  primeQuizDictionaries(quiz, room.question_order?.[0]);
+  res.status(201).json(room);
 }));
 
 app.get('/api/rooms/:code', asyncRoute(async (req, res) => {
@@ -618,6 +626,47 @@ async function getLobbyGameState(room: RoomRow, playerCount: number) {
   };
 }
 
+function getCachedDictionaryValues(ownerUserId: string, dictionaryId?: string): Promise<string[]> {
+  const key = `${ownerUserId}:${dictionaryId ?? ''}`;
+  const cached = dictionaryCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) return cached.values;
+  dictionaryCache.delete(key);
+  const values = getAnswerDictionaryValues(ownerUserId, dictionaryId);
+  dictionaryCache.set(key, { values, expiresAt: Date.now() + dictionaryCacheTtlMs });
+  void values.catch(() => {
+    if (dictionaryCache.get(key)?.values === values) dictionaryCache.delete(key);
+  });
+  while (dictionaryCache.size > dictionaryCacheLimit) {
+    dictionaryCache.delete(dictionaryCache.keys().next().value!);
+  }
+  return values;
+}
+
+function invalidateDictionaryCache(ownerUserId: string): void {
+  for (const key of dictionaryCache.keys()) {
+    if (key.startsWith(`${ownerUserId}:`)) dictionaryCache.delete(key);
+  }
+}
+
+function primeQuizDictionaries(quiz: QuizWithRounds, firstQuestion?: QuestionReference): void {
+  const ids = new Set<string | undefined>();
+  if (firstQuestion) {
+    const round = quiz.rounds?.find((candidate) => candidate.id === firstQuestion.round_id);
+    const target = firstQuestion.target_type === 'person'
+      ? round?.person
+      : round?.works.find((work) => work.id === firstQuestion.target_id);
+    if (target && (target.answer_mode ?? quiz.answer_mode) === 'autocomplete') ids.add(target.dictionary_id);
+  }
+  for (const round of quiz.rounds ?? []) {
+    for (const target of [...round.works, round.person]) {
+      if ((target.answer_mode ?? quiz.answer_mode) === 'autocomplete') ids.add(target.dictionary_id);
+    }
+  }
+  for (const id of [...ids].slice(0, dictionaryCacheLimit)) {
+    void getCachedDictionaryValues(quiz.owner_user_id, id).catch(console.error);
+  }
+}
+
 function invalidateRoomState(code: string): void {
   roomStateRevisions.set(code, (roomStateRevisions.get(code) ?? 0) + 1);
   const roomTimer = roomUpdateTimers.get(code);
@@ -687,7 +736,7 @@ async function activateQuestion(code: string, questionIndex: number) {
   if (!room) {
     return { ok: false, error: 'Salon introuvable' };
   }
-  const quiz = (await getQuiz(room.quiz_id)) as QuizWithRounds | undefined;
+  const quiz = room.question_order ? undefined : (await getQuiz(room.quiz_id)) as QuizWithRounds | undefined;
   const questionCount = room.question_order?.length ?? getQuestionCount(quiz);
   if (questionIndex >= questionCount) {
     invalidateRoomState(room.code);
@@ -710,7 +759,7 @@ async function activateQuestion(code: string, questionIndex: number) {
     }, questionDurationMs),
   );
   await emitGameState(room.code, true);
-  return { ok: true, gameState: await getGameState(room.code, true) };
+  return { ok: true };
 }
 
 async function revealQuestion(code: string): Promise<void> {
@@ -848,7 +897,7 @@ async function getActiveQuestion(
     options: answerMode === 'choices' ? options : [],
     suggestions:
       answerMode === 'autocomplete' && includeSuggestions
-        ? await getAnswerDictionaryValues(quiz.owner_user_id, target.dictionary_id)
+        ? await getCachedDictionaryValues(quiz.owner_user_id, target.dictionary_id)
         : [],
     correctOption,
   };

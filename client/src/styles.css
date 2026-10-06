@@ -2016,6 +2016,14 @@ app-answer-search,
   background: rgba(255, 250, 242, 0.94);
 }
 
+.final-ranking:not(.ranking-pending) {
+  animation: feedback-enter 900ms ease both;
+}
+
+.final-ranking.ranking-pending {
+  visibility: hidden;
+}
+
 .final-reveal-message {
   z-index: 1;
   min-height: 32px;
@@ -2027,7 +2035,7 @@ app-answer-search,
 }
 
 .name-revealed {
-  animation: identity-reveal 700ms cubic-bezier(0.2, 0.9, 0.2, 1.15) both;
+  animation: identity-reveal 1100ms cubic-bezier(0.2, 0.9, 0.2, 1.15) both;
 }
 
 .field-error {
@@ -2081,7 +2089,7 @@ app-answer-search,
   box-shadow: 0 18px 36px rgba(94, 46, 18, 0.22);
   transform-origin: bottom;
   opacity: 0;
-  animation: podium-rise 720ms cubic-bezier(0.2, 0.9, 0.2, 1.1) forwards;
+  animation: podium-rise 1500ms cubic-bezier(0.2, 0.9, 0.2, 1.1) forwards;
 }
 
 .podium-place p {
@@ -2099,13 +2107,13 @@ app-answer-search,
 .podium-place.first {
   min-height: 430px;
   background: linear-gradient(180deg, #d86f0d, #7c3908);
-  animation-delay: 1.4s;
+  animation-delay: 6.4s;
 }
 
 .podium-place.second {
   min-height: 340px;
   background: linear-gradient(180deg, #a8794f, #6b4426);
-  animation-delay: 0.7s;
+  animation-delay: 3.2s;
 }
 
 .podium-place.third {
