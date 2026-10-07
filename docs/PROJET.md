@@ -65,11 +65,11 @@ La mecanique differenciee du quiz est la suivante : pour chaque manche, les joue
 - Les joueurs rejoignent avec le QR code ou le code court.
 - L'animateur lance le quiz quand il le souhaite.
 - Les questions sont affichees une par une aux joueurs.
-- Chaque question a un timer serveur de 20 secondes.
+- Chaque question a un timer serveur de 40 secondes.
 - Si tous les joueurs ont repondu, la question se termine sans attendre la fin du timer.
 - A la fin du timer, ou lorsque tous les joueurs ont repondu, la bonne reponse est revelee a tout le monde.
 - Les points dependent de la rapidite : une bonne reponse conserve au minimum 50% des points de base et peut monter a 100% si elle est donnee tres vite.
-- Apres les trois questions d'oeuvres, la quatrieme question de la manche affiche les trois oeuvres et leurs indices, puis demande la personne reliee selon le mode de cette question.
+- La question personne rappelle les noms des trois œuvres, sans réafficher leurs indices.
 - L'animateur passe manuellement a la question suivante apres la revelation.
 - Les joueurs ne voient pas le classement complet pendant la partie ; ils voient leur resultat, leurs points gagnes et leur position apres chaque question.
 - Les joueurs voient aussi leur total de points apres chaque question.
@@ -125,8 +125,35 @@ La mecanique differenciee du quiz est la suivante : pour chaque manche, les joue
 - [x] Configuration Render via `render.yaml`.
 - [x] Upload signe et stockage Cloudinary des indices image, audio et video.
 - [x] Optimisation du jeu temps reel : diffusions regroupees, lectures Firestore evitees et accuse de reponse apres enregistrement.
-- [ ] Interface avancee d'animation question par question.
-- [ ] Tests automatises.
+- [x] Interface Studio : éditeur question par question et scène animateur adaptée à l'écran.
+- [x] Tests automatisés ciblés : timing, reveal et parcours graphiques locaux avec Playwright.
+
+## Refonte Studio, 7 octobre 2026
+
+- Studio devient le thème par défaut, sélectionnable avec `APP_THEME=studio` ou ponctuellement `?theme=studio`.
+- Création claire, jeu anthracite, accents citron et corail, icônes Lucide.
+- Édition d'une seule question à la fois, réglages séparés, indices sélectionnables avec leur horaire d'apparition, aperçu et navigation directe vers la question en erreur.
+- Commandes d'enregistrement accessibles pendant le défilement ; navigation des questions repliable sur mobile.
+- Bibliothèque simplifiée : lancement, édition et menu duplication/export/suppression.
+- Scène animateur dimensionnée à la fenêtre ; médias complets et indices futurs masqués.
+- Joueur : choix explicite, envoi neutre, confirmation, score et rang personnel ; une confirmation tardive ne bloque plus la question suivante.
+- Podium 2–1–3 conservant la révélation 3, puis 2, puis 1 et la synchronisation des identités.
+- Contrôles locaux sur Chrome avec données fictives et services simulés, sans modification de comptes ou de quiz distants. Les tests de charge Render ne sont pas relancés dans cette passe graphique.
+
+Maquettes, suivi et résultats détaillés : [audit Studio](design/audit-graphique-2026-10-06/AUDIT.md).
+
+## Reprise des parties et autocomplétion, 7 octobre 2026
+
+- [x] Suggestions longues intégralement affichées sur plusieurs lignes, avec une liste défilante sans écrasement des lignes. Même traitement dans l'éditeur et en jeu ; la réponse sélectionnée n'est plus limitée à deux lignes.
+- [x] Onglet **Quiz en cours** : code, titre, état, progression et date ; chargement, erreur, liste vide et actualisation manuelle.
+- [x] Liste limitée aux quiz du compte connecté, incluant les anciens salons sans migration de données ; parties terminées exclues.
+- [x] Reprise du salon existant après restauration de l'authentification, sans réinitialiser les réponses, les scores ou l'ordre des questions.
+- [x] Reconnexion de l'animateur après coupure réseau, gestion des échecs et bouton Réessayer ; désabonnement du salon à la sortie.
+- [x] Rétablissement du minuteur après redémarrage serveur à partir de l'échéance persistée ; révélation immédiate si elle est dépassée.
+- [x] Tests de dépôt avec Firestore simulé : filtrage propriétaire/statut, anciennes données, lots de requêtes et échéances.
+- [x] Contrôles navigateur des deux ajouts et non-régression Studio réussis. Sept tests unitaires passent ; accès anonyme à la liste refusé (401). Services simulés pour les parcours, pas de test sur Render dans cette passe.
+
+Le temps continue pendant l'absence de l'animateur : il s'agit d'une reprise, pas d'une pause. La suppression des salons lors de la modification/suppression d'un quiz reste inchangée.
 
 ## Validation technique
 

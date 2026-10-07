@@ -1,0 +1,138 @@
+<main class="page player-page screen screen-player">
+  <header class="player-header">
+    <a class="brand" href="/"><app-icon name="copy" [size]="24" /> Teammates</a>
+    @if (playerAvatar()) { <span class="player-avatar" title="Votre identité dans les classements">{{ playerAvatar() }}</span> }
+  </header>
+  @if (roomError()) {
+    <section class="empty-state" role="alert"><h1>Partie inaccessible</h1><p>{{ roomError() }}</p><a class="button-link secondary" href="/">Saisir un autre code</a></section>
+  } @else if (loading()) {
+    <p class="loading-state">Chargement de la partie…</p>
+  } @else {
+    @if (!playerId()) {
+      <section class="player-registration">
+        <p class="eyebrow">Salon {{ code() }}</p><h1>À vous de jouer.</h1>
+        <form class="join-player-form" (ngSubmit)="join()">
+          <label>Votre pseudo<input [(ngModel)]="nickname" name="nickname" minlength="2" maxlength="24" autocomplete="nickname" placeholder="Camille">
+            @if (nickname && nicknameError()) { <span class="field-error">{{ nicknameError() }}</span> }
+          </label>
+          <button type="submit" [disabled]="joining() || !!nicknameError()" [class.is-loading]="joining()">{{ joining() ? 'Inscription…' : 'Rejoindre la partie' }} <app-icon name="arrow-right" /></button>
+        </form>
+      </section>
+    }
+    @if (api.gameState(); as state) {
+      @if (state.status === 'lobby' && playerId()) {
+        <section class="waiting-state">
+          <app-icon class="ready-icon" name="success" [size]="58" /><p class="eyebrow">Salon {{ code() }}</p>
+          <h1>Vous êtes prêt.</h1><p>La partie démarre avec l'animateur.</p>
+          <div class="lobby-reaction-picker" aria-label="Envoyer une réaction">
+            <span>Un peu d'ambiance ?</span><div>
+              @for (emoji of reactionChoices; track emoji) {
+                <button type="button" [disabled]="reactionPending()" [attr.aria-label]="'Envoyer la réaction ' + emoji" (click)="sendReaction(emoji)">{{ emoji }}</button>
+              }
+            </div>
+          </div>
+        </section>
+      } @else if (state.status === 'question' && state.activeQuestion && playerId()) {
+        <section class="question-card">
+          <div class="player-question-meta"><span>Question {{ state.currentQuestionIndex + 1 }} / {{ state.totalQuestions }}</span><strong>{{ totalScore() | number }} pts</strong></div>
+          <div class="player-countdown" [class.urgent]="remainingSeconds() <= 5">
+            <div class="live-timer-track"><i [style.width.%]="timerProgress()"></i></div>
+            <span role="timer">{{ remainingSeconds() }} s</span>
+          </div>
+          <h1>{{ state.activeQuestion.prompt }}</h1>
+          @if (state.activeQuestion.targetType === 'person') {
+            <div class="work-name-recap" aria-label="Œuvres de la manche">
+              @for (work of state.activeQuestion.works; track $index; let index = $index) {
+                <div><span>Œuvre {{ index + 1 }}</span><strong>{{ work.title }}</strong></div>
+              }
+            </div>
+          } @else {
+            @if (visibleClues(state).at(-1); as clue) {
+              <div class="player-current-clue"><ng-container *ngTemplateOutlet="clueTpl; context: { clue: clue }" /></div>
+            }
+            @if (visibleClues(state).length > 1) {
+              <details class="player-clue-history"><summary>{{ visibleClues(state).length - 1 }} indice(s) précédent(s)</summary>
+                <div class="clue-list">
+                  @for (clue of visibleClues(state).slice(0, -1); track clue.id || clue.content) {
+                    <div class="clue-chip"><ng-container *ngTemplateOutlet="clueTpl; context: { clue: clue }" /></div>
+                  }
+                </div>
+              </details>
+            }
+          }
+          @if (answeredQuestionIndex() === state.currentQuestionIndex) {
+            <div class="submitted-answer" role="status">
+              <app-icon name="check" [size]="32" /><h2>Réponse enregistrée</h2>
+              <strong>{{ selectedAnswer() }}</strong><p>Les autres joueurs terminent…</p>
+            </div>
+          } @else if (sendingAnswer()) {
+            <div class="answer-sending" role="status" aria-live="polite" aria-busy="true">
+              <span class="studio-spinner" aria-hidden="true"></span><h2>Envoi de la réponse…</h2>
+              <strong>{{ selectedAnswer() }}</strong><p>Confirmation en cours</p>
+            </div>
+          } @else if (state.activeQuestion.answerMode === 'autocomplete') {
+            <div class="player-search">
+              <app-answer-search [resetKey]="state.activeQuestion.targetId" [values]="state.activeQuestion.suggestions" [value]="selectedAutocompleteAnswer()"
+                (valueChange)="selectedAutocompleteAnswer.set($event)" [disabled]="!canAnswer()" label="Votre réponse" />
+              <div class="answer-submit-bar">
+                <span>{{ selectedAutocompleteAnswer() ? 'Votre choix' : remainingSeconds() === 0 ? 'Temps écoulé' : 'Sélectionnez une réponse' }}</span>
+                @if (selectedAutocompleteAnswer()) { <strong class="selected-answer-summary">{{ selectedAutocompleteAnswer() }}</strong> }
+                <button type="button" [disabled]="!canAnswer() || !selectedAutocompleteAnswer()" (click)="answerTextValue()">
+                  Valider ma réponse <app-icon name="arrow-right" />
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div class="answer-options">
+              @for (option of state.activeQuestion.options; track option.id; let index = $index) {
+                <button type="button" class="answer-option" [attr.data-choice]="index + 1" [disabled]="!canAnswer()" (click)="answer(option.id, option.label)">
+                  <span>{{ index + 1 }}</span>{{ option.label }}
+                </button>
+              }
+            </div>
+          }
+        </section>
+      } @else if (state.status === 'reveal' && state.activeQuestion && playerId()) {
+        @if (api.playerResult(); as result) {
+          <section class="result-card" [class.missed]="!result.isCorrect" aria-live="polite">
+            <app-icon class="result-symbol" [name]="result.isCorrect ? 'success' : 'x'" [size]="60" />
+            <h1>{{ result.isCorrect ? 'Bien joué !' : 'Pas cette fois.' }}</h1>
+            <div class="result-points">{{ result.isCorrect ? '+' : '' }}{{ result.points | number }}</div><p class="result-points-label">points gagnés</p>
+            <div class="result-stats"><p>Total<strong>{{ result.totalScore | number }}</strong></p><p>Position<strong>{{ result.rank || '–' }} / {{ result.totalPlayers || state.playerCount }}</strong></p></div>
+            <div class="correct-answer" [class.incorrect]="!result.isCorrect">
+              <span>{{ result.isCorrect ? 'Bonne réponse' : 'La bonne réponse était' }}</span>
+              <strong>{{ state.activeQuestion.correctOption?.label || 'Réponse indisponible' }}</strong>
+            </div>
+            <p class="next-question-wait"><app-icon name="clock" /> En attente de l'animateur</p>
+          </section>
+        } @else {
+          <section class="result-pending" role="status" aria-live="polite">
+            <span class="studio-spinner" aria-hidden="true"></span><h1>Résultat en cours…</h1><p>Le score et votre position arrivent.</p>
+          </section>
+        }
+      } @else if (state.status === 'finished' && playerId()) {
+        <section class="player-final">
+          <app-icon name="crown" [size]="40" /><h1>Classement final</h1>
+          <p class="final-reveal-message player-final-reveal" aria-live="polite">{{ finalReveal().message }}</p>
+          <ol class="leaderboard">
+            @for (player of state.leaderboard; track player.id; let index = $index) {
+              <li [class.current-player]="player.id === playerId()"><strong>{{ index + 1 }}</strong>
+                <span [class.name-revealed]="isFinalNameRevealed(player)">{{ finalPlayerName(player) }}</span><strong>{{ player.score | number }}</strong>
+              </li>
+            }
+          </ol>
+        </section>
+      }
+    }
+  }
+  @if (message() && messageIsError()) { <p class="status-message error" role="alert">{{ message() }}</p> }
+</main>
+<ng-template #clueTpl let-clue="clue">
+  @if (clue.kind === 'image' || isImageUrl(clue.content)) {
+    <figure class="clue-figure"><img [src]="clue.content" alt="Indice visuel"></figure>
+  } @else if (clue.kind === 'audio') {
+    <div class="clue-media audio-clue"><app-icon name="music" /><span>Indice sonore</span><audio [src]="clue.content" controls preload="metadata"></audio></div>
+  } @else if (clue.kind === 'video') {
+    <div class="clue-media"><video [src]="clue.content" controls preload="metadata" playsinline></video></div>
+  } @else { <p class="text-clue">{{ clue.content }}</p> }
+</ng-template>

@@ -1,270 +1,32 @@
-import { NgTemplateOutlet } from '@angular/common';
+import { DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import {
   AfterViewInit,
   Component,
+  DestroyRef,
   ElementRef,
   OnDestroy,
   OnInit,
   QueryList,
   ViewChildren,
   computed,
+  effect,
+  inject,
   signal,
+  untracked,
 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ApiService } from './api.service';
 import { visibleClueCount } from './clue-timing';
 import { finalPlayerName, getFinalRevealState } from './final-reveal';
 import { Clue, GameState, Room } from './types';
+import { IconComponent } from './icon.component';
 
 @Component({
   selector: 'app-room',
   standalone: true,
-  imports: [NgTemplateOutlet],
-  template: `
-    @if (loading()) {
-      <main class="page screen screen-host-loading"><p class="loading-state">Chargement du salon…</p></main>
-    } @else if (error()) {
-      <main class="page screen screen-host-error">
-        <section class="empty-state" role="alert">
-          <h1>Salon inaccessible</h1>
-          <p>{{ error() }}</p>
-          <a class="button-link secondary" href="/">Retour à l'accueil</a>
-        </section>
-      </main>
-    } @else if (api.gameState()?.status === 'finished') {
-      <main class="podium-screen screen screen-podium">
-        <h1>Classement final</h1>
-        @if (finalRevealMessage()) {
-          <p class="final-reveal-message">{{ finalRevealMessage() }}</p>
-        }
-        @if (podiumPlayers(); as podium) {
-          <section class="final-podium" aria-label="Podium final">
-            @if (podium[1]) {
-              <article class="podium-place second">
-                <p [class.name-revealed]="isFinalNameRevealed(podium[1])">{{ finalPlayerName(podium[1]) }}</p>
-                <div class="medal">2</div>
-                <strong>{{ podium[1].score }}</strong>
-              </article>
-            }
-            @if (podium[0]) {
-              <article class="podium-place first">
-                <p [class.name-revealed]="isFinalNameRevealed(podium[0])">{{ finalPlayerName(podium[0]) }}</p>
-                <div class="medal">1</div>
-                <strong>{{ podium[0].score }}</strong>
-              </article>
-            }
-            @if (podium[2]) {
-              <article class="podium-place third">
-                <p [class.name-revealed]="isFinalNameRevealed(podium[2])">{{ finalPlayerName(podium[2]) }}</p>
-                <div class="medal">3</div>
-                <strong>{{ podium[2].score }}</strong>
-              </article>
-            }
-          </section>
-        }
-        <section
-          class="final-ranking"
-          [class.ranking-pending]="!finalReveal().complete"
-          [attr.aria-hidden]="!finalReveal().complete"
-        >
-          <h2>Classement complet</h2>
-          <ol class="leaderboard">
-            @for (player of api.gameState()?.leaderboard || []; track player.id; let index = $index) {
-              <li>
-                <strong>{{ index + 1 }}</strong>
-                <span [class.name-revealed]="isFinalNameRevealed(player)">{{ finalPlayerName(player) }}</span>
-                <strong>{{ player.score }}</strong>
-              </li>
-            }
-          </ol>
-        </section>
-      </main>
-    } @else {
-      <main class="page host-page screen screen-host">
-        <section class="panel grid host-stage">
-          @if (api.gameState(); as state) {
-            <article class="host-question grid">
-              @if (state.status === 'lobby') {
-                <div class="empty-state compact lobby-launch">
-                  <h2>Prêt à lancer le quiz</h2>
-                  <p>Scannez le QR code pour rejoindre la partie.</p>
-                  <div class="lobby-board">
-                    <div class="lobby-player-column" aria-label="Joueurs connectés">
-                      @for (player of leftLobbyPlayers(); track player.id) {
-                        <span class="lobby-player-name">{{ player.nickname }}</span>
-                      }
-                      @for (reaction of leftLobbyReactions(); track reaction.id) {
-                        <span
-                          class="lobby-reaction"
-                          [style.left.%]="reaction.x"
-                          [style.top.%]="reaction.y"
-                          aria-hidden="true"
-                        >{{ reaction.emoji }}</span>
-                      }
-                    </div>
-                    @if (room()?.qrCodeDataUrl; as qrCode) {
-                      <div class="lobby-qr">
-                        <img [src]="qrCode" alt="QR code pour rejoindre la partie">
-                      </div>
-                    }
-                    <div class="lobby-player-column" aria-label="Joueurs connectés">
-                      @for (player of rightLobbyPlayers(); track player.id) {
-                        <span class="lobby-player-name">{{ player.nickname }}</span>
-                      }
-                      @for (reaction of rightLobbyReactions(); track reaction.id) {
-                        <span
-                          class="lobby-reaction"
-                          [style.left.%]="reaction.x"
-                          [style.top.%]="reaction.y"
-                          aria-hidden="true"
-                        >{{ reaction.emoji }}</span>
-                      }
-                    </div>
-                  </div>
-                  <span class="lobby-player-count">{{ state.playerCount }} joueur(s) connecté(s)</span>
-                  <strong class="lobby-code">Code {{ room()?.code }}</strong>
-                  <button type="button" (click)="startGame()" [disabled]="commandPending()">
-                    {{ commandPending() ? 'Lancement…' : 'Lancer le quiz' }}
-                  </button>
-                </div>
-              } @else if (state.status === 'question' && state.activeQuestion) {
-                <div class="question-meta">
-                  <span>Question {{ state.currentQuestionIndex + 1 }} / {{ state.totalQuestions }}</span>
-                  <div
-                    class="timer-ring"
-                    [style.--progress]="timerProgress() + '%'"
-                    [class.urgent]="remainingSeconds() <= 5"
-                  >
-                    {{ remainingSeconds() }}
-                  </div>
-                </div>
-                <h2>{{ state.activeQuestion.prompt }}</h2>
-                <p class="answer-progress">
-                  {{ state.answerCount }} réponse(s) sur {{ state.playerCount }}
-                  <span><i [style.width.%]="answerProgress(state)"></i></span>
-                </p>
-
-                @if (state.activeQuestion.targetType === 'person') {
-                  <div class="work-name-recap" aria-label="Œuvres de la manche">
-                    @for (work of state.activeQuestion.works; track work.title; let index = $index) {
-                      <div>
-                        <span>Œuvre {{ index + 1 }}</span>
-                        <strong>{{ work.title }}</strong>
-                      </div>
-                    }
-                  </div>
-                } @else {
-                  @if (currentClue(state); as clue) {
-                    <div class="current-clue">
-                      <ng-container *ngTemplateOutlet="clueTpl; context: { clue: clue, autoplay: true }" />
-                    </div>
-                  }
-                  @if (previousClues(state).length > 0) {
-                    <div class="clue-list">
-                      @for (clue of previousClues(state); track clue.id || clue.content) {
-                        <div class="clue-chip">
-                          <ng-container *ngTemplateOutlet="clueTpl; context: { clue: clue, autoplay: false }" />
-                        </div>
-                      }
-                    </div>
-                  }
-                }
-              } @else if (state.status === 'reveal' && state.activeQuestion) {
-                <div class="reveal-heading">
-                  <p class="eyebrow">Réponse révélée</p>
-                  <h2>{{ state.activeQuestion.correctOption?.label || 'Réponse indisponible' }}</h2>
-                </div>
-                @if (state.answerStats; as stats) {
-                  <section class="answer-impact" aria-label="Répartition des réponses">
-                    <div
-                      class="answer-impact-orb"
-                      [style.--correct]="answerCorrectRate(stats) + '%'"
-                      [attr.aria-label]="stats.correct + ' bonne(s) réponse(s) et ' + stats.incorrect + ' mauvaise(s) réponse(s)'"
-                    >
-                      <strong>{{ answerCorrectRate(stats) }}%</strong>
-                      <span>de réussite</span>
-                    </div>
-                    <div class="answer-impact-bars">
-                      <div class="answer-impact-row good">
-                        <span>Bonnes réponses</span>
-                        <strong>{{ stats.correct }}</strong>
-                        <i [style.width.%]="answerStatWidth(stats.correct, stats.total)"></i>
-                      </div>
-                      <div class="answer-impact-row bad">
-                        <span>Mauvaises réponses</span>
-                        <strong>{{ stats.incorrect }}</strong>
-                        <i [style.width.%]="answerStatWidth(stats.incorrect, stats.total)"></i>
-                      </div>
-                    </div>
-                  </section>
-                }
-                <ol class="leaderboard podium">
-                  @for (player of state.topLeaderboard; track player.id; let index = $index) {
-                    <li>
-                      <strong>{{ index + 1 }}</strong>
-                      <span>{{ player.nickname }}</span>
-                      <strong>{{ player.score }}</strong>
-                    </li>
-                  }
-                </ol>
-                <button type="button" (click)="nextQuestion()" [disabled]="commandPending()">
-                  {{ commandPending()
-                    ? 'Chargement…'
-                    : state.currentQuestionIndex + 1 >= state.totalQuestions
-                      ? 'Voir les résultats'
-                      : 'Question suivante' }}
-                </button>
-              }
-            </article>
-          }
-          @if (message()) {
-            <p class="status-message" [class.error]="messageIsError()" role="status">{{ message() }}</p>
-          }
-        </section>
-
-      </main>
-    }
-
-    <ng-template #clueTpl let-clue="clue" let-autoplay="autoplay">
-      @if (clue.kind === 'image' || isImageUrl(clue.content)) {
-        <figure class="clue-figure">
-          <img [src]="clue.content" alt="Indice visuel">
-        </figure>
-      } @else if (clue.kind === 'audio') {
-        <div class="clue-media audio-clue">
-          <span>Indice sonore</span>
-          <audio
-            #hostMedia
-            [src]="clue.content"
-            [autoplay]="autoplay"
-            [attr.data-autoplay]="autoplay ? 'true' : null"
-            controls
-            preload="auto"
-          ></audio>
-          @if (autoplay && autoplayBlocked()) {
-            <button type="button" (click)="retryMediaPlayback()">Lancer l'indice sonore</button>
-          }
-        </div>
-      } @else if (clue.kind === 'video') {
-        <div class="clue-media">
-          <video
-            #hostMedia
-            [src]="clue.content"
-            [autoplay]="autoplay"
-            [attr.data-autoplay]="autoplay ? 'true' : null"
-            controls
-            preload="auto"
-            playsinline
-          ></video>
-          @if (autoplay && autoplayBlocked()) {
-            <button type="button" (click)="retryMediaPlayback()">Lancer la vidéo</button>
-          }
-        </div>
-      } @else {
-        <p><strong>Indice :</strong> {{ clue.content }}</p>
-      }
-    </ng-template>
-  `,
+  imports: [NgTemplateOutlet, DecimalPipe, IconComponent, RouterLink],
+  templateUrl: './room.component.html',
 })
 export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChildren('hostMedia') hostMediaElements!: QueryList<ElementRef<HTMLMediaElement>>;
@@ -276,6 +38,15 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
   commandPending = signal(false);
   autoplayBlocked = signal(false);
   now = signal(Date.now());
+  selectedClueIndex = signal<number | null>(null);
+  readonly podiumOrder = [1, 0, 2];
+  readonly confettiPieces = Array.from({ length: 12 }, (_, i) => i);
+  finalAnimationOffset = computed(() => {
+    const started = this.api.gameState()?.finalRevealStartedAt;
+    const timestamp = Date.parse(started ?? '');
+    return Number.isFinite(timestamp) ? Math.max(0, (Date.now() - timestamp) / 1000) : 20;
+  });
+  answerMarkers = computed(() => Array.from({ length: this.api.gameState()?.playerCount ?? 0 }, (_, i) => i < (this.api.gameState()?.answerCount ?? 0)));
   finalReveal = computed(() => getFinalRevealState(this.api.gameState(), this.now()));
   finalRevealMessage = computed(() => this.finalReveal().message);
   remainingSeconds = computed(() => {
@@ -296,28 +67,55 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
   leftLobbyReactions = computed(() => this.api.lobbyReactions().filter((reaction) => reaction.side === 'left'));
   rightLobbyReactions = computed(() => this.api.lobbyReactions().filter((reaction) => reaction.side === 'right'));
   private timerId: number | undefined;
+  private clueRevision = '';
+  private readonly destroyRef = inject(DestroyRef);
+  private hostRequest = 0;
+  private hostAbort?: AbortController;
+  private destroyed = false;
 
   constructor(
     public api: ApiService,
     private route: ActivatedRoute,
-  ) {}
+  ) {
+    effect(() => {
+      const state = this.api.gameState();
+      if (!state) return;
+      const revision = state.currentQuestionIndex + ':' + this.visibleClues(state).length;
+      if (revision !== this.clueRevision) {
+        this.clueRevision = revision;
+        this.selectedClueIndex.set(null);
+      }
+    }, { allowSignalWrites: true });
+    effect(() => {
+      const room = this.room();
+      const ready = this.api.authReady();
+      const admin = this.api.adminUser();
+      const connected = this.api.connected();
+      this.hostRequest++;
+      this.hostAbort?.abort();
+      if (!room || !ready) return;
+      if (!admin) {
+        this.api.leaveHostRoom(room.code);
+        this.loading.set(false);
+        this.error.set('Connectez-vous avec le compte qui a créé ce quiz pour reprendre la partie.');
+        return;
+      }
+      if (!connected) {
+        this.loading.set(true);
+        return;
+      }
+      untracked(() => void this.connectHost());
+    }, { allowSignalWrites: true });
+  }
 
   ngOnInit(): void {
     this.api.hostRoomMeta.set(undefined);
     const code = (this.route.snapshot.paramMap.get('code') ?? '').toUpperCase();
-    this.api.getRoom(code).subscribe({
+    this.api.getRoom(code).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (room) => {
         this.room.set(room);
         this.api.hostRoomMeta.set(room);
         this.api.gameState.set(room.gameState);
-        void this.api.hostRoom(code).then((response) => {
-          this.loading.set(false);
-          if (!response.ok) {
-            this.error.set(response.error ?? "Vous n'êtes pas autorisé à piloter ce salon.");
-            return;
-          }
-          if (response.gameState) this.api.gameState.set(response.gameState);
-        });
       },
       error: () => {
         this.loading.set(false);
@@ -328,9 +126,39 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
+    this.hostRequest++;
+    this.hostAbort?.abort();
+    const code = this.room()?.code;
+    if (code) this.api.leaveHostRoom(code);
     if (this.timerId) window.clearInterval(this.timerId);
     this.api.hostRoomMeta.set(undefined);
     this.api.lobbyReactions.set([]);
+  }
+
+  async connectHost(): Promise<void> {
+    const code = this.room()?.code;
+    if (!code || !this.api.adminUser() || !this.api.connected()) return;
+    const request = ++this.hostRequest;
+    this.hostAbort?.abort();
+    this.hostAbort = new AbortController();
+    this.loading.set(true);
+    this.error.set('');
+    try {
+      const response = await this.api.hostRoom(code, this.hostAbort.signal);
+      if (this.destroyed || request !== this.hostRequest) return;
+      if (!response.ok) {
+        this.error.set(response.error ?? "Vous n'êtes pas autorisé à piloter ce salon.");
+      } else if (response.gameState) {
+        this.api.gameState.set(response.gameState);
+      }
+    } catch {
+      if (!this.destroyed && request === this.hostRequest) {
+        this.error.set('Impossible de reprendre le salon. Vérifiez votre connexion et réessayez.');
+      }
+    } finally {
+      if (!this.destroyed && request === this.hostRequest) this.loading.set(false);
+    }
   }
 
   ngAfterViewInit(): void {
@@ -342,7 +170,7 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
 
   async startGame(): Promise<void> {
     const code = this.room()?.code;
-    if (!code) return;
+    if (!code || this.commandPending()) return;
     if ((this.api.gameState()?.playerCount ?? 0) === 0 && !window.confirm('Lancer le quiz sans aucun joueur ?')) return;
     this.commandPending.set(true);
     const response = await this.api.startGame(code);
@@ -352,7 +180,7 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
 
   async nextQuestion(): Promise<void> {
     const code = this.room()?.code;
-    if (!code) return;
+    if (!code || this.commandPending()) return;
     this.commandPending.set(true);
     const response = await this.api.nextQuestion(code);
     this.commandPending.set(false);
@@ -361,10 +189,6 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
 
   async retryMediaPlayback(): Promise<void> {
     await this.playCurrentMedia();
-  }
-
-  answerProgress(state: GameState): number {
-    return state.playerCount > 0 ? Math.min(100, (state.answerCount / state.playerCount) * 100) : 0;
   }
 
   answerCorrectRate(stats: { total: number; correct: number }): number {
@@ -389,12 +213,25 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
     return clues.slice(0, visibleClueCount(state, this.now(), clues.length));
   }
 
-  previousClues(state: GameState): Clue[] {
-    return this.visibleClues(state).slice(0, -1);
+  currentClue(state: GameState): Clue | undefined {
+    return this.visibleClues(state)[this.currentClueIndex(state)];
   }
 
-  currentClue(state: GameState): Clue | undefined {
-    return this.visibleClues(state).at(-1);
+  currentClueIndex(state: GameState): number {
+    const last = this.visibleClues(state).length - 1;
+    return Math.min(last, this.selectedClueIndex() ?? last);
+  }
+
+  clueLabel(clue: Clue): string {
+    if (clue.kind === 'image' || this.isImageUrl(clue.content)) return 'Image';
+    return clue.kind === 'audio' ? 'Son' : clue.kind === 'video' ? 'Vidéo' : 'Texte';
+  }
+
+  async toggleFullscreen(): Promise<void> {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    } catch { this.showMessage('Le plein écran est indisponible sur ce navigateur.', true); }
   }
 
   isImageUrl(value: string): boolean {

@@ -1,0 +1,195 @@
+@if (loading()) {
+  <main class="page screen screen-host-loading"><p class="loading-state" role="status"><span class="studio-spinner" aria-hidden="true"></span>{{ !api.authReady() ? 'Vérification de votre connexion…' : !api.connected() ? 'Connexion au salon…' : 'Reprise du salon…' }}</p></main>
+} @else if (error()) {
+  <main class="page screen screen-host-error">
+    <section class="empty-state" role="alert">
+      <h1>Salon inaccessible</h1><p>{{ error() }}</p>
+      @if (room()) {
+        @if (!api.adminUser()) {
+          <button type="button" (click)="api.signInWithGoogle()">Se connecter avec Google</button>
+          @if (api.authError()) { <p>{{ api.authError() }}</p> }
+        } @else {
+          <button type="button" (click)="connectHost()">Réessayer</button>
+        }
+      }
+      <a class="button-link secondary" routerLink="/" queryParamsHandling="preserve">Retour à l'accueil</a>
+    </section>
+  </main>
+} @else {
+  @if (api.gameState(); as state) {
+  @if (state.status === 'finished') {
+    <main class="podium-screen screen screen-podium">
+      <div class="final-confetti" aria-hidden="true">
+        @for (piece of confettiPieces; track piece) {
+          <i [style.left.%]="piece < 6 ? 4 + piece * 3 : 78 + (piece - 6) * 3"
+            [style.animation-delay.s]="10 + (piece % 4) * 0.1 - finalAnimationOffset()"></i>
+        }
+      </div>
+      <header class="final-heading">
+        <h1>Classement final</h1>
+        <p>{{ state.totalQuestions }} questions · {{ state.playerCount }} participants</p>
+        <p class="final-reveal-message" aria-live="polite">{{ finalRevealMessage() }}</p>
+      </header>
+      <section class="final-podium" aria-label="Podium final">
+        @for (index of podiumOrder; track index) {
+          @if (podiumPlayers()[index]; as player) {
+            <article class="podium-place" [class.first]="index === 0" [class.second]="index === 1" [class.third]="index === 2"
+              [style.animation-delay.s]="(index === 0 ? 6.4 : index === 1 ? 3.2 : 0) - finalAnimationOffset()">
+              <div class="podium-identity">
+                @if (index === 0) { <app-icon class="winner-crown" name="crown" [size]="32" /> }
+                <span class="podium-avatar" aria-hidden="true" [style.visibility]="isFinalNameRevealed(player) ? 'visible' : 'hidden'">{{ player.avatar }}</span>
+                <p [class.name-revealed]="isFinalNameRevealed(player)">{{ finalPlayerName(player) }}</p>
+              </div>
+              <div class="podium-block">
+                <span class="medal">{{ index + 1 }}</span>
+                <strong>{{ player.score | number }}</strong><span>points</span>
+              </div>
+            </article>
+          }
+        }
+      </section>
+      @if (state.leaderboard.length > 3) {
+        <section class="final-ranking" [class.ranking-pending]="!finalReveal().complete" [attr.aria-hidden]="!finalReveal().complete">
+          <h2>La suite du classement</h2>
+          <ol class="leaderboard" start="4">
+            @for (player of state.leaderboard.slice(3); track player.id; let index = $index) {
+              <li><strong>{{ index + 4 }}</strong><span [class.name-revealed]="isFinalNameRevealed(player)">{{ finalPlayerName(player) }}</span><strong>{{ player.score | number }}</strong></li>
+            }
+          </ol>
+        </section>
+      }
+    </main>
+  } @else {
+    <main class="page host-page screen screen-host" [class.is-question]="state.status === 'question'">
+      @if (state.status === 'lobby') {
+        <section class="lobby-launch">
+          <p class="eyebrow">La partie commence ici</p>
+          <h1>Prêt à lancer le quiz ?</h1>
+          <p>Scannez le QR code pour rejoindre la partie.</p>
+          <div class="lobby-board">
+            <div class="lobby-player-column" aria-label="Joueurs connectés">
+              @for (player of leftLobbyPlayers(); track player.id) { <span class="lobby-player-name">{{ player.nickname }}</span> }
+              @for (reaction of leftLobbyReactions(); track reaction.id) {
+                <span class="lobby-reaction" [style.left.%]="reaction.x" [style.top.%]="reaction.y" aria-hidden="true">{{ reaction.emoji }}</span>
+              }
+            </div>
+            @if (room()?.qrCodeDataUrl; as qrCode) {
+              <div class="lobby-qr"><img [src]="qrCode" alt="QR code pour rejoindre la partie"></div>
+            }
+            <div class="lobby-player-column" aria-label="Joueurs connectés">
+              @for (player of rightLobbyPlayers(); track player.id) { <span class="lobby-player-name">{{ player.nickname }}</span> }
+              @for (reaction of rightLobbyReactions(); track reaction.id) {
+                <span class="lobby-reaction" [style.left.%]="reaction.x" [style.top.%]="reaction.y" aria-hidden="true">{{ reaction.emoji }}</span>
+              }
+            </div>
+          </div>
+          <div class="lobby-launch-footer">
+            <div><span class="eyebrow">Code de la partie</span><strong class="lobby-code">{{ room()?.code }}</strong></div>
+            <span class="lobby-player-count">{{ state.playerCount }} {{ state.playerCount > 1 ? 'joueurs connectés' : 'joueur connecté' }}</span>
+            <button type="button" (click)="startGame()" [disabled]="commandPending()" [class.is-loading]="commandPending()">
+              <app-icon name="play" /> {{ commandPending() ? 'Lancement…' : 'Lancer le quiz' }}
+            </button>
+          </div>
+        </section>
+      } @else if (state.status === 'question' && state.activeQuestion) {
+        <section class="live-question">
+          <header class="live-heading">
+            <div><p class="eyebrow">Question {{ state.currentQuestionIndex + 1 }} / {{ state.totalQuestions }}</p><h1>{{ state.activeQuestion.prompt }}</h1></div>
+            <div class="live-timer" [class.urgent]="remainingSeconds() <= 5" role="timer" [attr.aria-label]="remainingSeconds() + ' secondes restantes'">
+              <strong>{{ remainingSeconds() }}</strong><span>secondes</span>
+            </div>
+          </header>
+          <div class="live-timer-track" [class.urgent]="remainingSeconds() <= 5"><i [style.width.%]="timerProgress()"></i></div>
+          @if (state.activeQuestion.targetType === 'person') {
+            <div class="work-name-recap live-work-recap" aria-label="Œuvres de la manche">
+              @for (work of state.activeQuestion.works; track $index; let index = $index) {
+                <div><span>Œuvre {{ index + 1 }}</span><strong>{{ work.title }}</strong></div>
+              }
+            </div>
+          } @else {
+            <div class="media-stage">
+              @if (currentClue(state); as clue) {
+                @for (active of [clue]; track active.id || active.content) {
+                  <div class="current-clue"><ng-container *ngTemplateOutlet="clueTpl; context: { clue: active, autoplay: true }" /></div>
+                }
+              } @else {
+                <div class="current-clue"><p>Aucun indice disponible</p></div>
+              }
+              <aside class="clue-rail" aria-label="Les indices">
+                <h2>Les indices</h2>
+                @for (clue of state.activeQuestion.clues; track $index; let index = $index) {
+                  <button type="button" class="clue-thumbnail" [class.active]="index === currentClueIndex(state)"
+                    [disabled]="index >= visibleClues(state).length"
+                    [attr.aria-label]="'Indice ' + (index + 1) + (index >= visibleClues(state).length ? ', à venir' : ', ' + clueLabel(clue))"
+                    [attr.aria-pressed]="index === currentClueIndex(state)" (click)="selectedClueIndex.set(index)">
+                    <span class="clue-thumbnail-media">
+                      @if (index < visibleClues(state).length) {
+                        @if (clue.kind === 'image' || isImageUrl(clue.content)) { <img [src]="clue.content" alt=""> }
+                        @else { <app-icon [name]="clue.kind === 'audio' ? 'music' : clue.kind === 'video' ? 'film' : 'list'" [size]="30" /> }
+                      } @else { <app-icon name="lock" [size]="26" /> }
+                    </span>
+                    <span class="clue-thumbnail-label">{{ index + 1 | number:'2.0-0' }} · {{ index < visibleClues(state).length ? clueLabel(clue) : 'À venir' }}</span>
+                  </button>
+                }
+              </aside>
+            </div>
+          }
+          <footer class="live-footer">
+            <div class="answer-progress">
+              <span><strong>{{ state.answerCount }}</strong> / {{ state.playerCount }} réponses reçues</span>
+              <div class="response-markers" aria-hidden="true">@for (answered of answerMarkers(); track $index) { <i [class.answered]="answered"></i> }</div>
+            </div>
+            <div class="live-connection"><span [class.online]="api.connected()"></span>{{ api.connected() ? 'Connexion active' : 'Reconnexion…' }}</div>
+            <button type="button" class="icon-button secondary" title="Plein écran" aria-label="Plein écran" (click)="toggleFullscreen()"><app-icon name="maximize" /></button>
+          </footer>
+        </section>
+      } @else if (state.status === 'reveal' && state.activeQuestion) {
+        <section class="host-reveal">
+          <header class="reveal-heading"><p class="eyebrow">Réponse révélée</p><h1>{{ state.activeQuestion.correctOption?.label || 'Réponse indisponible' }}</h1></header>
+          @if (state.answerStats; as stats) {
+            <section class="answer-impact" aria-label="Répartition des réponses">
+              <div class="answer-impact-orb" [style.--correct]="answerCorrectRate(stats) + '%'" [attr.aria-label]="stats.correct + ' bonnes réponses sur ' + stats.total">
+                <strong>{{ answerCorrectRate(stats) }}%</strong><span>de réussite</span>
+              </div>
+              <div class="answer-impact-bars">
+                <div class="answer-impact-row good"><span><app-icon name="check" /> Bonnes réponses</span><strong>{{ stats.correct }}</strong><i [style.width.%]="answerStatWidth(stats.correct, stats.total)"></i></div>
+                <div class="answer-impact-row bad"><span><app-icon name="x" /> Mauvaises réponses</span><strong>{{ stats.incorrect }}</strong><i [style.width.%]="answerStatWidth(stats.incorrect, stats.total)"></i></div>
+              </div>
+            </section>
+          }
+          <section class="round-leaders"><h2>Le top 5</h2><ol class="leaderboard podium">
+            @for (player of state.topLeaderboard; track player.id; let index = $index) {
+              <li><strong>{{ index + 1 }}</strong><span>{{ player.nickname }}</span><strong>{{ player.score | number }}</strong></li>
+            }
+          </ol></section>
+          <div class="reveal-actions"><span>Question {{ state.currentQuestionIndex + 1 }} / {{ state.totalQuestions }}</span>
+            <button type="button" (click)="nextQuestion()" [disabled]="commandPending()" [class.is-loading]="commandPending()">
+              {{ commandPending() ? 'Chargement…' : state.currentQuestionIndex + 1 >= state.totalQuestions ? 'Voir les résultats' : 'Question suivante' }}
+              <app-icon name="arrow-right" />
+            </button>
+          </div>
+        </section>
+      }
+      @if (message()) { <p class="status-message" [class.error]="messageIsError()" role="status">{{ message() }}</p> }
+    </main>
+  }
+}
+
+}
+
+<ng-template #clueTpl let-clue="clue" let-autoplay="autoplay">
+  @if (clue.kind === 'image' || isImageUrl(clue.content)) {
+    <figure class="clue-figure"><img [src]="clue.content" alt="Indice visuel"></figure>
+  } @else if (clue.kind === 'audio') {
+    <div class="clue-media audio-clue">
+      <app-icon name="music" [size]="56" /><span>Indice sonore</span>
+      <audio #hostMedia [src]="clue.content" [autoplay]="autoplay" [attr.data-autoplay]="autoplay ? 'true' : null" controls preload="auto"></audio>
+      @if (autoplay && autoplayBlocked()) { <button type="button" (click)="retryMediaPlayback()"><app-icon name="play" /> Écouter l'indice</button> }
+    </div>
+  } @else if (clue.kind === 'video') {
+    <div class="clue-media">
+      <video #hostMedia [src]="clue.content" [autoplay]="autoplay" [attr.data-autoplay]="autoplay ? 'true' : null" controls preload="auto" playsinline></video>
+      @if (autoplay && autoplayBlocked()) { <button type="button" (click)="retryMediaPlayback()"><app-icon name="play" /> Lancer la vidéo</button> }
+    </div>
+  } @else { <p class="text-clue">{{ clue.content }}</p> }
+</ng-template>

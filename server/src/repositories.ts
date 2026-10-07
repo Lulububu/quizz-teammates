@@ -128,6 +128,16 @@ export type QuestionReference = {
   target_id: string;
 };
 
+export type ActiveRoomSummary = {
+  code: string;
+  quiz_id: string;
+  quiz_title: string;
+  status: 'lobby' | 'question' | 'reveal';
+  current_question_index: number;
+  total_questions: number;
+  created_at: string;
+};
+
 export type PlayerScore = {
   id: string;
   nickname: string;
@@ -160,6 +170,37 @@ export async function listQuizzes(ownerUserId: string): Promise<QuizRow[]> {
   return snapshot.docs
     .map((doc) => quizFromDoc(doc.id, doc.data(), false))
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+export async function listActiveRooms(ownerUserId: string): Promise<ActiveRoomSummary[]> {
+  const ownedQuizzes = await quizzes.where('owner_user_id', '==', ownerUserId).select('title', 'rounds').get();
+  const quizMetadata = new Map(ownedQuizzes.docs.map((doc) => {
+    const data = doc.data();
+    const questionCount = (data.rounds ?? []).reduce((count: number, round: { works?: unknown[] }) => count + (round.works?.length ?? 3) + 1, 0);
+    return [doc.id, { title: String(data.title ?? ''), questionCount }];
+  }));
+  const quizIds = [...quizMetadata.keys()];
+  const activeRooms: ActiveRoomSummary[] = [];
+  // Query by owned quiz IDs so existing rooms need no ownership migration or composite index.
+  for (let offset = 0; offset < quizIds.length; offset += 10) {
+    const snapshot = await rooms.where('quiz_id', 'in', quizIds.slice(offset, offset + 10))
+      .select('code', 'quiz_id', 'status', 'current_question_index', 'question_order', 'created_at').get();
+    for (const doc of snapshot.docs) {
+      const room = doc.data();
+      const quiz = quizMetadata.get(room.quiz_id);
+      if (!quiz || !['lobby', 'question', 'reveal'].includes(room.status)) continue;
+      activeRooms.push({
+        code: room.code ?? doc.id,
+        quiz_id: room.quiz_id,
+        quiz_title: quiz.title,
+        status: room.status,
+        current_question_index: room.current_question_index ?? -1,
+        total_questions: room.question_order?.length ?? quiz.questionCount,
+        created_at: room.created_at ?? '',
+      });
+    }
+  }
+  return activeRooms.sort((a, b) => b.created_at.localeCompare(a.created_at) || a.code.localeCompare(b.code));
 }
 
 export async function createQuiz(input: QuizInput, ownerUserId: string): Promise<QuizRow> {

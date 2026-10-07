@@ -48,6 +48,16 @@ export type Room = {
   gameState?: GameState;
 };
 
+export type ActiveRoomSummary = {
+  code: string;
+  quiz_id: string;
+  quiz_title: string;
+  status: 'lobby' | 'question' | 'reveal';
+  current_question_index: number;
+  total_questions: number;
+  created_at: string;
+};
+
 export type PlayerScore = {
   id: string;
   nickname: string;

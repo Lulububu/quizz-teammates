@@ -1,5 +1,8 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { IconComponent } from './icon.component';
+
+let searchSequence = 0;
 
 type SearchEntry = {
   label: string;
@@ -9,12 +12,16 @@ type SearchEntry = {
 @Component({
   selector: 'app-answer-search',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, IconComponent],
   template: `
     <div class="autocomplete">
-      <label>
-        {{ label }}
+      @if (!selectedValue) {
+      <label [for]="inputId">{{ label }}</label>
+      <div class="search-input-wrap">
+        <app-icon name="search" />
         <input
+          #searchInput
+          [id]="inputId"
           [ngModel]="query"
           (ngModelChange)="updateQuery($event)"
           [placeholder]="placeholder"
@@ -22,23 +29,28 @@ type SearchEntry = {
           autocomplete="off"
           role="combobox"
           aria-autocomplete="list"
-          [attr.aria-expanded]="filteredSuggestions.length > 0"
+          [attr.aria-expanded]="filteredSuggestions.length > 0 && !selectedValue"
+          [attr.aria-controls]="inputId + '-list'"
+          [attr.aria-activedescendant]="filteredSuggestions.length ? inputId + '-option-' + activeIndex : null"
           (keydown)="handleKey($event)"
         >
-      </label>
+      </div>
+      }
 
       @if (filteredSuggestions.length > 0 && !selectedValue) {
-        <div class="suggestion-list" role="listbox">
+        <div class="suggestion-list" role="listbox" [id]="inputId + '-list'" [attr.aria-label]="label">
           @for (suggestion of filteredSuggestions; track suggestion; let index = $index) {
             <button
               type="button"
               role="option"
+              [id]="inputId + '-option-' + index"
               [class.active]="activeIndex === index"
               [attr.aria-selected]="activeIndex === index"
               [disabled]="disabled"
+              [title]="suggestion"
               (click)="selectSuggestion(suggestion)"
             >
-              {{ suggestion }}
+              <span class="suggestion-label">{{ suggestion }}</span>
             </button>
           }
         </div>
@@ -50,17 +62,30 @@ type SearchEntry = {
 
       @if (selectedValue) {
         <div class="selected-search-answer">
-          <span>Réponse sélectionnée</span>
-          <strong>{{ selectedValue }}</strong>
-          <button type="button" class="secondary" [disabled]="disabled" (click)="clear()">Modifier</button>
+          <app-icon name="check" />
+          <div><span>{{ label }}</span><strong>{{ selectedValue }}</strong></div>
+          <button #editSelection type="button" class="secondary icon-button" title="Modifier la réponse" aria-label="Modifier la réponse" [disabled]="disabled" (click)="clear()"><app-icon name="pencil" /></button>
         </div>
       }
     </div>
   `,
+  styles: [`
+    :host { min-width: 0; }
+    .suggestion-list { display: flex; flex-direction: column; align-items: stretch; overflow-x: hidden; }
+    .suggestion-list button { flex: 0 0 auto; width: 100%; min-width: 0; height: auto; }
+    .suggestion-label, .selected-search-answer strong {
+      display: block; white-space: normal; overflow-wrap: anywhere; word-break: normal;
+      overflow: visible; text-overflow: clip; -webkit-line-clamp: unset;
+    }
+  `],
 })
 export class AnswerSearchComponent implements OnChanges {
+  readonly inputId = 'answer-search-' + ++searchSequence;
+  @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('editSelection') editSelection?: ElementRef<HTMLButtonElement>;
   @Input() values: string[] = [];
   @Input() value = '';
+  @Input() resetKey = '';
   @Input() label = 'Rechercher une réponse';
   @Input() placeholder = 'Saisissez au moins 2 caractères';
   @Input() disabled = false;
@@ -78,9 +103,10 @@ export class AnswerSearchComponent implements OnChanges {
       this.searchIndex = this.values.map((label) => ({ label, normalized: normalize(label) }));
       this.refreshSuggestions();
     }
-    if (changes['value'] && this.value !== this.selectedValue) {
+    if (changes['resetKey'] || (changes['value'] && this.value !== this.selectedValue)) {
       this.selectedValue = this.value;
       this.query = this.value;
+      this.activeIndex = 0;
       this.refreshSuggestions();
     }
   }
@@ -96,6 +122,7 @@ export class AnswerSearchComponent implements OnChanges {
   }
 
   handleKey(event: KeyboardEvent): void {
+    if (this.disabled) return;
     if (!this.filteredSuggestions.length) return;
     if (event.key === 'ArrowDown') {
       event.preventDefault();
@@ -109,14 +136,19 @@ export class AnswerSearchComponent implements OnChanges {
     } else if (event.key === 'Escape') {
       this.clear();
     }
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      document.getElementById(this.inputId + '-option-' + this.activeIndex)?.scrollIntoView({ block: 'nearest' });
+    }
   }
 
   selectSuggestion(suggestion: string): void {
+    if (this.disabled) return;
     this.selectedValue = suggestion;
     this.query = suggestion;
     this.filteredSuggestions = [];
     this.activeIndex = 0;
     this.valueChange.emit(suggestion);
+    window.setTimeout(() => this.editSelection?.nativeElement.focus({ preventScroll: true }));
   }
 
   clear(): void {
@@ -125,6 +157,7 @@ export class AnswerSearchComponent implements OnChanges {
     this.filteredSuggestions = [];
     this.activeIndex = 0;
     this.valueChange.emit('');
+    window.setTimeout(() => this.searchInput?.nativeElement.focus());
   }
 
   private refreshSuggestions(): void {

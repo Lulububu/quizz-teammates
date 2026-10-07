@@ -1,0 +1,24 @@
+{
+  "checks": [
+    "Active rooms: statuses, progress, loading, refresh, failure, empty state and mobile layout",
+    "Host: waits for restored authentication, keeps deadline/scores/answers, reconnects, retries after timeout and leaves subscription on navigation",
+    "Editor: eight fully wrapped labels, scrolling, unbroken long words, keyboard selection and edit",
+    "Player: full suggestions and full selected answer with an accessible validation button at 360px across themes"
+  ],
+  "errors": [],
+  "screenshots": [
+    "01-parties-desktop.png",
+    "02-parties-mobile.png",
+    "03-libelles-editeur.png",
+    "04-recherche-mobile-studio.png",
+    "05-selection-mobile-studio.png",
+    "04-recherche-mobile-cosmic.png",
+    "05-selection-mobile-cosmic.png",
+    "04-recherche-mobile-academy.png",
+    "05-selection-mobile-academy.png",
+    "04-recherche-mobile-orbit.png",
+    "05-selection-mobile-orbit.png",
+    "04-recherche-mobile-arcade.png",
+    "05-selection-mobile-arcade.png"
+  ]
+}

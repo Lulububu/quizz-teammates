@@ -1,0 +1,72 @@
+[
+  {
+    "name": "01-accueil-cosmic",
+    "viewport": 1440,
+    "contentWidth": 1440,
+    "pageHeight": 1000,
+    "nestedBorders": 0
+  },
+  {
+    "name": "02-bibliotheque-cosmic",
+    "viewport": 1440,
+    "contentWidth": 1440,
+    "pageHeight": 1000,
+    "nestedBorders": 0
+  },
+  {
+    "name": "03-editeur-cosmic",
+    "viewport": 1440,
+    "contentWidth": 1440,
+    "pageHeight": 2576,
+    "nestedBorders": 2
+  },
+  {
+    "name": "04-editeur-cosmic-complet",
+    "viewport": 1440,
+    "contentWidth": 1440,
+    "pageHeight": 2576,
+    "nestedBorders": 2
+  },
+  {
+    "name": "05-editeur-academy",
+    "viewport": 1440,
+    "contentWidth": 1440,
+    "pageHeight": 2576,
+    "nestedBorders": 2
+  },
+  {
+    "name": "06-salon-cosmic",
+    "viewport": 1440,
+    "contentWidth": 1440,
+    "pageHeight": 1000,
+    "nestedBorders": 0
+  },
+  {
+    "name": "07-indice-cosmic",
+    "viewport": 1440,
+    "contentWidth": 1440,
+    "pageHeight": 1177,
+    "nestedBorders": 0
+  },
+  {
+    "name": "08-resultat-animateur-cosmic",
+    "viewport": 1440,
+    "contentWidth": 1440,
+    "pageHeight": 1000,
+    "nestedBorders": 0
+  },
+  {
+    "name": "09-joueur-mobile-cosmic",
+    "viewport": 390,
+    "contentWidth": 390,
+    "pageHeight": 910,
+    "nestedBorders": 0
+  },
+  {
+    "name": "10-resultat-joueur-mobile-cosmic",
+    "viewport": 390,
+    "contentWidth": 390,
+    "pageHeight": 844,
+    "nestedBorders": 0
+  }
+]

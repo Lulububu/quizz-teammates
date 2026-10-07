@@ -1,43 +1,48 @@
 import { Component, signal } from '@angular/core';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { ApiService } from './api.service';
+import { IconComponent } from './icon.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterLink, RouterOutlet],
+  imports: [RouterLink, RouterOutlet, IconComponent],
   template: `
-    <div class="app-shell">
-      <header class="topbar">
-        <a routerLink="/" class="brand">Quiz Teammates</a>
-        @if (api.hostRoomMeta(); as room) {
-          <div class="topbar-room">
-            <div class="topbar-room-code">
-              <span>Code</span>
-              <strong>{{ room.code }}</strong>
-            </div>
-            @if (room.qrCodeDataUrl) {
-              <img [src]="room.qrCodeDataUrl" alt="QR code pour rejoindre le salon">
+    <div class="app-shell" [class.game-shell]="gameView()" [class.player-shell-layout]="playerView()">
+      @if (!playerView()) {
+        <header class="topbar">
+          <a routerLink="/" class="brand"><app-icon name="copy" [size]="26" /> Quiz Teammates</a>
+          @if (api.hostRoomMeta(); as room) {
+            @if (api.gameState()?.status !== 'finished') {
+              <div class="topbar-room">
+                @if (api.gameState()?.status !== 'lobby') {
+                  <div class="topbar-room-code"><span>Code</span><strong>{{ room.code }}</strong></div>
+                }
+                <details class="room-share">
+                  <summary class="icon-button" aria-label="Afficher le QR code" title="Afficher le QR code"><app-icon name="qr" /></summary>
+                  <div class="share-popover">
+                    @if (room.qrCodeDataUrl) { <img [src]="room.qrCodeDataUrl" alt="QR code pour rejoindre la partie"> }
+                    <strong>{{ room.code }}</strong>
+                    <button type="button" class="secondary" (click)="copyJoinLink(room.code)">
+                      <app-icon [name]="linkCopied() ? 'check' : 'link'" /> {{ linkCopied() ? 'Lien copié' : 'Copier le lien' }}
+                    </button>
+                  </div>
+                </details>
+                <button type="button" class="secondary names-visibility" [class.active]="api.gameState()?.hidePlayerNames"
+                  [disabled]="visibilityPending()" [attr.aria-pressed]="api.gameState()?.hidePlayerNames"
+                  [title]="api.gameState()?.hidePlayerNames ? 'Afficher les pseudos' : 'Masquer les pseudos'"
+                  (click)="togglePlayerNames(room.code)">
+                  <app-icon [name]="api.gameState()?.hidePlayerNames ? 'eye-off' : 'eye'" />
+                  <span>{{ visibilityPending() ? 'Mise à jour…' : api.gameState()?.hidePlayerNames ? 'Pseudos masqués' : 'Pseudos visibles' }}</span>
+                </button>
+              </div>
+            } @else {
+              <a routerLink="/" class="icon-button" title="Retour aux quiz" aria-label="Retour aux quiz"><app-icon name="arrow-right" /></a>
             }
-            <button
-              type="button"
-              class="secondary names-visibility"
-              [class.active]="api.gameState()?.hidePlayerNames"
-              [disabled]="visibilityPending()"
-              (click)="togglePlayerNames(room.code)"
-            >
-              {{ visibilityPending()
-                ? 'Mise à jour…'
-                : api.gameState()?.hidePlayerNames
-                  ? 'Afficher les pseudos'
-                  : 'Masquer les pseudos' }}
-            </button>
-            <button type="button" class="secondary" (click)="copyJoinLink(room.code)">
-              {{ linkCopied() ? 'Lien copié' : 'Copier le lien' }}
-            </button>
-          </div>
-        }
-      </header>
+          }
+        </header>
+      }
       <router-outlet />
     </div>
   `,
@@ -45,27 +50,34 @@ import { ApiService } from './api.service';
 export class AppComponent {
   linkCopied = signal(false);
   visibilityPending = signal(false);
+  gameView = signal(this.isGamePath(window.location.pathname));
+  playerView = signal(window.location.pathname.startsWith('/join/'));
 
-  constructor(public api: ApiService) {}
+  constructor(public api: ApiService, router: Router) {
+    router.events.pipe(takeUntilDestroyed()).subscribe(event => {
+      if (!(event instanceof NavigationEnd)) return;
+      this.gameView.set(this.isGamePath(event.urlAfterRedirects));
+      this.playerView.set(event.urlAfterRedirects.startsWith('/join/'));
+    });
+  }
+
+  private isGamePath(path: string): boolean {
+    return path.startsWith('/rooms/') || path.startsWith('/join/');
+  }
 
   async copyJoinLink(code: string): Promise<void> {
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}/join/${code}`);
+      await navigator.clipboard.writeText(window.location.origin + '/join/' + code);
       this.linkCopied.set(true);
       window.setTimeout(() => this.linkCopied.set(false), 1800);
-    } catch {
-      this.linkCopied.set(false);
-    }
+    } catch { this.linkCopied.set(false); }
   }
 
   async togglePlayerNames(code: string): Promise<void> {
     const state = this.api.gameState();
     if (!state || this.visibilityPending()) return;
     this.visibilityPending.set(true);
-    try {
-      await this.api.setPlayerNamesVisibility(code, !state.hidePlayerNames);
-    } finally {
-      this.visibilityPending.set(false);
-    }
+    try { await this.api.setPlayerNamesVisibility(code, !state.hidePlayerNames); }
+    finally { this.visibilityPending.set(false); }
   }
 }

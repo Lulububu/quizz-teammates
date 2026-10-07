@@ -12,6 +12,7 @@ import { z } from 'zod';
 import { requireAdmin, verifyAdminToken } from './auth.js';
 import { createCloudinaryUploadSignature } from './cloudinary.js';
 import { getFirebaseWebConfig } from './firebase.js';
+import { remainingQuestionDelay } from './room-resume.js';
 import {
   addPlayer,
   createQuiz,
@@ -35,6 +36,7 @@ import {
   hasAnswered,
   listAnswerDictionaries,
   listQuizzes,
+  listActiveRooms,
   recordAnswer,
   removePlayer,
   saveAnswerDictionary,
@@ -146,10 +148,10 @@ const uploadSignatureSchema = z.object({
   kind: z.enum(['image', 'audio', 'video']),
 });
 
-const availableThemes = ['academy', 'cosmic', 'orbit', 'arcade'] as const;
+const availableThemes = ['studio', 'academy', 'cosmic', 'orbit', 'arcade'] as const;
 const configuredTheme = availableThemes.includes(process.env.APP_THEME as typeof availableThemes[number])
   ? process.env.APP_THEME
-  : 'academy';
+  : 'studio';
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
@@ -304,6 +306,10 @@ app.post('/api/quizzes/:quizId/rooms', requireAdmin, asyncRoute(async (req, res)
   res.status(201).json(room);
 }));
 
+app.get('/api/rooms', requireAdmin, asyncRoute(async (req, res) => {
+  res.json(await listActiveRooms(req.adminUser!.id));
+}));
+
 app.get('/api/rooms/:code', asyncRoute(async (req, res) => {
   const room = await getRoomByCode(req.params.code);
   if (!room) {
@@ -352,19 +358,40 @@ function isPayloadTooLargeError(error: unknown): boolean {
 
 io.on('connection', (socket) => {
   socket.on('host-room', async (payload: { code: string; idToken?: string }, callback) => {
-    const room = await getRoomByCode(payload.code);
-    if (!room) {
-      callback?.({ ok: false, error: 'Salon introuvable' });
-      return;
+    socket.data.hostRequestCode = payload.code;
+    try {
+      const room = await getRoomByCode(payload.code);
+      if (!room) {
+        callback?.({ ok: false, error: 'Salon introuvable' });
+        return;
+      }
+      const admin = await verifyRoomOwner(room.quiz_id, payload.idToken);
+      if (!admin.ok) {
+        callback?.({ ok: false, error: admin.error });
+        return;
+      }
+      if (socket.data.hostRequestCode !== payload.code || !socket.connected) return;
+      if (socket.data.hostRoomCode && socket.data.hostRoomCode !== room.code) {
+        socket.leave(socket.data.hostRoomCode);
+        socket.leave(hostChannel(socket.data.hostRoomCode));
+      }
+      socket.data.hostRoomCode = room.code;
+      socket.join(room.code);
+      socket.join(hostChannel(room.code));
+      await restoreQuestionTimer(room.code);
+      callback?.({ ok: true, gameState: await getGameState(room.code, true, false) });
+    } catch (error) {
+      console.error('Reprise du salon impossible', error);
+      callback?.({ ok: false, error: 'Impossible de reprendre le salon. Réessayez.' });
     }
-    const admin = await verifyRoomOwner(room.quiz_id, payload.idToken);
-    if (!admin.ok) {
-      callback?.({ ok: false, error: admin.error });
-      return;
-    }
-    socket.join(room.code);
-    socket.join(hostChannel(room.code));
-    callback?.({ ok: true, gameState: await getGameState(room.code, true, false) });
+  });
+
+  socket.on('leave-host-room', (payload: { code: string }) => {
+    if (socket.data.hostRequestCode === payload.code) socket.data.hostRequestCode = undefined;
+    if (socket.data.hostRoomCode !== payload.code) return;
+    socket.leave(payload.code);
+    socket.leave(hostChannel(payload.code));
+    socket.data.hostRoomCode = undefined;
   });
 
   socket.on('join-room', async (payload: { code: string; nickname: string }, callback) => {
@@ -760,6 +787,24 @@ async function activateQuestion(code: string, questionIndex: number) {
   );
   await emitGameState(room.code, true);
   return { ok: true };
+}
+
+async function restoreQuestionTimer(code: string): Promise<void> {
+  const room = await getRoomByCode(code);
+  if (!room) return;
+  const delay = remainingQuestionDelay(room);
+  if (delay === undefined) return;
+  if (delay === 0) {
+    await revealQuestion(code);
+  } else if (!revealTimers.has(code)) {
+    revealTimers.set(code, setTimeout(() => {
+      void (async () => {
+        const current = await getRoomByCode(code);
+        if (current?.current_question_index === room.current_question_index
+          && current.question_ends_at === room.question_ends_at) await revealQuestion(code);
+      })().catch(console.error);
+    }, delay));
+  }
 }
 
 async function revealQuestion(code: string): Promise<void> {

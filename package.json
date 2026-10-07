@@ -22,6 +22,7 @@
     "perf:setup": "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm --prefix performance ci",
     "perf:smoke": "node scripts/performance-artillery-smoke.mjs",
     "test:timing": "tsx --test tests/game-timing.test.ts",
+    "test:rooms": "tsx --test tests/active-rooms.test.ts",
     "typecheck": "tsc -p server/tsconfig.json --noEmit && npx --no-install ng build --configuration development",
     "lint": "npm run typecheck"
   },
@@ -39,6 +40,7 @@
     "express": "^4.21.2",
     "firebase": "^10.14.1",
     "firebase-admin": "^12.7.0",
+    "lucide-angular": "^0.468.0",
     "qrcode": "^1.5.4",
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.1",

@@ -29,4 +29,4 @@ services:
       - key: CLOUDINARY_API_SECRET
         sync: false
       - key: APP_THEME
-        value: academy
+        value: studio

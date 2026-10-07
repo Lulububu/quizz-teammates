@@ -1,0 +1,287 @@
+{
+  "checks": [
+    "Editor: add/remove clues, add works, preview, settings, validation focus, pending save and save confirmation",
+    "Host: viewport fit and clue reveal without exposing future clues; previous clue selection",
+    "Host: audio and video loaded and playing; decoded video frame is nonblank",
+    "Player: selection required, pending/accepted/result states; late acknowledgement ignored on next question",
+    "Mobile editor: collapsed navigation, selecting/adding a question opens the corresponding editor",
+    "Final identities: host/player reveal the same names at 0 / 1.2 / 3.5 / 6.5 / 10 / 13.5 seconds",
+    "Reduced motion, mobile host/podium and narrow layout equivalent to 200% desktop zoom"
+  ],
+  "metrics": [
+    {
+      "name": "00-accueil",
+      "viewport": 1440,
+      "viewportHeight": 1000,
+      "contentWidth": 1440,
+      "pageHeight": 1000
+    },
+    {
+      "name": "00-accueil-mobile",
+      "viewport": 390,
+      "viewportHeight": 844,
+      "contentWidth": 390,
+      "pageHeight": 844
+    },
+    {
+      "name": "01-bibliotheque",
+      "viewport": 1440,
+      "viewportHeight": 1000,
+      "contentWidth": 1440,
+      "pageHeight": 1000
+    },
+    {
+      "name": "02-editeur-neuf",
+      "viewport": 1440,
+      "viewportHeight": 1000,
+      "contentWidth": 1440,
+      "pageHeight": 1000
+    },
+    {
+      "name": "03-editeur-image",
+      "viewport": 1440,
+      "viewportHeight": 1000,
+      "contentWidth": 1440,
+      "pageHeight": 1006
+    },
+    {
+      "name": "04-apercu",
+      "viewport": 1440,
+      "viewportHeight": 1000,
+      "contentWidth": 1440,
+      "pageHeight": 1006
+    },
+    {
+      "name": "05-reglages",
+      "viewport": 1440,
+      "viewportHeight": 1000,
+      "contentWidth": 1440,
+      "pageHeight": 1000
+    },
+    {
+      "name": "06-erreur-ciblee",
+      "viewport": 1440,
+      "viewportHeight": 1000,
+      "contentWidth": 1440,
+      "pageHeight": 1052
+    },
+    {
+      "name": "07-import",
+      "viewport": 1440,
+      "viewportHeight": 1000,
+      "contentWidth": 1440,
+      "pageHeight": 1000
+    },
+    {
+      "name": "08-dictionnaires",
+      "viewport": 1440,
+      "viewportHeight": 1000,
+      "contentWidth": 1440,
+      "pageHeight": 1388
+    },
+    {
+      "name": "09-salon",
+      "viewport": 1440,
+      "viewportHeight": 1000,
+      "contentWidth": 1440,
+      "pageHeight": 1000
+    },
+    {
+      "name": "10-indice-1440",
+      "viewport": 1440,
+      "viewportHeight": 900,
+      "contentWidth": 1440,
+      "pageHeight": 900
+    },
+    {
+      "name": "10-indice-1366",
+      "viewport": 1366,
+      "viewportHeight": 768,
+      "contentWidth": 1366,
+      "pageHeight": 768
+    },
+    {
+      "name": "10-indice-1920",
+      "viewport": 1920,
+      "viewportHeight": 1080,
+      "contentWidth": 1920,
+      "pageHeight": 1080
+    },
+    {
+      "name": "10-media-audio",
+      "viewport": 1440,
+      "viewportHeight": 900,
+      "contentWidth": 1440,
+      "pageHeight": 906
+    },
+    {
+      "name": "10-media-video",
+      "viewport": 1440,
+      "viewportHeight": 900,
+      "contentWidth": 1440,
+      "pageHeight": 906
+    },
+    {
+      "name": "11-resultats-animateur",
+      "viewport": 1440,
+      "viewportHeight": 900,
+      "contentWidth": 1440,
+      "pageHeight": 900
+    },
+    {
+      "name": "12-podium",
+      "viewport": 1440,
+      "viewportHeight": 900,
+      "contentWidth": 1440,
+      "pageHeight": 1119
+    },
+    {
+      "name": "13-joueur-pret",
+      "viewport": 390,
+      "viewportHeight": 844,
+      "contentWidth": 390,
+      "pageHeight": 844
+    },
+    {
+      "name": "14-joueur-recherche",
+      "viewport": 390,
+      "viewportHeight": 844,
+      "contentWidth": 390,
+      "pageHeight": 844
+    },
+    {
+      "name": "15-joueur-selection",
+      "viewport": 390,
+      "viewportHeight": 844,
+      "contentWidth": 390,
+      "pageHeight": 844
+    },
+    {
+      "name": "16-joueur-envoi",
+      "viewport": 390,
+      "viewportHeight": 844,
+      "contentWidth": 390,
+      "pageHeight": 844
+    },
+    {
+      "name": "17-joueur-enregistre",
+      "viewport": 390,
+      "viewportHeight": 844,
+      "contentWidth": 390,
+      "pageHeight": 844
+    },
+    {
+      "name": "18-joueur-correct",
+      "viewport": 390,
+      "viewportHeight": 844,
+      "contentWidth": 390,
+      "pageHeight": 844
+    },
+    {
+      "name": "19-joueur-incorrect",
+      "viewport": 390,
+      "viewportHeight": 844,
+      "contentWidth": 390,
+      "pageHeight": 844
+    },
+    {
+      "name": "20-joueur-360-800",
+      "viewport": 360,
+      "viewportHeight": 800,
+      "contentWidth": 360,
+      "pageHeight": 800
+    },
+    {
+      "name": "20-joueur-390-480",
+      "viewport": 390,
+      "viewportHeight": 480,
+      "contentWidth": 390,
+      "pageHeight": 480
+    },
+    {
+      "name": "21-joueur-choix",
+      "viewport": 390,
+      "viewportHeight": 844,
+      "contentWidth": 390,
+      "pageHeight": 844
+    },
+    {
+      "name": "22-joueur-personne",
+      "viewport": 390,
+      "viewportHeight": 844,
+      "contentWidth": 390,
+      "pageHeight": 844
+    },
+    {
+      "name": "23-joueur-final",
+      "viewport": 390,
+      "viewportHeight": 844,
+      "contentWidth": 390,
+      "pageHeight": 844
+    },
+    {
+      "name": "24-editeur-cosmic",
+      "viewport": 1440,
+      "viewportHeight": 900,
+      "contentWidth": 1440,
+      "pageHeight": 944
+    },
+    {
+      "name": "24-editeur-academy",
+      "viewport": 1440,
+      "viewportHeight": 900,
+      "contentWidth": 1440,
+      "pageHeight": 944
+    },
+    {
+      "name": "24-editeur-orbit",
+      "viewport": 1440,
+      "viewportHeight": 900,
+      "contentWidth": 1440,
+      "pageHeight": 944
+    },
+    {
+      "name": "24-editeur-arcade",
+      "viewport": 1440,
+      "viewportHeight": 900,
+      "contentWidth": 1440,
+      "pageHeight": 952
+    },
+    {
+      "name": "25-editeur-mobile",
+      "viewport": 390,
+      "viewportHeight": 844,
+      "contentWidth": 390,
+      "pageHeight": 1672
+    },
+    {
+      "name": "26-editeur-mobile-champ",
+      "viewport": 390,
+      "viewportHeight": 844,
+      "contentWidth": 390,
+      "pageHeight": 1672
+    },
+    {
+      "name": "27-editeur-zoom-equivalent",
+      "viewport": 720,
+      "viewportHeight": 500,
+      "contentWidth": 720,
+      "pageHeight": 1518
+    },
+    {
+      "name": "28-animateur-mobile",
+      "viewport": 390,
+      "viewportHeight": 844,
+      "contentWidth": 390,
+      "pageHeight": 844
+    },
+    {
+      "name": "29-podium-mobile",
+      "viewport": 390,
+      "viewportHeight": 844,
+      "contentWidth": 390,
+      "pageHeight": 968
+    }
+  ],
+  "errors": []
+}

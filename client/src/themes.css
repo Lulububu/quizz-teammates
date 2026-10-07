@@ -13,7 +13,7 @@ html[data-theme="cosmic"] {
   --orange: #e854bc;
   --primary: #d84fc6;
   --primary-hover: #f16eb7;
-  --primary-contrast: #ffffff;
+  --primary-contrast: #171b1a;
   --secondary: #3a4572;
   --secondary-contrast: #f7f8ff;
   --input-surface: #222a50;
@@ -294,7 +294,7 @@ html[data-theme="academy"] {
   --orange: #ed9946;
   --primary: #ed9946;
   --primary-hover: #f2ad62;
-  --primary-contrast: #ffffff;
+  --primary-contrast: #34251d;
   --secondary: #fff0d8;
   --secondary-contrast: #34251d;
   --input-surface: #ffffff;
@@ -355,7 +355,7 @@ html[data-theme="orbit"] {
   --orange: #ff6658;
   --primary: #ff6658;
   --primary-hover: #ff897e;
-  --primary-contrast: #ffffff;
+  --primary-contrast: #171b1a;
   --secondary: #ece9ff;
   --secondary-contrast: #35335f;
   --input-surface: #ffffff;

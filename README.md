@@ -81,17 +81,30 @@ Le scenario d'autocompletion recherche une valeur dans les suggestions visibles,
 Le thème actif est choisi côté serveur avec la variable `APP_THEME` :
 
 ```bash
-APP_THEME=academy
+APP_THEME=studio
 ```
 
-Quatre variantes sont disponibles :
+Cinq variantes sont disponibles :
 
+- `studio` (défaut) : création claire, jeu anthracite, accents citron et corail ;
 - `academy` : thème chaleureux et pédagogique, inspiré du second visuel ;
 - `cosmic` : thème sombre et compétitif, inspiré du premier visuel ;
 - `orbit` : thème pastel et ludique, inspiré du troisième visuel ;
 - `arcade` : thème original à fort contraste, inspiré des jeux télévisés rétro.
 
-Après une modification de `APP_THEME`, redémarrez le serveur local ou redéployez le service Render. Pour comparer ponctuellement un thème sans toucher à la configuration, ajoutez `?theme=cosmic`, `?theme=orbit`, `?theme=academy` ou `?theme=arcade` à l'URL. Cette option ne modifie pas le thème des autres visiteurs.
+Après une modification de `APP_THEME`, redémarrez le serveur local ou redéployez le service Render. Pour comparer ponctuellement un thème sans toucher à la configuration, ajoutez par exemple `?theme=studio` ou `?theme=cosmic` à l'URL. Cette option ne modifie pas le thème des autres visiteurs. Sur un service Render existant, mettez explicitement `APP_THEME=studio` si une autre valeur est déjà enregistrée.
+
+L'éditeur affiche une question active, avec les indices au centre et les réponses à droite. Les paramètres du quiz sont dans « Réglages ». Le suivi de la refonte et les contrôles visuels sont dans [l'audit Studio](docs/design/audit-graphique-2026-10-06/AUDIT.md).
+
+## Reprendre une partie
+
+Après connexion avec le compte créateur, ouvrez **Quiz en cours**, à côté de **Mes quiz** et **Dictionnaires**. Cet onglet liste vos salons en attente et vos parties non terminées, avec leur code, leur état et leur progression. **Actualiser** recharge la liste ; **Reprendre** ouvre le salon existant, sans créer de nouvelle partie.
+
+Les joueurs, les réponses enregistrées, les scores et l'ordre des questions sont conservés. Le temps de réponse continue de s'écouler pendant l'absence de l'animateur : une question déjà expirée affiche son résultat à la reprise. Après un redémarrage du serveur, le minuteur est rétabli depuis son échéance enregistrée, jamais remis à zéro. Les parties terminées ne figurent pas dans cet onglet. La modification ou la suppression du quiz supprime toujours ses salons, comme auparavant.
+
+Les joueurs continuent à participer sans compte. La liste des parties et leur pilotage sont réservés à leur propriétaire.
+
+Vérifications locales : `npm run test:rooms` (isolation des comptes et échéances), `npm run test:timing` (indices et révélation). Le scénario navigateur `node output/playwright/resume-rooms/verify.mjs` utilise Chrome, le serveur local sur le port 4200 et des données fictives ; il ne touche pas aux données Firebase.
 
 ## Dictionnaire d'oeuvres
 

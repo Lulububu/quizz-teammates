@@ -11,7 +11,7 @@ import {
 } from 'firebase/auth';
 import { io, Socket } from 'socket.io-client';
 import { firstValueFrom } from 'rxjs';
-import { AdminUser, AnswerDictionary, GameState, LobbyReaction, PlayerResult, PlayerScore, Quiz, Room } from './types';
+import { ActiveRoomSummary, AdminUser, AnswerDictionary, GameState, LobbyReaction, PlayerResult, PlayerScore, Quiz, Room } from './types';
 
 type FirebaseWebConfig = {
   apiKey: string;
@@ -35,6 +35,7 @@ type CloudinaryUploadSignature = {
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
+  connected = signal(false);
   leaderboard = signal<PlayerScore[]>([]);
   gameState = signal<GameState | undefined>(undefined);
   playerResult = signal<PlayerResult | undefined>(undefined);
@@ -51,6 +52,8 @@ export class ApiService {
 
   constructor(private http: HttpClient) {
     this.socket = io();
+    this.socket.on('connect', () => this.connected.set(true));
+    this.socket.on('disconnect', () => this.connected.set(false));
     this.socket.on('leaderboard', (scores: PlayerScore[]) => this.leaderboard.set(scores));
     this.socket.on('game-state', (state: GameState) => {
       const currentState = this.gameState();
@@ -140,6 +143,10 @@ export class ApiService {
     return this.http.get<Room>(`/api/rooms/${code}`);
   }
 
+  listActiveRooms() {
+    return this.http.get<ActiveRoomSummary[]>('/api/rooms', { headers: this.authHeaders() });
+  }
+
   joinRoom(
     code: string,
     nickname: string,
@@ -154,8 +161,14 @@ export class ApiService {
     return this.emit('resume-player', { code, playerId });
   }
 
-  hostRoom(code: string): Promise<{ ok: boolean; gameState?: GameState; error?: string }> {
-    return this.emit('host-room', { code, idToken: this.idToken });
+  async hostRoom(code: string, signal?: AbortSignal): Promise<{ ok: boolean; gameState?: GameState; error?: string }> {
+    const idToken = this.auth?.currentUser ? await this.auth.currentUser.getIdToken() : this.idToken;
+    signal?.throwIfAborted();
+    return this.emitWithTimeout('host-room', { code, idToken }, 12_000);
+  }
+
+  leaveHostRoom(code: string): void {
+    this.socket.emit('leave-host-room', { code });
   }
 
   startGame(code: string): Promise<{ ok: boolean; error?: string }> {

@@ -1,0 +1,556 @@
+<main class="page grid screen screen-home" [class.editor-page]="api.adminUser() && adminView() === 'editor'">
+  @if (!api.authReady()) {
+    <section class="auth-loading" aria-live="polite">
+      <div class="brand-loader" aria-hidden="true"></div>
+      <p>Ouverture de Quiz Teammates…</p>
+    </section>
+  } @else if (!api.adminUser()) {
+    <section class="public-entry">
+      <div>
+        <p class="eyebrow">Quiz Teammates</p>
+        <h1>Rejoindre une partie</h1>
+        <p>Entrez le code affiché par l'animateur ou utilisez directement le QR code.</p>
+        <form class="join-code-form" (ngSubmit)="joinByCode()">
+          <label>
+            Code de la partie
+            <input
+              [(ngModel)]="publicRoomCode"
+              name="roomCode"
+              maxlength="8"
+              inputmode="text"
+              autocomplete="off"
+              placeholder="ABC123"
+            >
+          </label>
+          <button type="submit" [disabled]="publicRoomCode.trim().length < 4">Rejoindre</button>
+        </form>
+      </div>
+      <div class="admin-login">
+        <h2>Créer et animer</h2>
+        <p>Connectez-vous avec Google pour gérer vos quiz et lancer une partie.</p>
+        <button type="button" class="secondary" (click)="api.signInWithGoogle()">Connexion avec Google</button>
+        @if (api.authError()) {
+          <p class="status-message error" role="alert">{{ api.authError() }}</p>
+        }
+      </div>
+    </section>
+  } @else {
+    <header class="admin-header" [hidden]="adminView() === 'editor'">
+      <div>
+        <p class="eyebrow">Espace de création</p>
+        <h1>{{ adminView() === 'dictionaries' ? 'Dictionnaires' : adminView() === 'active-rooms' ? 'Quiz en cours' : 'Mes quiz' }}</h1>
+      </div>
+      <button type="button" class="secondary" (click)="api.signOut()">Déconnexion</button>
+    </header>
+
+    <nav class="admin-tabs" aria-label="Administration" [hidden]="adminView() === 'editor'">
+      <button type="button" [class.active]="adminView() === 'quizzes'" (click)="switchView('quizzes')">Mes quiz</button>
+      <button type="button" [class.active]="adminView() === 'active-rooms'" (click)="switchView('active-rooms')">Quiz en cours</button>
+      <button type="button" [class.active]="adminView() === 'dictionaries'" (click)="switchView('dictionaries')">Dictionnaires</button>
+    </nav>
+
+    @if (adminView() === 'quizzes') {
+      <section class="panel grid quiz-library">
+        <div class="section-heading">
+          <div>
+            <h2>{{ quizzes().length }} quiz</h2>
+          </div>
+          <div class="row-actions">
+            <button type="button" class="secondary" (click)="openImportModal()"><app-icon name="upload" [size]="18" /> Importer JSON</button>
+            <button type="button" (click)="openNewQuiz()"><app-icon name="plus" [size]="18" /> Nouveau quiz</button>
+          </div>
+        </div>
+        @if (quizzes().length === 0) {
+          <div class="empty-state">
+            <h3>Aucun quiz</h3>
+            <p>Créez votre premier quiz pour pouvoir ouvrir un salon.</p>
+          </div>
+        }
+        <div class="quiz-list">
+          @for (quiz of quizzes(); track quiz.id) {
+            <article class="quiz-row">
+              <div>
+                <h3>{{ quiz.title }}</h3>
+                <p>{{ quiz.description || 'Sans description' }}</p>
+                <span>{{ quiz.rounds?.length || 0 }} manche(s) · {{ (quiz.rounds?.length || 0) * 4 }} question(s)</span>
+                <span>
+                  {{ quiz.sequence_mode === 'works-first'
+                    ? 'Œuvres mélangées, personnes à la fin'
+                    : 'Déroulement par manche' }}
+                </span>
+                @if (quiz.hide_player_names) {
+                  <span>Classements anonymisés</span>
+                }
+              </div>
+              <div class="row-actions">
+                <button type="button" (click)="createRoom(quiz.id)" [disabled]="!!launchingQuizId()" [class.is-loading]="launchingQuizId() === quiz.id"><app-icon name="play" [size]="18" /> {{ launchingQuizId() === quiz.id ? 'Création…' : 'Lancer' }}</button>
+                <button type="button" class="icon-button" (click)="editQuiz(quiz.id)" [attr.aria-label]="'Modifier ' + quiz.title" title="Modifier le quiz"><app-icon name="pencil" [size]="18" /></button>
+                <details class="action-menu">
+                  <summary class="icon-button" title="Autres actions" [attr.aria-label]="'Actions pour ' + quiz.title"><app-icon name="more" /></summary>
+                  <div class="action-menu-items" (click)="closeActionMenu($event)">
+                    <button type="button" (click)="duplicateQuiz(quiz)"><app-icon name="copy" [size]="17" /> Dupliquer</button>
+                    <button type="button" (click)="exportQuiz(quiz.id)"><app-icon name="download" [size]="17" /> Exporter JSON</button>
+                    <button type="button" class="danger ghost" (click)="deleteQuiz(quiz)"><app-icon name="trash" [size]="17" /> Supprimer</button>
+                  </div>
+                </details>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    @if (adminView() === 'active-rooms') {
+      <section class="quiz-library active-rooms" aria-label="Parties à reprendre" [attr.aria-busy]="activeRoomsLoading()">
+        <div class="section-heading">
+          <h2>{{ activeRoomsLoading() ? 'Chargement des parties…' : activeRooms().length + (activeRooms().length > 1 ? ' parties à reprendre' : ' partie à reprendre') }}</h2>
+          <button type="button" class="secondary" (click)="loadActiveRooms()" [disabled]="activeRoomsLoading()" [class.is-loading]="activeRoomsLoading()"><app-icon name="refresh" [size]="18" /> Actualiser</button>
+        </div>
+        @if (activeRoomsLoading()) {
+          <p class="active-rooms-status" role="status"><span class="studio-spinner" aria-hidden="true"></span> Récupération de vos parties…</p>
+        } @else if (activeRoomsError()) {
+          <p class="status-message error" role="alert">{{ activeRoomsError() }}</p>
+        } @else if (activeRooms().length === 0) {
+          <div class="empty-state"><h3>Aucune partie en cours</h3><p>Vos salons en attente de joueurs et vos parties non terminées apparaîtront ici.</p><button type="button" class="secondary" (click)="switchView('quizzes')">Mes quiz <app-icon name="arrow-right" [size]="18" /></button></div>
+        } @else {
+          <div class="quiz-list">
+            @for (room of activeRooms(); track room.code) {
+              <article class="quiz-row active-room-row">
+                <div>
+                  <h3>{{ room.quiz_title }}</h3>
+                  <p><strong class="active-room-code">{{ room.code }}</strong><span class="active-room-phase">{{ room.status === 'lobby' ? 'En attente de joueurs' : room.status === 'question' ? 'Question en cours' : 'Réponse révélée' }}</span></p>
+                  <span>{{ room.status === 'lobby' ? room.total_questions + ' questions' : 'Question ' + (room.current_question_index + 1) + ' / ' + room.total_questions }}</span>
+                  @if (room.created_at) { <span>Créée le {{ room.created_at | date:'dd/MM/yyyy à HH:mm' }}</span> }
+                </div>
+                <a class="button-link" [routerLink]="['/rooms', room.code]" queryParamsHandling="preserve"><app-icon name="play" [size]="18" /> Reprendre</a>
+              </article>
+            }
+          </div>
+        }
+      </section>
+    }
+
+    @if (importModalOpen()) {
+      <div class="modal-backdrop" role="presentation" (click)="closeImportModal()">
+        <section class="modal-panel import-modal" role="dialog" aria-modal="true" aria-labelledby="import-title" (click)="$event.stopPropagation()">
+          <header class="modal-header">
+            <div>
+              <p class="eyebrow">Import de quiz</p>
+              <h2 id="import-title">Importer un JSON</h2>
+            </div>
+            <button type="button" class="secondary" (click)="closeImportModal()" [disabled]="importProcessing()">Fermer</button>
+          </header>
+
+          <div class="import-modal-body">
+            <label>
+              Dictionnaire œuvres
+              <select [ngModel]="importDictionaryId()" (ngModelChange)="onImportDictionaryChange($event)">
+                <option value="">Tous les dictionnaires</option>
+                @for (dictionary of dictionaries(); track dictionary.id) {
+                  <option [value]="dictionary.id">{{ dictionary.name }}</option>
+                }
+              </select>
+            </label>
+
+            <label class="file-drop import-file-drop" [class.is-disabled]="importProcessing()">
+              <span>{{ importProcessing() ? 'Import en cours…' : 'Sélectionner un fichier JSON' }}</span>
+              <input type="file" accept="application/json,.json" (change)="importQuizJson($event)" [disabled]="importProcessing()">
+            </label>
+
+            @if (importProcessing()) {
+              <div class="import-status" role="status">
+                <span class="loader-dot"></span>
+                {{ importProgressLabel() }}
+              </div>
+              <div class="import-progress" aria-label="Avancement de l'import">
+                <div class="import-progress-meta">
+                  <span>{{ importProgressLabel() }}</span>
+                  <strong>{{ importProgress() }}%</strong>
+                </div>
+                <div class="import-progress-track">
+                  <span [style.width.%]="importProgress()"></span>
+                </div>
+              </div>
+            }
+
+            @if (importErrors().length > 0) {
+              <div class="modal-errors" role="alert">
+                <strong>Import impossible</strong>
+                <p>{{ importErrorSummary() }}</p>
+                @if (importErrors().length > 0) {
+                  <button type="button" class="ghost-toggle" (click)="toggleImportErrorDetails()">
+                    {{ importErrorDetailsOpen() ? 'Masquer le détail' : 'Voir le détail' }}
+                  </button>
+                }
+                @if (importErrorDetailsOpen()) {
+                  <div class="modal-error-details">
+                    @for (error of importErrors(); track error) {
+                      <p>{{ error }}</p>
+                    }
+                  </div>
+                }
+              </div>
+            }
+
+            @if (missingDictionaryValues().length > 0) {
+              <div class="missing-dictionary-values">
+                <div>
+                  <strong>{{ missingDictionaryValues().length }} œuvre(s) absente(s) du dictionnaire</strong>
+                  <p>Ajoutez-les au dictionnaire sélectionné, puis relancez l'import du quiz.</p>
+                </div>
+                <button
+                  type="button"
+                  class="secondary"
+                  (click)="addMissingValuesToSelectedDictionary()"
+                  [class.is-loading]="addingMissingDictionaryValues()"
+                  [disabled]="addingMissingDictionaryValues() || !importDictionaryId()"
+                >
+                  {{ addingMissingDictionaryValues() ? 'Ajout…' : 'Ajouter au dictionnaire sélectionné' }}
+                </button>
+              </div>
+
+              <div class="missing-values-table-wrap">
+                <table class="missing-values-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Œuvre manquante</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (value of missingDictionaryValues(); track value; let index = $index) {
+                      <tr>
+                        <td>{{ index + 1 }}</td>
+                        <td>{{ value }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+    }
+
+    @if (adminView() === 'editor') {
+      <header class="editor-toolbar">
+        <div class="editor-title">
+          <button type="button" class="icon-button" title="Retour aux quiz" aria-label="Retour aux quiz" (click)="switchView('quizzes')" [disabled]="hasUploadInProgress() || saving()"><app-icon name="arrow-left" /></button>
+          <div>
+            <p class="eyebrow">{{ editingQuizId() ? 'Modifier le quiz' : 'Nouveau quiz' }}</p>
+            <h1>{{ draft.title || 'Quiz sans titre' }}</h1>
+          </div>
+        </div>
+        <div class="row-actions">
+          <span class="save-state">{{ saving() ? 'Enregistrement…' : dirty() ? 'Non enregistré' : 'Aucune modification' }}</span>
+          <button type="button" class="secondary" (click)="openPreview()"><app-icon name="eye" /> Aperçu</button>
+          <button type="button" (click)="saveQuiz()" [class.is-loading]="saving()" [attr.aria-busy]="saving()" [disabled]="saving() || hasUploadInProgress()">
+            <app-icon name="check" /> {{ saving() ? 'Enregistrement…' : editingQuizId() ? 'Enregistrer' : 'Créer le quiz' }}
+          </button>
+        </div>
+      </header>
+      @if (message()) { <p class="editor-message" role="status">{{ message() }}</p> }
+
+      <fieldset class="studio-editor-layout" aria-label="Questions et réglages du quiz" [disabled]="saving()" [attr.aria-busy]="saving()">
+        <aside class="editor-navigation" [class.is-mobile-open]="mobileQuestionNavOpen()">
+          <div class="editor-view-tabs" aria-label="Sections de l'éditeur">
+            <button type="button" [class.active]="editorTab() === 'questions'" [attr.aria-pressed]="editorTab() === 'questions'" (click)="editorTab.set('questions')"><app-icon name="list" [size]="17" /> Questions</button>
+            <button type="button" [class.active]="editorTab() === 'settings'" [attr.aria-pressed]="editorTab() === 'settings'" (click)="editorTab.set('settings')"><app-icon name="settings" [size]="17" /> Réglages</button>
+          </div>
+          <button type="button" class="secondary mobile-question-toggle" (click)="mobileQuestionNavOpen.set(!mobileQuestionNavOpen())" [attr.aria-expanded]="mobileQuestionNavOpen()" aria-controls="editor-question-list">
+            Manche {{ activeRoundIndex() + 1 }} · {{ editingPerson() ? 'Personne reliée' : 'Œuvre ' + (activeWorkIndex() + 1) }} <app-icon [name]="mobileQuestionNavOpen() ? 'arrow-up' : 'arrow-down'" [size]="17" />
+          </button>
+          <div class="editor-question-list" id="editor-question-list">
+            @for (round of draft.rounds; track $index; let roundIndex = $index) {
+              <section class="question-group">
+                <header>
+                  <h2>Manche {{ roundIndex + 1 }}</h2>
+                  <details class="action-menu">
+                    <summary class="icon-button" [attr.title]="'Actions de la manche ' + (roundIndex + 1)" [attr.aria-label]="'Actions de la manche ' + (roundIndex + 1)"><app-icon name="more" [size]="18" /></summary>
+                    <div class="action-menu-items" (click)="closeActionMenu($event)">
+                      <button type="button" (click)="moveRound(roundIndex, -1)" [disabled]="roundIndex === 0 || hasUploadInProgress()"><app-icon name="arrow-up" [size]="17" /> Monter</button>
+                      <button type="button" (click)="moveRound(roundIndex, 1)" [disabled]="roundIndex === draft.rounds.length - 1 || hasUploadInProgress()"><app-icon name="arrow-down" [size]="17" /> Descendre</button>
+                      <button type="button" (click)="duplicateRound(roundIndex)" [disabled]="hasUploadInProgress()"><app-icon name="copy" [size]="17" /> Dupliquer</button>
+                      <button type="button" class="danger ghost" (click)="removeRound(roundIndex)" [disabled]="draft.rounds.length === 1 || hasUploadInProgress()"><app-icon name="trash" [size]="17" /> Supprimer</button>
+                    </div>
+                  </details>
+                </header>
+                @for (work of round.works; track $index; let workIndex = $index) {
+                  <button type="button" class="question-nav-item" [class.active]="editorTab() === 'questions' && activeRoundIndex() === roundIndex && !editingPerson() && activeWorkIndex() === workIndex"
+                    [attr.aria-current]="editorTab() === 'questions' && activeRoundIndex() === roundIndex && !editingPerson() && activeWorkIndex() === workIndex ? 'step' : null" (click)="selectQuestion(roundIndex, workIndex)">
+                    <span class="question-number">{{ workIndex + 1 }}</span>
+                    <span><small>Œuvre {{ workIndex + 1 }}</small><strong>{{ answerLabel(work) || 'À compléter' }}</strong></span>
+                    @if (questionHasErrors(errorPath('rounds', roundIndex, 'works', workIndex))) { <span class="error-indicator" title="Question à corriger" aria-label="Question à corriger">!</span> }
+                  </button>
+                }
+                @if (round.works.length < 3) {
+                  <button type="button" class="add-work" (click)="addWork(roundIndex)" [disabled]="hasUploadInProgress()"><app-icon name="plus" [size]="16" /> Ajouter une œuvre</button>
+                }
+                <button type="button" class="question-nav-item person-nav-item" [class.active]="editorTab() === 'questions' && activeRoundIndex() === roundIndex && editingPerson()" (click)="selectQuestion(roundIndex, null)" [attr.aria-current]="editorTab() === 'questions' && activeRoundIndex() === roundIndex && editingPerson() ? 'step' : null">
+                  <app-icon name="person" [size]="18" /><span><small>Personne reliée</small><strong>{{ answerLabel(round.person) || 'À compléter' }}</strong></span>
+                  @if (questionHasErrors(errorPath('rounds', roundIndex, 'person'))) { <span class="error-indicator" title="Question à corriger" aria-label="Question à corriger">!</span> }
+                </button>
+              </section>
+            }
+          </div>
+          <button type="button" class="secondary add-round" (click)="addRound()" [disabled]="hasUploadInProgress()"><app-icon name="plus" [size]="18" /> Ajouter une manche</button>
+        </aside>
+
+        @if (editorTab() === 'settings') {
+          <section class="editor-main quiz-settings">
+            <header class="section-heading"><div><p class="eyebrow">Le quiz</p><h2>Réglages généraux</h2></div><span class="question-duration"><app-icon name="clock" [size]="16" /> 40 s / question</span></header>
+            <label>Titre du quiz<input [(ngModel)]="draft.title" placeholder="Les coups de cœur de l'équipe"><app-field-error [errors]="fieldErrors()" path="title" /></label>
+            <label>Description<textarea [(ngModel)]="draft.description" rows="3" placeholder="Session équipe du vendredi"></textarea></label>
+            <label>Déroulement des questions
+              <select [(ngModel)]="draft.sequenceMode"><option value="rounds">Par manche : 3 œuvres puis la personne</option><option value="works-first">Œuvres mélangées puis toutes les personnes</option></select>
+            </label>
+            <label class="checkbox-line"><input type="checkbox" [(ngModel)]="draft.hidePlayerNames"> Masquer les pseudos dans les classements</label>
+            <div class="settings-summary"><span>{{ draft.rounds.length }} manche(s)</span><span>{{ clueCount() }} indice(s)</span></div>
+            <button type="button" class="danger ghost reset-quiz" (click)="cancelEdit()" [disabled]="hasUploadInProgress() || saving()">Réinitialiser le formulaire</button>
+          </section>
+        } @else {
+          <div class="editor-question-content">
+            <header class="question-editor-heading">
+              <div><p class="eyebrow">Manche {{ activeRoundIndex() + 1 }} · {{ editingPerson() ? 'Personne reliée' : 'Œuvre ' + (activeWorkIndex() + 1) }}</p><h2>{{ answerLabel(activeTarget()) || (editingPerson() ? 'Personne à deviner' : 'Œuvre à compléter') }}</h2></div>
+              <span class="question-duration"><app-icon name="clock" [size]="16" /> 40 s</span>
+              @if (!editingPerson()) {
+                <div class="compact-actions">
+                  <button type="button" class="icon-button" title="Dupliquer l'œuvre" aria-label="Dupliquer l'œuvre" (click)="duplicateWork(activeRoundIndex(), activeWorkIndex())" [disabled]="activeRound().works.length >= 3 || hasUploadInProgress()"><app-icon name="copy" [size]="18" /></button>
+                  <button type="button" class="icon-button" title="Supprimer l'œuvre" aria-label="Supprimer l'œuvre" (click)="removeWork(activeRoundIndex(), activeWorkIndex())" [disabled]="activeRound().works.length <= 1 || hasUploadInProgress()"><app-icon name="trash" [size]="18" /></button>
+                </div>
+              }
+            </header>
+            @if (activeRound().works.length < 3) { <p class="works-requirement">Manche incomplète : {{ activeRound().works.length }} œuvre(s) sur 3.</p> }
+            <div class="question-workspace">
+              <section class="editor-main clue-workspace">
+                @if (activeWork(); as work) {
+                  <div class="section-heading compact"><h3>Indices</h3><span class="editor-hint-count">{{ work.clues.length }} / 40 s</span></div>
+                  <div class="clue-timeline" aria-label="Indices de la question">
+                    @for (clue of work.clues; track $index; let clueIndex = $index) {
+                      <button type="button" [class.active]="activeClueIndex() === clueIndex" [attr.aria-pressed]="activeClueIndex() === clueIndex" (click)="activeClueIndex.set(clueIndex)">
+                        <span class="timeline-thumbnail">
+                          @if (clue.kind === 'image' && clue.content) { <img [src]="clue.content" alt=""> }
+                          @else { <app-icon [name]="clue.kind === 'audio' ? 'music' : clue.kind === 'video' ? 'film' : clue.kind === 'image' ? 'image' : 'list'" /> }
+                        </span>
+                        <span>Indice {{ clueIndex + 1 }}<small>{{ clueSeconds(clueIndex, work.clues.length) }} s</small></span>
+                      </button>
+                    }
+                    <button type="button" class="add-clue" (click)="addClue(work)" [disabled]="hasUploadInProgress()" title="Ajouter un indice" aria-label="Ajouter un indice"><app-icon name="plus" /></button>
+                  </div>
+                  @for (clue of work.clues; track $index; let clueIndex = $index) {
+                    @if (clueIndex === activeClueIndex()) {
+                      <div class="active-clue-editor">
+                        <div class="section-heading compact">
+                          <label class="clue-type-field">Type d'indice<select [ngModel]="clue.kind" (ngModelChange)="changeClueKind(clue, $event)" [disabled]="hasUploadInProgress()"><option value="text">Texte</option><option value="image">Image</option><option value="audio">Son</option><option value="video">Vidéo</option></select></label>
+                          <button type="button" class="icon-button" title="Supprimer cet indice" aria-label="Supprimer cet indice" (click)="removeClue(work, clueIndex)" [disabled]="work.clues.length <= 1 || hasUploadInProgress()"><app-icon name="trash" [size]="18" /></button>
+                        </div>
+                        @if (clue.kind === 'text') {
+                          <label>Texte de l'indice<textarea [(ngModel)]="clue.content" rows="7" placeholder="Saisissez votre indice…"></textarea></label>
+                        } @else {
+                          <div class="editor-media-stage">
+                            @if (clue.content) {
+                              @if (clue.kind === 'image') { <img [src]="clue.content" alt="Aperçu de l'indice"> }
+                              @else if (clue.kind === 'audio') { <app-icon name="music" [size]="48" /><audio [src]="clue.content" controls preload="metadata"></audio> }
+                              @else { <video [src]="clue.content" controls preload="metadata"></video> }
+                            } @else { <app-icon [name]="clue.kind === 'image' ? 'image' : clue.kind === 'audio' ? 'music' : 'film'" [size]="48" /> }
+                          </div>
+                          <div class="upload-controls">
+                            <label class="file-button secondary"><app-icon name="upload" [size]="17" /> {{ clue.content ? 'Remplacer le fichier' : 'Ajouter un fichier' }}<input type="file" [accept]="acceptedMediaTypes(clue.kind)" [disabled]="hasUploadInProgress()" (change)="uploadClueFile($event, clue, activeRoundIndex(), activeWorkIndex(), clueIndex)"></label>
+                            <span class="field-help">Max. {{ clue.kind === 'image' ? '5' : clue.kind === 'audio' ? '10' : '20' }} Mo</span>
+                          </div>
+                          <label>URL du média<input type="url" [(ngModel)]="clue.content" placeholder="https://…" [disabled]="hasUploadInProgress()"></label>
+                        }
+                        <app-field-error [errors]="fieldErrors()" [path]="activePrefix() + '.clues.' + clueIndex + '.content'" />
+                        @if (isClueUploading(activeRoundIndex(), activeWorkIndex(), clueIndex)) { <div class="upload-progress" role="status"><span></span>Téléversement en cours…</div> }
+                      </div>
+                    }
+                  }
+                } @else {
+                  <h3>Les œuvres à relier</h3>
+                  <div class="editor-person-recap">
+                    @for (work of activeRound().works; track $index; let workIndex = $index) {
+                      <div><span>Œuvre {{ workIndex + 1 }}</span><strong>{{ answerLabel(work) || 'À compléter' }}</strong><button type="button" class="icon-button" [attr.aria-label]="'Modifier l’œuvre ' + (workIndex + 1)" title="Modifier cette œuvre" (click)="selectQuestion(activeRoundIndex(), workIndex)"><app-icon name="pencil" [size]="18" /></button></div>
+                    }
+                  </div>
+                }
+              </section>
+              <aside class="editor-properties">
+                <h3>Réponse</h3>
+                <div class="answer-mode-control" aria-label="Mode de réponse">
+                  <button type="button" [class.active]="activeTarget().answerMode === 'choices'" [attr.aria-pressed]="activeTarget().answerMode === 'choices'" (click)="changeAnswerMode('choices')"><app-icon name="list" [size]="17" /> 4 propositions</button>
+                  <button type="button" [class.active]="activeTarget().answerMode === 'autocomplete'" [attr.aria-pressed]="activeTarget().answerMode === 'autocomplete'" (click)="changeAnswerMode('autocomplete')"><app-icon name="search" [size]="17" /> Recherche</button>
+                </div>
+                @if (activeTarget().answerMode === 'autocomplete') {
+                  <label>Dictionnaire<select [(ngModel)]="activeTarget().dictionaryId"><option value="">Tous les dictionnaires</option>@for (dictionary of dictionaries(); track dictionary.id) { <option [value]="dictionary.id">{{ dictionary.name }}</option> }</select></label>
+                  <app-field-error [errors]="fieldErrors()" [path]="activePrefix() + '.dictionaryId'" />
+                }
+                <ng-container *ngTemplateOutlet="answerEditor; context: { target: activeTarget(), prefix: activePrefix(), radioName: activePrefix(), label: editingPerson() ? 'personne' : 'œuvre' }" />
+              </aside>
+            </div>
+          </div>
+        }
+      </fieldset>
+    }
+
+    @if (previewOpen()) {
+      <div class="modal-backdrop" role="presentation" (click)="closePreview()">
+        <section class="modal-panel question-preview-modal" role="dialog" aria-modal="true" aria-labelledby="preview-title" (click)="$event.stopPropagation()">
+          <header class="modal-header"><div><p class="eyebrow">Aperçu de la question</p><h2 id="preview-title">{{ editingPerson() ? 'À qui appartiennent ces œuvres ?' : 'Quelle est cette œuvre ?' }}</h2></div><button type="button" class="icon-button" title="Fermer l'aperçu" aria-label="Fermer l'aperçu" (click)="closePreview()"><app-icon name="x" /></button></header>
+          @if (activeWork(); as work) {
+            @for (clue of work.clues; track $index; let clueIndex = $index) {
+              @if (clueIndex === activeClueIndex()) {
+                <div class="preview-clue">
+                  @if (clue.kind === 'image' && clue.content) { <img [src]="clue.content" alt="Indice"> }
+                  @else if (clue.kind === 'audio' && clue.content) { <audio [src]="clue.content" controls></audio> }
+                  @else if (clue.kind === 'video' && clue.content) { <video [src]="clue.content" controls></video> }
+                  @else { <p>{{ clue.content || 'Indice à compléter' }}</p> }
+                </div>
+              }
+            }
+          } @else {
+            <div class="editor-person-recap">@for (work of activeRound().works; track $index) { <div><strong>{{ answerLabel(work) || 'Œuvre à compléter' }}</strong></div> }</div>
+          }
+          @if (activeTarget().answerMode === 'choices') {
+            <div class="preview-options">@for (option of activeTarget().options; track $index) { <div><span>{{ $index + 1 }}</span>{{ option || 'Proposition à compléter' }}</div> }</div>
+          } @else { <app-answer-search [values]="dictionaryValuesFor(activeTarget().dictionaryId)" label="Votre réponse" /> }
+        </section>
+      </div>
+    }
+
+    @if (adminView() === 'dictionaries') {
+      <section class="dictionary-layout dictionary-screen">
+        <div class="panel grid">
+          <div class="section-heading">
+            <div>
+              <h2>{{ editingDictionaryId() ? 'Modifier le dictionnaire' : 'Nouveau dictionnaire' }}</h2>
+              <p>Collez une valeur par ligne ou importez un fichier texte ou CSV.</p>
+            </div>
+            <button type="button" class="secondary" (click)="newDictionary()">Nouveau</button>
+          </div>
+          <label>
+            Nom du dictionnaire
+            <input [ngModel]="dictionaryName()" (ngModelChange)="dictionaryName.set($event)" placeholder="Films et séries">
+          </label>
+          <label>
+            Valeurs
+            <textarea
+              [ngModel]="dictionaryText()"
+              (ngModelChange)="onDictionaryTextChange($event)"
+              rows="14"
+              placeholder="Interstellar&#10;The Legend of Zelda&#10;Christopher Nolan"
+            ></textarea>
+          </label>
+          <div class="dictionary-stats">
+            <span><strong>{{ dictionaryStats().unique }}</strong> valeur(s)</span>
+            <span><strong>{{ dictionaryStats().duplicates }}</strong> doublon(s) retiré(s)</span>
+          </div>
+          <div class="row-actions">
+            <label class="file-button secondary">
+              Importer un fichier
+              <input type="file" accept=".txt,.csv,text/plain,text/csv" (change)="importDictionaryFile($event)">
+            </label>
+            <button
+              type="button"
+              (click)="saveDictionary()"
+              [class.is-loading]="dictionarySaving()"
+              [attr.aria-busy]="dictionarySaving()"
+              [disabled]="dictionarySaving()"
+            >
+              {{ dictionarySaving() ? 'Enregistrement…' : 'Enregistrer' }}
+            </button>
+          </div>
+
+          <div class="dictionary-preview">
+            <label>
+              Rechercher dans l'aperçu
+              <input [ngModel]="dictionarySearch()" (ngModelChange)="setDictionarySearch($event)" placeholder="Filtrer les valeurs">
+            </label>
+            <ol>
+              @for (value of dictionaryPreview(); track value) {
+                <li>{{ value }}</li>
+              }
+            </ol>
+            <div class="pagination">
+              <button type="button" class="secondary" (click)="changeDictionaryPage(-1)" [disabled]="dictionaryPage() === 0">Précédent</button>
+              <span>Page {{ dictionaryPage() + 1 }} / {{ dictionaryPageCount() }}</span>
+              <button type="button" class="secondary" (click)="changeDictionaryPage(1)" [disabled]="dictionaryPage() + 1 >= dictionaryPageCount()">Suivant</button>
+            </div>
+          </div>
+        </div>
+
+        <aside class="panel grid">
+          <h2>Mes dictionnaires</h2>
+          @if (dictionaries().length === 0) {
+            <p>Aucun dictionnaire enregistré.</p>
+          }
+          @for (dictionary of dictionaries(); track dictionary.id) {
+            <article class="dictionary-row" [class.active]="editingDictionaryId() === dictionary.id">
+              <div>
+                <h3>{{ dictionary.name }}</h3>
+                <p>{{ dictionary.values.length }} valeur(s) · utilisé par {{ dictionary.usage_count || 0 }} quiz</p>
+              </div>
+              <div class="row-actions">
+                <button type="button" class="secondary" (click)="editDictionary(dictionary)">Éditer</button>
+                <button type="button" class="danger ghost" (click)="deleteDictionary(dictionary)">Supprimer</button>
+              </div>
+            </article>
+          }
+        </aside>
+      </section>
+    }
+
+    @if (adminView() !== 'editor' && message()) {
+      <p class="status-message" role="status">{{ message() }}</p>
+    }
+  }
+</main>
+
+@if (feedbackMessage()) {
+  <div
+    class="feedback-toast"
+    [class.info]="feedbackTone() === 'info'"
+    [class.error]="feedbackTone() === 'error'"
+    role="status"
+    aria-live="polite"
+  >
+    <strong>{{ feedbackTitle() }}</strong>
+    <span>{{ feedbackMessage() }}</span>
+  </div>
+}
+
+<ng-template #answerEditor let-target="target" let-prefix="prefix" let-radioName="radioName" let-label="label">
+  @if (target.answerMode === 'choices') {
+    <div class="options-grid">
+      @for (option of target.options; track $index; let optionIndex = $index) {
+        <label>
+          <span>Proposition {{ optionIndex + 1 }} @if (target.correctOptionIndex === optionIndex) { <small class="correct-option-label">Bonne réponse</small> }</span>
+          <span class="option-line">
+            <input
+              class="radio"
+              type="radio"
+              [name]="radioName"
+              [value]="optionIndex"
+              [(ngModel)]="target.correctOptionIndex"
+              [attr.aria-label]="'Définir la proposition ' + (optionIndex + 1) + ' comme bonne réponse'"
+            >
+            <textarea [(ngModel)]="target.options[optionIndex]" rows="2" [attr.aria-label]="'Proposition ' + (optionIndex + 1)"></textarea>
+          </span>
+          <app-field-error [errors]="fieldErrors()" [path]="prefix + '.options.' + optionIndex" />
+        </label>
+      }
+    </div>
+    <app-field-error [errors]="fieldErrors()" [path]="prefix + '.options'" />
+    <app-field-error [errors]="fieldErrors()" [path]="prefix + '.correctOptionIndex'" />
+  } @else {
+    <app-answer-search
+      [resetKey]="prefix"
+      [values]="dictionaryValuesFor(target.dictionaryId)"
+      [value]="target.correctAnswer"
+      (valueChange)="target.correctAnswer = $event; dirty.set(true)"
+      [label]="'Bonne réponse ' + label"
+      placeholder="Rechercher puis sélectionner une réponse"
+    />
+    <app-field-error [errors]="fieldErrors()" [path]="prefix + '.correctAnswer'" />
+  }
+</ng-template>

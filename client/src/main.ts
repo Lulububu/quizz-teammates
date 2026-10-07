@@ -1,4 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
+import { registerLocaleData } from '@angular/common';
+import localeFr from '@angular/common/locales/fr';
+import { LOCALE_ID } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter, Routes } from '@angular/router';
 import { AppComponent } from './app/app.component';
@@ -13,14 +16,15 @@ const routes: Routes = [
   { path: '**', redirectTo: '' },
 ];
 
-const availableThemes = ['academy', 'cosmic', 'orbit', 'arcade'] as const;
+const availableThemes = ['studio', 'academy', 'cosmic', 'orbit', 'arcade'] as const;
 type AppTheme = typeof availableThemes[number];
 
 async function bootstrap(): Promise<void> {
+  registerLocaleData(localeFr);
   const theme = await loadTheme();
   document.documentElement.dataset['theme'] = theme;
   await bootstrapApplication(AppComponent, {
-    providers: [provideHttpClient(), provideRouter(routes)],
+    providers: [provideHttpClient(), provideRouter(routes), { provide: LOCALE_ID, useValue: 'fr' }],
   });
 }
 
@@ -33,9 +37,9 @@ async function loadTheme(): Promise<AppTheme> {
   try {
     const response = await fetch('/api/app/config');
     const config = await response.json() as { theme?: string };
-    return availableThemes.includes(config.theme as AppTheme) ? config.theme as AppTheme : 'academy';
+    return availableThemes.includes(config.theme as AppTheme) ? config.theme as AppTheme : 'studio';
   } catch {
-    return 'academy';
+    return 'studio';
   }
 }
 
