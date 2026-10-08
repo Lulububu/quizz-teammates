@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, computed, effect, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild, computed, effect, signal } from '@angular/core';
 import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -40,6 +40,9 @@ type DraftQuiz = {
   templateUrl: './home.component.html',
 })
 export class HomeComponent implements OnInit {
+  @ViewChild('questionList') private questionList?: ElementRef<HTMLElement>;
+  @ViewChild('editorContent') private editorContent?: ElementRef<HTMLElement>;
+  @ViewChild('editorToolbar') private editorToolbar?: ElementRef<HTMLElement>;
   quizzes = signal<Quiz[]>([]);
   activeRooms = signal<ActiveRoomSummary[]>([]);
   activeRoomsLoading = signal(false);
@@ -176,6 +179,41 @@ export class HomeComponent implements OnInit {
     this.activeClueIndex.set(0);
     this.editorTab.set('questions');
     this.mobileQuestionNavOpen.set(false);
+    window.setTimeout(() => {
+      const content = this.editorContent?.nativeElement;
+      content?.scrollTo({ top: 0, behavior: 'instant' });
+      this.scrollActiveQuestionIntoView();
+      if (content && window.matchMedia('(max-width: 600px)').matches) {
+        const top = content.getBoundingClientRect().top;
+        const toolbarBottom = this.editorToolbar?.nativeElement.getBoundingClientRect().bottom ?? 0;
+        if (top < toolbarBottom || top > window.innerHeight - 80) {
+          window.scrollBy({ top: top - toolbarBottom, behavior: 'instant' });
+        }
+      }
+    });
+  }
+
+  toggleQuestionNavigation(): void {
+    this.mobileQuestionNavOpen.update(open => !open);
+    if (this.mobileQuestionNavOpen()) window.setTimeout(() => {
+      const toggle = this.questionList?.nativeElement.previousElementSibling;
+      if (toggle) {
+        const toolbarHeight = this.editorToolbar?.nativeElement.offsetHeight ?? 0;
+        window.scrollTo({ top: window.scrollY + toggle.getBoundingClientRect().top - toolbarHeight - 8, behavior: 'instant' });
+      }
+      this.scrollActiveQuestionIntoView();
+    });
+  }
+
+  private scrollActiveQuestionIntoView(): void {
+    const list = this.questionList?.nativeElement;
+    const selected = list?.querySelector<HTMLElement>('.question-nav-item.active');
+    if (!list?.clientHeight || !selected) return;
+    const bounds = list.getBoundingClientRect();
+    const item = selected.getBoundingClientRect();
+    // Only scroll the navigation, leaving the editor and the page in place.
+    if (item.top < bounds.top) list.scrollTop += item.top - bounds.top;
+    else if (item.bottom > bounds.bottom) list.scrollTop += item.bottom - bounds.bottom;
   }
 
   activeRound(): DraftRound {

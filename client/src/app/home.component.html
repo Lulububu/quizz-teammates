@@ -6,7 +6,7 @@
     </section>
   } @else if (!api.adminUser()) {
     <section class="public-entry">
-      <div>
+      <div class="public-join">
         <p class="eyebrow">Quiz Teammates</p>
         <h1>Rejoindre une partie</h1>
         <p>Entrez le code affiché par l'animateur ou utilisez directement le QR code.</p>
@@ -50,7 +50,7 @@
     </nav>
 
     @if (adminView() === 'quizzes') {
-      <section class="panel grid quiz-library">
+      <section class="grid quiz-library">
         <div class="section-heading">
           <div>
             <h2>{{ quizzes().length }} quiz</h2>
@@ -234,7 +234,7 @@
     }
 
     @if (adminView() === 'editor') {
-      <header class="editor-toolbar">
+      <header #editorToolbar class="editor-toolbar">
         <div class="editor-title">
           <button type="button" class="icon-button" title="Retour aux quiz" aria-label="Retour aux quiz" (click)="switchView('quizzes')" [disabled]="hasUploadInProgress() || saving()"><app-icon name="arrow-left" /></button>
           <div>
@@ -258,10 +258,10 @@
             <button type="button" [class.active]="editorTab() === 'questions'" [attr.aria-pressed]="editorTab() === 'questions'" (click)="editorTab.set('questions')"><app-icon name="list" [size]="17" /> Questions</button>
             <button type="button" [class.active]="editorTab() === 'settings'" [attr.aria-pressed]="editorTab() === 'settings'" (click)="editorTab.set('settings')"><app-icon name="settings" [size]="17" /> Réglages</button>
           </div>
-          <button type="button" class="secondary mobile-question-toggle" (click)="mobileQuestionNavOpen.set(!mobileQuestionNavOpen())" [attr.aria-expanded]="mobileQuestionNavOpen()" aria-controls="editor-question-list">
+          <button type="button" class="secondary mobile-question-toggle" (click)="toggleQuestionNavigation()" [attr.aria-expanded]="mobileQuestionNavOpen()" aria-controls="editor-question-list">
             Manche {{ activeRoundIndex() + 1 }} · {{ editingPerson() ? 'Personne reliée' : 'Œuvre ' + (activeWorkIndex() + 1) }} <app-icon [name]="mobileQuestionNavOpen() ? 'arrow-up' : 'arrow-down'" [size]="17" />
           </button>
-          <div class="editor-question-list" id="editor-question-list">
+          <div #questionList class="editor-question-list" id="editor-question-list" role="region" aria-label="Manches et questions" tabindex="0">
             @for (round of draft.rounds; track $index; let roundIndex = $index) {
               <section class="question-group">
                 <header>
@@ -298,7 +298,7 @@
         </aside>
 
         @if (editorTab() === 'settings') {
-          <section class="editor-main quiz-settings">
+          <section #editorContent class="editor-main quiz-settings">
             <header class="section-heading"><div><p class="eyebrow">Le quiz</p><h2>Réglages généraux</h2></div><span class="question-duration"><app-icon name="clock" [size]="16" /> 40 s / question</span></header>
             <label>Titre du quiz<input [(ngModel)]="draft.title" placeholder="Les coups de cœur de l'équipe"><app-field-error [errors]="fieldErrors()" path="title" /></label>
             <label>Description<textarea [(ngModel)]="draft.description" rows="3" placeholder="Session équipe du vendredi"></textarea></label>
@@ -310,7 +310,7 @@
             <button type="button" class="danger ghost reset-quiz" (click)="cancelEdit()" [disabled]="hasUploadInProgress() || saving()">Réinitialiser le formulaire</button>
           </section>
         } @else {
-          <div class="editor-question-content">
+          <div #editorContent class="editor-question-content">
             <header class="question-editor-heading">
               <div><p class="eyebrow">Manche {{ activeRoundIndex() + 1 }} · {{ editingPerson() ? 'Personne reliée' : 'Œuvre ' + (activeWorkIndex() + 1) }}</p><h2>{{ answerLabel(activeTarget()) || (editingPerson() ? 'Personne à deviner' : 'Œuvre à compléter') }}</h2></div>
               <span class="question-duration"><app-icon name="clock" [size]="16" /> 40 s</span>
@@ -420,7 +420,7 @@
 
     @if (adminView() === 'dictionaries') {
       <section class="dictionary-layout dictionary-screen">
-        <div class="panel grid">
+        <div class="dictionary-editor grid">
           <div class="section-heading">
             <div>
               <h2>{{ editingDictionaryId() ? 'Modifier le dictionnaire' : 'Nouveau dictionnaire' }}</h2>
@@ -479,7 +479,7 @@
           </div>
         </div>
 
-        <aside class="panel grid">
+        <aside class="dictionary-library grid">
           <h2>Mes dictionnaires</h2>
           @if (dictionaries().length === 0) {
             <p>Aucun dictionnaire enregistré.</p>

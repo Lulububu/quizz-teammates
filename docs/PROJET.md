@@ -155,6 +155,26 @@ Maquettes, suivi et résultats détaillés : [audit Studio](design/audit-graphiq
 
 Le temps continue pendant l'absence de l'animateur : il s'agit d'une reprise, pas d'une pause. La suppression des salons lors de la modification/suppression d'un quiz reste inchangée.
 
+## Navigation des quiz longs, 7 octobre 2026
+
+- [x] Sur ordinateur, liste des manches et formulaire dans deux zones de défilement indépendantes, limitées à la hauteur disponible.
+- [x] Enregistrement, onglets Questions/Réglages et ajout d'une manche restent accessibles sans parcourir la liste complète.
+- [x] La sélection d'une question ramène son formulaire en haut ; les ajouts, duplications et erreurs de validation rendent la question concernée visible dans la navigation.
+- [x] Sur mobile, liste verticale repliable de hauteur limitée, réouverture sur la sélection courante sous le bandeau fixe.
+- [x] Contrôles Playwright avec 40 manches : sélection de la dernière, modification, défilements indépendants, duplication/ajout, validation en erreur, clavier, cinq thèmes et fenêtres bureau/tablette/mobile. Aucune exception navigateur ni débordement horizontal.
+
+Scénario et captures : `output/playwright/editor-scroll/`. Données fictives uniquement, aucun quiz distant modifié.
+
+## Espacements des composants, 7 octobre 2026
+
+- [x] Accueil Studio : espace de 40 px entre le séparateur et le bloc de connexion ; sur tablette et mobile, séparation horizontale avec 24 px au-dessus du contenu.
+- [x] Dictionnaires : colonnes identifiées par des classes dédiées, marge intérieure du séparateur rétablie et actions pouvant revenir à la ligne. Suppression des styles de panneau hérités sur les sections non encadrées.
+- [x] Marges horizontales des onglets, avertissements de l'éditeur, confirmations d'envoi, réponses révélées, statistiques animateur, classement final et lecteur audio joueur harmonisées.
+- [x] Autocomplétion Cosmic : suppression du fond du conteneur structurel ; champs, suggestions et sélection conservent leurs surfaces propres.
+- [x] Vérifications Chrome/Playwright sur les cinq thèmes, avec fenêtres bureau, tablette et mobile ; non-régression de l'éditeur à 40 manches. Compilation client/serveur réussie, avertissement de taille du paquet initial inchangé.
+
+Scénario, mesures et captures : `output/playwright/spacing/`. Services simulés : aucune donnée Firebase modifiée. Cette passe ne modifie pas l'authentification.
+
 ## Validation technique
 
 - `npm run typecheck` passe.

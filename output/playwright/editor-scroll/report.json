@@ -1,0 +1,111 @@
+{
+  "checks": [
+    "40 rounds: sidebar scrolling leaves the form and page fixed; last round directly editable",
+    "Validation reveals the relevant question and error; keyboard Home/End scroll only the round list",
+    "Independent form scrolling, reset on selection, contextual menu and newly added/duplicated round kept visible",
+    "Five themes at 1366x768 and 720x500 with wrapped title/message: save and add controls remain available",
+    "Mobile: bounded vertical list, auto-collapse on selection, reopen at active question and last-round editing"
+  ],
+  "metrics": [
+    {
+      "name": "01-editeur-40-manches",
+      "width": 1440,
+      "height": 900,
+      "pageWidth": 1440,
+      "pageHeight": 900,
+      "navigationHeight": 518,
+      "navigationScrollHeight": 13761
+    },
+    {
+      "name": "02-derniere-manche",
+      "width": 1440,
+      "height": 900,
+      "pageWidth": 1440,
+      "pageHeight": 900,
+      "navigationHeight": 518,
+      "navigationScrollHeight": 13761
+    },
+    {
+      "name": "03-navigation-tablette",
+      "width": 800,
+      "height": 650,
+      "pageWidth": 800,
+      "pageHeight": 650,
+      "navigationHeight": 267,
+      "navigationScrollHeight": 14363
+    },
+    {
+      "name": "04-editeur-studio",
+      "width": 1366,
+      "height": 768,
+      "pageWidth": 1366,
+      "pageHeight": 768,
+      "navigationHeight": 386,
+      "navigationScrollHeight": 14363
+    },
+    {
+      "name": "04-editeur-cosmic",
+      "width": 1366,
+      "height": 768,
+      "pageWidth": 1366,
+      "pageHeight": 768,
+      "navigationHeight": 386,
+      "navigationScrollHeight": 14363
+    },
+    {
+      "name": "04-editeur-academy",
+      "width": 1366,
+      "height": 768,
+      "pageWidth": 1366,
+      "pageHeight": 768,
+      "navigationHeight": 386,
+      "navigationScrollHeight": 14363
+    },
+    {
+      "name": "04-editeur-orbit",
+      "width": 1366,
+      "height": 768,
+      "pageWidth": 1366,
+      "pageHeight": 768,
+      "navigationHeight": 386,
+      "navigationScrollHeight": 14363
+    },
+    {
+      "name": "04-editeur-arcade",
+      "width": 1366,
+      "height": 768,
+      "pageWidth": 1366,
+      "pageHeight": 768,
+      "navigationHeight": 386,
+      "navigationScrollHeight": 14695
+    },
+    {
+      "name": "05-editeur-fenetre-basse",
+      "width": 720,
+      "height": 500,
+      "pageWidth": 720,
+      "pageHeight": 500,
+      "navigationHeight": 139,
+      "navigationScrollHeight": 14363
+    },
+    {
+      "name": "06-selection-mobile",
+      "width": 390,
+      "height": 844,
+      "pageWidth": 390,
+      "pageHeight": 1643,
+      "navigationHeight": 0,
+      "navigationScrollHeight": 0
+    },
+    {
+      "name": "07-liste-mobile",
+      "width": 390,
+      "height": 844,
+      "pageWidth": 390,
+      "pageHeight": 2087,
+      "navigationHeight": 360,
+      "navigationScrollHeight": 14199
+    }
+  ],
+  "errors": []
+}

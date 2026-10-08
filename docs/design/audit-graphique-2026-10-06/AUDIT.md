@@ -198,3 +198,36 @@ Limites : fenêtres mobiles simulées dans Chrome, pas de test sur appareil phys
 La logique du délai est testée sans Firestore réel ; les parcours navigateur simulent les services. Aucune partie Render ni aucun compte Firebase réel n'a été modifié pour ces contrôles.
 
 Reproduction : `node output/playwright/resume-rooms/verify.mjs`, dans les mêmes conditions locales que le scénario Studio. [Rapport et liste des captures](../../../output/playwright/resume-rooms/report.json).
+
+## Complément : navigation des quiz longs
+
+La page d'édition ne grandit plus avec le nombre de manches sur ordinateur : sa hauteur reste celle de la fenêtre. La liste des questions et la zone de saisie défilent séparément ; le bandeau d'enregistrement et l'ajout d'une manche restent en place. Les titres et messages peuvent revenir à la ligne sans décaler les commandes hors de l'écran.
+
+Une nouvelle sélection remet le formulaire en haut. L'ajout, la duplication et l'affichage d'une erreur maintiennent la question active dans la liste visible. Les menus des manches restent accessibles dans la colonne défilante. Sur mobile, la liste devient verticale, limitée à 360 px ou la moitié de la fenêtre ; elle se replie après sélection et se rouvre sur la question active, sous le bandeau fixe.
+
+Vérification locale avec 40 manches (120 œuvres et 40 personnes), puis duplication et ajout :
+
+- Aucun déplacement de la page lors du défilement de la liste, dernière manche directement modifiable.
+- Défilement du formulaire indépendant ; erreur de validation d'une autre manche correctement révélée et champ visible.
+- Navigation clavier Home/End, menus, duplication et ajout vérifiés.
+- Cinq thèmes à 1366 × 768 ; bureau à 1440 × 900 ; tablette à 800 × 650 ; fenêtre basse à 720 × 500 avec titre et message longs ; mobile à 390 × 844.
+- Page de 900 px à 1440 × 900 malgré une liste de plus de 13 700 px de contenu. Pas de débordement horizontal ni exception navigateur.
+- Compilation client/serveur réussie ; avertissement de taille du paquet initial toujours présent.
+
+[Rapport](../../../output/playwright/editor-scroll/report.json) et [scénario reproductible](../../../output/playwright/editor-scroll/verify.mjs). Tests Chrome avec services simulés, sans modifier les quiz réels.
+
+## Complément : marges et séparateurs
+
+Deux conflits de priorité CSS annulaient les marges prévues : la règle générique des blocs de l'accueil écrasait le retrait du bloc de connexion et celle des panneaux de dictionnaires écrasait le retrait de leur colonne latérale. Les blocs disposent désormais de classes dédiées. Les bibliothèques sans encadrement ne portent plus la classe historique `panel`, qui réintroduisait des fonds et bordures dans certains thèmes.
+
+- Accueil Studio : retrait de 40 px après le séparateur vertical ; empilement à 900 px avec séparateur horizontal et 24 px de retrait supérieur.
+- Dictionnaires : 28 px après le séparateur, lignes avec marges des deux côtés, actions repliables et état sélectionné préservé.
+- Onglets : 12 px de marge intérieure, y compris lorsque Cosmic colore l'onglet actif.
+- Éditeur et joueur : espace intérieur rétabli dans les avertissements, les encadrés d'envoi/confirmation/attente, la bonne réponse et le lecteur audio. Le conteneur structurel d'autocomplétion Cosmic n'a plus de fond supplémentaire.
+- Animateur : marges dans le bilan des réponses, ses lignes et la suite du classement final, même avec les fonds ou bordures des anciens thèmes.
+
+Contrôles locaux : cinq thèmes, accueil de 390 à 2330 px, colonnes de dictionnaires sur bureau étroit et mobile, éditeur et import, résultats animateur, états joueur avec libellé long, lecteur audio à 320 px. Les mesures attendent la stabilisation du rendu après chaque changement de thème ou de taille. Le scénario des 40 manches a également été relancé avec succès ; il attend maintenant la fin du défilement Home avant d'envoyer End.
+
+Compilation client/serveur réussie : paquet initial de 688,82 ko (environ 169,72 ko transférés). L'avertissement de budget de 614,40 ko reste présent. Les services sont simulés, sans accès aux quiz réels ni test d'authentification Google ou de charge Render.
+
+Reproduction : `node output/playwright/spacing/verify.mjs`, serveur Angular local sur le port 4200, Node 20, Chrome et Playwright de `performance/`. [Rapport des mesures](../../../output/playwright/spacing/report.json) et [scénario](../../../output/playwright/spacing/verify.mjs). Les captures sont dans le même dossier.

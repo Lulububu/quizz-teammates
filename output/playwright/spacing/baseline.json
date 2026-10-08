@@ -1,0 +1,245 @@
+{
+  "measures": [
+    {
+      "name": "home-1440",
+      "side": "left",
+      "value": 0,
+      "minimum": 32
+    },
+    {
+      "name": "home-2330",
+      "side": "left",
+      "value": 0,
+      "minimum": 32
+    },
+    {
+      "name": "home-768",
+      "side": "top",
+      "value": 24,
+      "minimum": 24
+    },
+    {
+      "name": "home-390",
+      "side": "top",
+      "value": 24,
+      "minimum": 24
+    },
+    {
+      "name": "dictionaries-studio",
+      "side": "left",
+      "value": 0,
+      "minimum": 24
+    },
+    {
+      "name": "dictionaries-cosmic",
+      "side": "left",
+      "value": 0,
+      "minimum": 24
+    },
+    {
+      "name": "dictionary-row-cosmic",
+      "background": "rgb(45, 54, 95)",
+      "border": "0px",
+      "inset": 0,
+      "minimum": 12
+    },
+    {
+      "name": "dictionary-editor-cosmic",
+      "background": "rgb(45, 54, 95)",
+      "border": "0px",
+      "inset": 0,
+      "minimum": 12
+    },
+    {
+      "name": "dictionaries-academy",
+      "side": "left",
+      "value": 0,
+      "minimum": 24
+    },
+    {
+      "name": "dictionaries-orbit",
+      "side": "left",
+      "value": 0,
+      "minimum": 24
+    },
+    {
+      "name": "dictionaries-arcade",
+      "side": "left",
+      "value": 0,
+      "minimum": 24
+    },
+    {
+      "name": "dictionary-editor-arcade",
+      "background": "rgba(0, 0, 0, 0)",
+      "border": "2px",
+      "inset": 0,
+      "minimum": 12
+    },
+    {
+      "name": "dictionaries-mobile",
+      "side": "top",
+      "value": 0,
+      "minimum": 24
+    },
+    {
+      "name": "import-modal",
+      "side": "left",
+      "value": 26,
+      "minimum": 24
+    },
+    {
+      "name": "editor-answers-studio",
+      "side": "left",
+      "value": 24,
+      "minimum": 24
+    },
+    {
+      "name": "editor-answers-cosmic",
+      "side": "left",
+      "value": 24,
+      "minimum": 24
+    },
+    {
+      "name": "editor-warning-cosmic",
+      "background": "rgb(77, 64, 47)",
+      "border": "0px",
+      "inset": 0,
+      "minimum": 12
+    },
+    {
+      "name": "editor-search-cosmic",
+      "background": "rgb(52, 62, 107)",
+      "border": "0px",
+      "inset": 0,
+      "minimum": 12
+    },
+    {
+      "name": "editor-answers-academy",
+      "side": "left",
+      "value": 24,
+      "minimum": 24
+    },
+    {
+      "name": "editor-answers-orbit",
+      "side": "left",
+      "value": 24,
+      "minimum": 24
+    },
+    {
+      "name": "editor-answers-arcade",
+      "side": "left",
+      "value": 24,
+      "minimum": 24
+    },
+    {
+      "name": "editor-settings",
+      "side": "left",
+      "value": 32,
+      "minimum": 24
+    },
+    {
+      "name": "editor-stacked-answers",
+      "side": "top",
+      "value": 24,
+      "minimum": 24
+    },
+    {
+      "name": "host-clue-rail",
+      "side": "left",
+      "value": 22,
+      "minimum": 20
+    },
+    {
+      "name": "host-result-row-cosmic",
+      "background": "rgb(52, 62, 107)",
+      "border": "0px",
+      "inset": 0,
+      "minimum": 12
+    },
+    {
+      "name": "host-results-arcade",
+      "background": "rgba(0, 0, 0, 0)",
+      "border": "2px",
+      "inset": 0,
+      "minimum": 12
+    },
+    {
+      "name": "host-result-row-arcade",
+      "background": "rgba(0, 0, 0, 0)",
+      "border": "2px",
+      "inset": 0,
+      "minimum": 12
+    },
+    {
+      "name": "player-clue-studio",
+      "background": "rgb(32, 38, 35)",
+      "border": "3px",
+      "inset": 18,
+      "minimum": 12
+    },
+    {
+      "name": "player-clue-cosmic",
+      "background": "rgb(45, 54, 95)",
+      "border": "3px",
+      "inset": 18,
+      "minimum": 12
+    },
+    {
+      "name": "player-search-cosmic",
+      "background": "rgb(52, 62, 107)",
+      "border": "0px",
+      "inset": 0,
+      "minimum": 12
+    },
+    {
+      "name": "player-clue-academy",
+      "background": "rgb(255, 250, 242)",
+      "border": "3px",
+      "inset": 18,
+      "minimum": 12
+    },
+    {
+      "name": "player-clue-orbit",
+      "background": "rgb(255, 255, 255)",
+      "border": "3px",
+      "inset": 18,
+      "minimum": 12
+    },
+    {
+      "name": "player-clue-arcade",
+      "background": "rgb(255, 253, 243)",
+      "border": "3px",
+      "inset": 18,
+      "minimum": 12
+    },
+    {
+      "name": "player-result-cosmic",
+      "background": "rgb(91, 45, 74)",
+      "border": "0px",
+      "inset": 0,
+      "minimum": 12
+    }
+  ],
+  "failures": [
+    "home-1440: left 0px < 32px",
+    "home-2330: left 0px < 32px",
+    "home-768: stacked layout retains vertical separator",
+    "dictionaries-studio: left 0px < 24px",
+    "dictionaries-cosmic: left 0px < 24px",
+    "dictionary-row-cosmic: colored/bordered surface has 0px left padding",
+    "dictionary-editor-cosmic: colored/bordered surface has 0px left padding",
+    "dictionaries-academy: left 0px < 24px",
+    "dictionaries-orbit: left 0px < 24px",
+    "dictionaries-arcade: left 0px < 24px",
+    "dictionary-editor-arcade: colored/bordered surface has 0px left padding",
+    "dictionaries-mobile: top 0px < 24px",
+    "editor-warning-cosmic: colored/bordered surface has 0px left padding",
+    "editor-search-cosmic: colored/bordered surface has 0px left padding",
+    "host-result-row-cosmic: colored/bordered surface has 0px left padding",
+    "host-results-arcade: colored/bordered surface has 0px left padding",
+    "host-result-row-arcade: colored/bordered surface has 0px left padding",
+    "player-search-cosmic: colored/bordered surface has 0px left padding",
+    "player-result-cosmic: colored/bordered surface has 0px left padding"
+  ],
+  "errors": []
+}
