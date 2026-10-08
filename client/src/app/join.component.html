@@ -35,10 +35,13 @@
       } @else if (state.status === 'question' && state.activeQuestion && playerId()) {
         <section class="question-card">
           <div class="player-question-meta"><span>Question {{ state.currentQuestionIndex + 1 }} / {{ state.totalQuestions }}</span><strong>{{ totalScore() | number }} pts</strong></div>
-          <div class="player-countdown" [class.urgent]="remainingSeconds() <= 5">
+          <div class="player-countdown" [class.is-paused]="state.questionPausedAt" [class.urgent]="!state.questionPausedAt && remainingSeconds() <= 5">
             <div class="live-timer-track"><i [style.width.%]="timerProgress()"></i></div>
             <span role="timer">{{ remainingSeconds() }} s</span>
           </div>
+          @if (state.questionPausedAt) {
+            <p class="pause-notice" role="status"><app-icon name="pause" /> Partie en pause. L'animateur reprend bientôt.</p>
+          }
           <h1>{{ state.activeQuestion.prompt }}</h1>
           @if (state.activeQuestion.targetType === 'person') {
             <div class="work-name-recap" aria-label="Œuvres de la manche">
@@ -75,7 +78,7 @@
               <app-answer-search [resetKey]="state.activeQuestion.targetId" [values]="state.activeQuestion.suggestions" [value]="selectedAutocompleteAnswer()"
                 (valueChange)="selectedAutocompleteAnswer.set($event)" [disabled]="!canAnswer()" label="Votre réponse" />
               <div class="answer-submit-bar">
-                <span>{{ selectedAutocompleteAnswer() ? 'Votre choix' : remainingSeconds() === 0 ? 'Temps écoulé' : 'Sélectionnez une réponse' }}</span>
+                <span>{{ state.questionPausedAt ? 'Réponses suspendues' : selectedAutocompleteAnswer() ? 'Votre choix' : remainingSeconds() === 0 ? 'Temps écoulé' : 'Sélectionnez une réponse' }}</span>
                 @if (selectedAutocompleteAnswer()) { <strong class="selected-answer-summary">{{ selectedAutocompleteAnswer() }}</strong> }
                 <button type="button" [disabled]="!canAnswer() || !selectedAutocompleteAnswer()" (click)="answerTextValue()">
                   Valider ma réponse <app-icon name="arrow-right" />

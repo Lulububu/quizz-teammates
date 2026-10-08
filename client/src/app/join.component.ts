@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ApiService } from './api.service';
 import { AnswerSearchComponent } from './answer-search.component';
 import { finalPlayerName, getFinalRevealState } from './final-reveal';
-import { visibleClueCount } from './clue-timing';
+import { questionProgress, remainingQuestionSeconds, visibleClueCount } from './clue-timing';
 import { Clue, GameState, Room } from './types';
 import { IconComponent } from './icon.component';
 
@@ -35,21 +35,12 @@ export class JoinComponent implements OnInit, OnDestroy {
   finalReveal = computed(() => getFinalRevealState(this.api.gameState(), this.now()));
   canAnswer = computed(
     () => Boolean(this.playerId()) && this.api.gameState()?.status === 'question'
+      && !this.api.gameState()?.questionPausedAt
       && !this.sendingAnswer() && this.answeredQuestionIndex() !== this.api.gameState()?.currentQuestionIndex
       && this.remainingSeconds() > 0,
   );
-  remainingSeconds = computed(() => {
-    const endsAt = this.api.gameState()?.questionEndsAt;
-    if (!endsAt) return 0;
-    return Math.max(0, Math.ceil((new Date(endsAt).getTime() - this.now()) / 1000));
-  });
-  timerProgress = computed(() => {
-    const state = this.api.gameState();
-    if (!state?.questionStartedAt || !state.questionEndsAt) return 0;
-    const start = new Date(state.questionStartedAt).getTime();
-    const end = new Date(state.questionEndsAt).getTime();
-    return Math.max(0, Math.min(100, ((end - this.now()) / Math.max(1, end - start)) * 100));
-  });
+  remainingSeconds = computed(() => remainingQuestionSeconds(this.api.gameState(), this.now()));
+  timerProgress = computed(() => questionProgress(this.api.gameState(), this.now()));
   nickname = '';
   reactionChoices = randomReactionChoices();
   private timerId: number | undefined;

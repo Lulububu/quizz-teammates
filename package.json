@@ -23,6 +23,7 @@
     "perf:smoke": "node scripts/performance-artillery-smoke.mjs",
     "test:timing": "tsx --test tests/game-timing.test.ts",
     "test:rooms": "tsx --test tests/active-rooms.test.ts",
+    "test:pause": "tsx --test tests/game-pause.test.ts",
     "typecheck": "tsc -p server/tsconfig.json --noEmit && npx --no-install ng build --configuration development",
     "lint": "npm run typecheck"
   },

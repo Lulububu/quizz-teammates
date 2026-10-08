@@ -42,7 +42,8 @@ import {
   saveAnswerDictionary,
   updateRoomQuestion,
   updateRoomPlayerNamesVisibility,
-  updateRoomStatus,
+  setRoomQuestionPaused,
+  revealRoomQuestion,
   updateQuiz,
   userOwnsQuiz,
   type AnswerMode,
@@ -52,14 +53,14 @@ import {
 } from './repositories.js';
 
 const app = express();
-const server = createServer(app);
+export const server = createServer(app);
 const rootDir = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
 const clientDistDir = existsSync(join(rootDir, 'dist', 'client', 'browser'))
   ? join(rootDir, 'dist', 'client', 'browser')
   : join(rootDir, 'dist', 'client');
 const lobbyReactionEmojis = new Set(['👏', '🔥', '🎉', '❤️', '😂', '🤩', '🚀', '💡', '😎', '🥳', '⭐', '🙌']);
 const lastLobbyReactionAt = new Map<string, number>();
-const io = new Server(server, {
+export const io = new Server(server, {
   cors: {
     origin: true,
   },
@@ -72,7 +73,6 @@ const dictionaryCacheLimit = 3;
 const roomUpdateTimers = new Map<string, NodeJS.Timeout>();
 const roomStateRevisions = new Map<string, number>();
 const roomStateEmissions = new Map<string, number>();
-const revealingRooms = new Set<string>();
 const answerUpdates = new Map<string, {
   questionIndex: number;
   roundId: string;
@@ -519,6 +519,35 @@ io.on('connection', (socket) => {
     },
   );
 
+  socket.on('set-question-paused', async (payload: { code: string; questionIndex: number; paused: boolean; idToken?: string }, callback) => {
+    try {
+      if (typeof payload.paused !== 'boolean' || !Number.isInteger(payload.questionIndex)) {
+        callback?.({ ok: false, error: 'Commande invalide.' });
+        return;
+      }
+      const room = await getRoomByCode(payload.code);
+      if (!room) { callback?.({ ok: false, error: 'Salon introuvable' }); return; }
+      const admin = await verifyRoomOwner(room.quiz_id, payload.idToken);
+      if (!admin.ok) { callback?.({ ok: false, error: admin.error }); return; }
+      await setRoomQuestionPaused(room.code, payload.questionIndex, payload.paused);
+      invalidateRoomState(room.code);
+      clearRevealTimer(room.code);
+      await restoreQuestionTimer(room.code);
+      if (!payload.paused) {
+        const current = await getRoomByCode(room.code);
+        const question = current ? await getActiveQuestion(current, true, false) : undefined;
+        if (current?.status === 'question' && !current.question_paused_at && question
+          && await allPlayersAnswered(room.code, question.roundId, question.targetType, question.targetId)) {
+          await revealQuestion(room.code, { index: current.current_question_index, endsAt: current.question_ends_at });
+        }
+      }
+      await emitGameState(room.code);
+      callback?.({ ok: true });
+    } catch (error) {
+      callback?.({ ok: false, error: error instanceof Error ? error.message : 'Impossible de modifier la pause.' });
+    }
+  });
+
   socket.on('remove-player', async (payload: { code: string; playerId: string; idToken?: string }, callback) => {
     const room = await getRoomByCode(payload.code);
     if (!room) {
@@ -558,77 +587,78 @@ io.on('connection', (socket) => {
       },
       callback,
     ) => {
-      const room = await getRoomByCode(payload.code);
-      const activeQuestion = room ? await getActiveQuestion(room, true, false) : undefined;
-      if (!room || !activeQuestion) {
-        callback?.({ ok: false, error: 'Salon introuvable' });
-        return;
+      try {
+        const room = await getRoomByCode(payload.code);
+        const activeQuestion = room ? await getActiveQuestion(room, true, false) : undefined;
+        if (!room || !activeQuestion) {
+          callback?.({ ok: false, error: 'Salon introuvable' });
+          return;
+        }
+        if (room.status !== 'question') {
+          callback?.({ ok: false, error: 'Le temps de réponse est terminé' });
+          return;
+        }
+        if (room.question_paused_at) {
+          callback?.({ ok: false, error: "La partie est en pause. Attendez la reprise par l'animateur." });
+          return;
+        }
+        if (
+          activeQuestion.roundId !== payload.roundId ||
+          activeQuestion.targetType !== payload.targetType ||
+          activeQuestion.targetId !== payload.targetId
+        ) {
+          callback?.({ ok: false, error: "Cette question n'est pas active" });
+          return;
+        }
+
+        const submittedValue = payload.value?.trim() ?? '';
+        const correctOption = activeQuestion.correctOption;
+        const isAutocomplete = activeQuestion.answerMode === 'autocomplete';
+        const selectedOption = isAutocomplete
+          ? undefined
+          : activeQuestion.options.find((option) => option.id === payload.optionId);
+
+        if (!isAutocomplete && !selectedOption) {
+          callback?.({ ok: false, error: 'Option introuvable' });
+          return;
+        }
+
+        if (isAutocomplete && !submittedValue) {
+          callback?.({ ok: false, error: 'Réponse vide' });
+          return;
+        }
+
+        const alreadyAnswered = await hasAnswered(
+          room.code,
+          payload.playerId,
+          payload.roundId,
+          payload.targetType,
+          payload.targetId,
+        );
+
+        if (alreadyAnswered) {
+          callback?.({ ok: false, error: 'Réponse déjà envoyée' });
+          return;
+        }
+
+        const isCorrect = isAutocomplete
+          ? normalizeAnswer(submittedValue) === normalizeAnswer(correctOption?.label ?? '')
+          : selectedOption?.id === correctOption?.id;
+        const points = await recordAnswer(room.code, {
+          player_id: payload.playerId,
+          round_id: payload.roundId,
+          target_type: payload.targetType,
+          target_id: payload.targetId,
+          value: isAutocomplete ? submittedValue : payload.optionId ?? '',
+          is_correct: isCorrect ? 1 : 0,
+          answered_at: new Date().toISOString(),
+        }, room.current_question_index);
+
+        callback?.({ ok: true, isCorrect, points });
+        scheduleAnswerUpdate(room.code, room.current_question_index, payload.roundId, payload.targetType, payload.targetId);
+      } catch (error) {
+        callback?.({ ok: false, error: error instanceof Error ? error.message : "Impossible d'enregistrer la réponse." });
       }
-      if (room.status !== 'question') {
-        callback?.({ ok: false, error: 'Le temps de réponse est terminé' });
-        return;
-      }
-      if (!(await getPlayer(room.code, payload.playerId))) {
-        callback?.({ ok: false, error: 'Session joueur invalide' });
-        return;
-      }
-      if (
-        activeQuestion.roundId !== payload.roundId ||
-        activeQuestion.targetType !== payload.targetType ||
-        activeQuestion.targetId !== payload.targetId
-      ) {
-        callback?.({ ok: false, error: "Cette question n'est pas active" });
-        return;
-      }
-
-      const submittedValue = payload.value?.trim() ?? '';
-      const correctOption = activeQuestion.correctOption;
-      const isAutocomplete = activeQuestion.answerMode === 'autocomplete';
-      const selectedOption = isAutocomplete
-        ? undefined
-        : activeQuestion.options.find((option) => option.id === payload.optionId);
-
-      if (!isAutocomplete && !selectedOption) {
-        callback?.({ ok: false, error: 'Option introuvable' });
-        return;
-      }
-
-      if (isAutocomplete && !submittedValue) {
-        callback?.({ ok: false, error: 'Réponse vide' });
-        return;
-      }
-
-      const alreadyAnswered = await hasAnswered(
-        room.code,
-        payload.playerId,
-        payload.roundId,
-        payload.targetType,
-        payload.targetId,
-      );
-
-      if (alreadyAnswered) {
-        callback?.({ ok: false, error: 'Réponse déjà envoyée' });
-        return;
-      }
-
-      const isCorrect = isAutocomplete
-        ? normalizeAnswer(submittedValue) === normalizeAnswer(correctOption?.label ?? '')
-        : selectedOption?.id === correctOption?.id;
-      const points = isCorrect ? calculatePoints(payload.targetType, room.question_started_at, room.question_ends_at) : 0;
-
-      await recordAnswer(room.code, {
-        player_id: payload.playerId,
-        round_id: payload.roundId,
-        target_type: payload.targetType,
-        target_id: payload.targetId,
-        value: isAutocomplete ? submittedValue : payload.optionId ?? '',
-        is_correct: isCorrect ? 1 : 0,
-        points,
-        answered_at: new Date().toISOString(),
-      });
-
-      callback?.({ ok: true, isCorrect, points });
-      scheduleAnswerUpdate(room.code, room.current_question_index, payload.roundId, payload.targetType, payload.targetId);
     },
   );
 });
@@ -641,6 +671,7 @@ async function getLobbyGameState(room: RoomRow, playerCount: number) {
     totalQuestions: room.question_order?.length ?? getQuestionCount(quiz as QuizWithRounds | undefined),
     questionStartedAt: null,
     questionEndsAt: null,
+    questionPausedAt: null,
     finalRevealStartedAt: null,
     playerCount,
     answerCount: 0,
@@ -738,9 +769,9 @@ async function flushAnswerUpdate(code: string, update: NonNullable<ReturnType<ty
   update.dirty = false;
   try {
     const room = await getRoomByCode(code);
-    if (room?.status !== 'question' || room.current_question_index !== update.questionIndex) return;
+    if (room?.status !== 'question' || room.question_paused_at || room.current_question_index !== update.questionIndex) return;
     if (await allPlayersAnswered(code, update.roundId, update.targetType, update.targetId)) {
-      await revealQuestion(code);
+      await revealQuestion(code, { index: room.current_question_index, endsAt: room.question_ends_at });
     } else {
       await emitGameState(code);
     }
@@ -766,61 +797,52 @@ async function activateQuestion(code: string, questionIndex: number) {
   const quiz = room.question_order ? undefined : (await getQuiz(room.quiz_id)) as QuizWithRounds | undefined;
   const questionCount = room.question_order?.length ?? getQuestionCount(quiz);
   if (questionIndex >= questionCount) {
-    invalidateRoomState(room.code);
     clearRevealTimer(room.code);
     await updateRoomQuestion(room.code, questionIndex, new Date().toISOString(), null, 'finished');
+    invalidateRoomState(room.code);
     await emitGameState(room.code);
     return { ok: true, finished: true };
   }
 
   const startedAt = new Date();
   const endsAt = new Date(startedAt.getTime() + questionDurationMs);
-  invalidateRoomState(room.code);
   await updateRoomQuestion(room.code, questionIndex, startedAt.toISOString(), endsAt.toISOString());
+  invalidateRoomState(room.code);
 
   clearRevealTimer(room.code);
-  revealTimers.set(
-    room.code,
-    setTimeout(() => {
-      void revealQuestion(room.code).catch(console.error);
-    }, questionDurationMs),
-  );
+  await scheduleQuestionTimer({ ...room, status: 'question', current_question_index: questionIndex,
+    question_started_at: startedAt.toISOString(), question_ends_at: endsAt.toISOString(), question_paused_at: null });
   await emitGameState(room.code, true);
   return { ok: true };
 }
 
 async function restoreQuestionTimer(code: string): Promise<void> {
+  const revision = roomStateRevisions.get(code);
   const room = await getRoomByCode(code);
-  if (!room) return;
+  if (!room || roomStateRevisions.get(code) !== revision) return;
+  await scheduleQuestionTimer(room);
+}
+
+async function scheduleQuestionTimer(room: RoomRow): Promise<void> {
+  const code = room.code;
   const delay = remainingQuestionDelay(room);
-  if (delay === undefined) return;
+  if (delay === undefined) { clearRevealTimer(code); return; }
+  const expected = { index: room.current_question_index, endsAt: room.question_ends_at };
   if (delay === 0) {
-    await revealQuestion(code);
+    await revealQuestion(code, expected);
   } else if (!revealTimers.has(code)) {
     revealTimers.set(code, setTimeout(() => {
-      void (async () => {
-        const current = await getRoomByCode(code);
-        if (current?.current_question_index === room.current_question_index
-          && current.question_ends_at === room.question_ends_at) await revealQuestion(code);
-      })().catch(console.error);
+      void revealQuestion(code, expected).catch(console.error);
     }, delay));
   }
 }
 
-async function revealQuestion(code: string): Promise<void> {
-  if (revealingRooms.has(code)) return;
-  revealingRooms.add(code);
-  try {
-    const room = await getRoomByCode(code);
-    if (!room || room.status !== 'question') return;
-    invalidateRoomState(room.code);
-    await updateRoomStatus(room.code, 'reveal');
-    clearRevealTimer(code);
-    await emitPlayerResults(code);
-    await emitGameState(code, false);
-  } finally {
-    revealingRooms.delete(code);
-  }
+async function revealQuestion(code: string, expected?: { index: number; endsAt: string | null }): Promise<void> {
+  if (!await revealRoomQuestion(code, expected)) return;
+  invalidateRoomState(code);
+  clearRevealTimer(code);
+  await emitPlayerResults(code);
+  await emitGameState(code, false);
 }
 
 async function emitGameState(code: string, includeSuggestions = false): Promise<void> {
@@ -878,6 +900,7 @@ async function getGameState(code: string, includeAnswer: boolean, includeSuggest
     totalQuestions: room.question_order?.length ?? getQuestionCount(quiz),
     questionStartedAt: room.question_started_at,
     questionEndsAt: room.question_ends_at,
+    questionPausedAt: room.question_paused_at ?? null,
     finalRevealStartedAt: room.status === 'finished' ? room.question_started_at : null,
     playerCount,
     answerCount: answerStats?.total ?? 0,
@@ -978,17 +1001,6 @@ function anonymizeLeaderboard<T extends { nickname: string; avatar?: string }>(
     ...(includeRealNames ? { realNickname: player.nickname } : {}),
     nickname: player.avatar || '🎭',
   }));
-}
-
-function calculatePoints(targetType: 'work' | 'person', startedAt: string | null, endsAt: string | null): number {
-  const basePoints = targetType === 'person' ? 300 : 100;
-  if (!startedAt || !endsAt) return basePoints;
-  const started = new Date(startedAt).getTime();
-  const ends = new Date(endsAt).getTime();
-  const now = Date.now();
-  const duration = Math.max(1, ends - started);
-  const remainingRatio = Math.max(0, Math.min(1, (ends - now) / duration));
-  return Math.round(basePoints * (0.5 + remainingRatio * 0.5));
 }
 
 function normalizeAnswer(value: string): string {

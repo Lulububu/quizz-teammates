@@ -175,6 +175,21 @@ Scénario et captures : `output/playwright/editor-scroll/`. Données fictives un
 
 Scénario, mesures et captures : `output/playwright/spacing/`. Services simulés : aucune donnée Firebase modifiée. Cette passe ne modifie pas l'authentification.
 
+## Partage et pause, 8 octobre 2026
+
+- [x] QR code centré dans le bloc de démarrage, carré et stable avec des nombres de participants différents de chaque côté, sur ordinateur et mobile.
+- [x] Copie du lien dans le contenu principal ; composant partagé avec le popover, confirmation et erreur de presse-papiers visibles.
+- [x] Fermeture du popover par clic extérieur ou Échap, avec retour du focus au déclencheur au clavier.
+- [x] Pause/reprise réservée au propriétaire de la partie. Bouton d'attente pendant la commande et message d'erreur si elle n'est pas confirmée.
+- [x] Champ Firestore optionnel `question_paused_at`, exposé via `questionPausedAt`. Les anciens salons sans ce champ restent compatibles ; pas de migration nécessaire.
+- [x] Minuteur et indices figés côté animateur/joueurs, réponses refusées pendant la pause, choix joueur préservé. Lecture audio/vidéo animateur suspendue puis reprise sans recommencer l'extrait.
+- [x] Reprise par décalage du début et de la fin de question : même temps restant, mêmes intervalles d'indices et même bonus de rapidité. La pause survit à la reconnexion et n'est pas levée par la restauration du minuteur.
+- [x] Réponse et points enregistrés ensemble, avec contrôle transactionnel de la question active, de la pause, de l'échéance et des doublons. Un ancien minuteur ne peut pas révéler une question pausée ou déjà remplacée.
+- [x] 11 tests automatisés de pause/rythme/reprise ; parcours Socket.IO réel local avec authentification et Firestore simulés, incluant l'autocomplétion et la révélation après toutes les réponses. Aucun test de charge Render ni écriture Firebase réelle.
+- [x] Contrôles Chrome sur cinq thèmes, QR centré à 390 / 768 / 840 / 1440 / 1920 px, popover au clavier et à la souris, erreurs simulées, média réellement joué, pause et reprise. Rapport et captures : `output/playwright/game-controls/`.
+
+Compilation client/serveur réussie ; avertissement de taille du paquet initial toujours présent (693,88 ko pour un seuil de 614,40 ko). Redéployer client et serveur ensemble pour activer la pause sur Render.
+
 ## Validation technique
 
 - `npm run typecheck` passe.

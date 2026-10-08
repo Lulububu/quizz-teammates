@@ -100,11 +100,19 @@ L'éditeur affiche une question active, avec les indices au centre et les répon
 
 Après connexion avec le compte créateur, ouvrez **Quiz en cours**, à côté de **Mes quiz** et **Dictionnaires**. Cet onglet liste vos salons en attente et vos parties non terminées, avec leur code, leur état et leur progression. **Actualiser** recharge la liste ; **Reprendre** ouvre le salon existant, sans créer de nouvelle partie.
 
-Les joueurs, les réponses enregistrées, les scores et l'ordre des questions sont conservés. Le temps de réponse continue de s'écouler pendant l'absence de l'animateur : une question déjà expirée affiche son résultat à la reprise. Après un redémarrage du serveur, le minuteur est rétabli depuis son échéance enregistrée, jamais remis à zéro. Les parties terminées ne figurent pas dans cet onglet. La modification ou la suppression du quiz supprime toujours ses salons, comme auparavant.
+Les joueurs, les réponses enregistrées, les scores et l'ordre des questions sont conservés. Sauf pause explicite, le temps de réponse continue de s'écouler pendant l'absence de l'animateur : une question déjà expirée affiche son résultat à la reprise. Après un redémarrage du serveur, le minuteur est rétabli depuis son échéance enregistrée, jamais remis à zéro. Les parties terminées ne figurent pas dans cet onglet. La modification ou la suppression du quiz supprime toujours ses salons, comme auparavant.
 
 Les joueurs continuent à participer sans compte. La liste des parties et leur pilotage sont réservés à leur propriétaire.
 
 Vérifications locales : `npm run test:rooms` (isolation des comptes et échéances), `npm run test:timing` (indices et révélation). Le scénario navigateur `node output/playwright/resume-rooms/verify.mjs` utilise Chrome, le serveur local sur le port 4200 et des données fictives ; il ne touche pas aux données Firebase.
+
+## Partage et pause
+
+L'écran de démarrage affiche le QR code centré entre les participants et un bouton **Copier le lien**. Pendant la partie, le partage reste accessible dans le bandeau ; le popover se ferme par un clic extérieur ou Échap.
+
+Le bouton **Pause**, à côté du minuteur de l'animateur, suspend le compte à rebours, l'arrivée des indices et les réponses. **Reprendre** conserve exactement le temps restant, les réponses déjà reçues et les sélections des joueurs. La durée de pause ne pénalise pas les points de rapidité. Les médias en lecture côté animateur sont suspendus puis repris au même endroit. Une pause reste enregistrée même après reconnexion ou redémarrage serveur ; aucun compte n'est demandé aux joueurs.
+
+Vérifications : `npm run test:pause` (horloge, persistance et échanges Socket.IO locaux avec Firebase simulé), `node output/playwright/game-controls/verify.mjs` (Chrome et serveur Angular local, cinq thèmes, QR code et commandes).
 
 ## Dictionnaire d'oeuvres
 

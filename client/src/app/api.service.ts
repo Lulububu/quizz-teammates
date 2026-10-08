@@ -179,6 +179,11 @@ export class ApiService {
     return this.emit('next-question', { code, idToken: this.idToken });
   }
 
+  async setQuestionPaused(code: string, questionIndex: number, paused: boolean): Promise<{ ok: boolean; error?: string }> {
+    const idToken = this.auth?.currentUser ? await this.auth.currentUser.getIdToken() : this.idToken;
+    return this.emitWithTimeout('set-question-paused', { code, questionIndex, paused, idToken }, 12_000);
+  }
+
   removePlayer(code: string, playerId: string): Promise<{ ok: boolean; error?: string }> {
     return this.emit('remove-player', { code, playerId, idToken: this.idToken });
   }

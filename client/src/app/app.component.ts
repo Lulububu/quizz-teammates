@@ -3,11 +3,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { ApiService } from './api.service';
 import { IconComponent } from './icon.component';
+import { CopyJoinLinkComponent } from './copy-join-link.component';
+import { DismissPopoverDirective } from './dismiss-popover.directive';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterLink, RouterOutlet, IconComponent],
+  imports: [RouterLink, RouterOutlet, IconComponent, CopyJoinLinkComponent, DismissPopoverDirective],
   template: `
     <div class="app-shell" [class.game-shell]="gameView()" [class.player-shell-layout]="playerView()">
       @if (!playerView()) {
@@ -19,14 +21,12 @@ import { IconComponent } from './icon.component';
                 @if (api.gameState()?.status !== 'lobby') {
                   <div class="topbar-room-code"><span>Code</span><strong>{{ room.code }}</strong></div>
                 }
-                <details class="room-share">
+                <details class="room-share" appDismissPopover>
                   <summary class="icon-button" aria-label="Afficher le QR code" title="Afficher le QR code"><app-icon name="qr" /></summary>
                   <div class="share-popover">
                     @if (room.qrCodeDataUrl) { <img [src]="room.qrCodeDataUrl" alt="QR code pour rejoindre la partie"> }
                     <strong>{{ room.code }}</strong>
-                    <button type="button" class="secondary" (click)="copyJoinLink(room.code)">
-                      <app-icon [name]="linkCopied() ? 'check' : 'link'" /> {{ linkCopied() ? 'Lien copié' : 'Copier le lien' }}
-                    </button>
+                    <app-copy-join-link [code]="room.code" />
                   </div>
                 </details>
                 <button type="button" class="secondary names-visibility" [class.active]="api.gameState()?.hidePlayerNames"
@@ -48,7 +48,6 @@ import { IconComponent } from './icon.component';
   `,
 })
 export class AppComponent {
-  linkCopied = signal(false);
   visibilityPending = signal(false);
   gameView = signal(this.isGamePath(window.location.pathname));
   playerView = signal(window.location.pathname.startsWith('/join/'));
@@ -63,14 +62,6 @@ export class AppComponent {
 
   private isGamePath(path: string): boolean {
     return path.startsWith('/rooms/') || path.startsWith('/join/');
-  }
-
-  async copyJoinLink(code: string): Promise<void> {
-    try {
-      await navigator.clipboard.writeText(window.location.origin + '/join/' + code);
-      this.linkCopied.set(true);
-      window.setTimeout(() => this.linkCopied.set(false), 1800);
-    } catch { this.linkCopied.set(false); }
   }
 
   async togglePlayerNames(code: string): Promise<void> {

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { firestore } from './firebase.js';
+import { calculatePoints, questionPausePatch } from './question-clock.js';
 
 export type AnswerMode = 'choices' | 'autocomplete';
 export type SequenceMode = 'rounds' | 'works-first';
@@ -117,6 +118,7 @@ export type RoomRow = {
   current_question_index: number;
   question_started_at: string | null;
   question_ends_at: string | null;
+  question_paused_at?: string | null;
   question_order?: QuestionReference[];
   hide_player_names?: boolean;
   created_at: string;
@@ -378,6 +380,7 @@ export async function createRoom(quizId: string): Promise<RoomRow> {
     current_question_index: -1,
     question_started_at: null,
     question_ends_at: null,
+    question_paused_at: null,
     question_order: buildQuestionOrder(quiz),
     hide_player_names: quiz.hide_player_names,
     created_at: new Date().toISOString(),
@@ -403,11 +406,30 @@ export async function updateRoomQuestion(
     current_question_index: questionIndex,
     question_started_at: startedAt,
     question_ends_at: endsAt,
+    question_paused_at: null,
   });
 }
 
-export async function updateRoomStatus(code: string, status: string): Promise<void> {
-  await rooms.doc(code).update({ status });
+export async function setRoomQuestionPaused(code: string, questionIndex: number, paused: boolean): Promise<void> {
+  const ref = rooms.doc(code);
+  await firestore.runTransaction(async transaction => {
+    const snapshot = await transaction.get(ref);
+    const room = snapshot.data() as RoomRow | undefined;
+    if (!room || room.current_question_index !== questionIndex) throw new Error("Cette question n'est plus active.");
+    const patch = questionPausePatch(room, paused);
+    if (patch) transaction.update(ref, patch);
+  });
+}
+
+export async function revealRoomQuestion(code: string, expected?: { index: number; endsAt: string | null }): Promise<boolean> {
+  const ref = rooms.doc(code);
+  return firestore.runTransaction(async transaction => {
+    const room = (await transaction.get(ref)).data() as RoomRow | undefined;
+    if (!room || room.status !== 'question' || room.question_paused_at) return false;
+    if (expected && (room.current_question_index !== expected.index || room.question_ends_at !== expected.endsAt)) return false;
+    transaction.update(ref, { status: 'reveal', question_paused_at: null });
+    return true;
+  });
 }
 
 export async function updateRoomPlayerNamesVisibility(code: string, hidePlayerNames: boolean): Promise<void> {
@@ -539,21 +561,25 @@ export async function hasAnswered(
   return !snapshot.empty;
 }
 
-export async function recordAnswer(code: string, answer: Omit<AnswerRow, 'id' | 'room_id'>): Promise<void> {
-  const id = randomUUID();
-  await rooms.doc(code).collection('answers').doc(id).set({
-    ...answer,
-    id,
-    room_id: code,
+export async function recordAnswer(code: string, answer: Omit<AnswerRow, 'id' | 'room_id' | 'points'>, questionIndex: number): Promise<number> {
+  const roomRef = rooms.doc(code);
+  const id = `${answer.player_id}_${answer.round_id}_${answer.target_type}_${answer.target_id}`;
+  const answerRef = roomRef.collection('answers').doc(id);
+  const playerRef = roomRef.collection('players').doc(answer.player_id);
+  return firestore.runTransaction(async transaction => {
+    const [roomSnapshot, existing, player] = await transaction.getAll(roomRef, answerRef, playerRef);
+    const room = roomSnapshot.data() as RoomRow | undefined;
+    if (!room || room.status !== 'question' || room.current_question_index !== questionIndex) throw new Error("Cette question n'est plus active.");
+    if (room.question_paused_at) throw new Error("La partie est en pause. Attendez la reprise par l'animateur.");
+    if (!player.exists) throw new Error('Session joueur invalide');
+    if (existing.exists) throw new Error('Réponse déjà envoyée');
+    const now = Date.now();
+    if (Date.parse(room.question_ends_at ?? '') <= now) throw new Error('Le temps de réponse est terminé');
+    const points = answer.is_correct ? calculatePoints(answer.target_type, room, now) : 0;
+    transaction.set(answerRef, { ...answer, id, room_id: code, points, answered_at: new Date(now).toISOString() });
+    if (points > 0) transaction.update(playerRef, { score: Number(player.data()?.score ?? 0) + points });
+    return points;
   });
-  if (answer.points > 0) {
-    const playerRef = rooms.doc(code).collection('players').doc(answer.player_id);
-    await firestore.runTransaction(async (transaction) => {
-      const snapshot = await transaction.get(playerRef);
-      const currentScore = Number(snapshot.data()?.score ?? 0);
-      transaction.update(playerRef, { score: currentScore + answer.points });
-    });
-  }
 }
 
 export async function getPlayers(code: string): Promise<PlayerScore[]> {

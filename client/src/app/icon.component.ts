@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import {
   ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Check, CircleCheck, Clock3, Copy,
   Crown, Download, Eye, EyeOff, Film, Image, Link, List, LockKeyhole, Maximize,
-  MoreHorizontal, Music2, Pencil, Play, Plus, QrCode, Search, Settings2,
+  MoreHorizontal, Music2, Pencil, Play, Pause, Plus, QrCode, Search, Settings2,
   Trash2, Upload, UserRound, X, RefreshCw, LucideAngularModule,
 } from 'lucide-angular';
 
@@ -13,7 +13,7 @@ const icons = {
   image: Image, link: Link, list: List, lock: LockKeyhole, maximize: Maximize,
   more: MoreHorizontal, music: Music2, pencil: Pencil, play: Play, plus: Plus,
   qr: QrCode, search: Search, settings: Settings2, trash: Trash2, upload: Upload,
-  person: UserRound, x: X, refresh: RefreshCw,
+  person: UserRound, x: X, refresh: RefreshCw, pause: Pause,
 };
 export type IconName = keyof typeof icons;
 

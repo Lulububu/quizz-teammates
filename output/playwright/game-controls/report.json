@@ -1,0 +1,41 @@
+{
+  "checks": [
+    "QR centered and square at 1920, 1440, 840, 768 and 390 px with uneven player counts",
+    "Copy link in lobby and popover, success/failure feedback, outside click and Escape with focus restoration",
+    "Pause pending state, frozen countdown/clues/media, player selection preserved and answer disabled; synchronized resume",
+    "Timeout feedback restores the control without falsely showing a paused game"
+  ],
+  "geometry": [
+    {
+      "width": 1920,
+      "delta": 0,
+      "square": 0,
+      "decoded": true
+    },
+    {
+      "width": 1440,
+      "delta": 0,
+      "square": 0,
+      "decoded": true
+    },
+    {
+      "width": 840,
+      "delta": 0,
+      "square": 0,
+      "decoded": true
+    },
+    {
+      "width": 768,
+      "delta": 0,
+      "square": 0,
+      "decoded": true
+    },
+    {
+      "width": 390,
+      "delta": 0,
+      "square": 0,
+      "decoded": true
+    }
+  ],
+  "errors": []
+}

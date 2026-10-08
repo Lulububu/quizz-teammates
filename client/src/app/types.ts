@@ -79,6 +79,7 @@ export type GameState = {
   totalQuestions: number;
   questionStartedAt: string | null;
   questionEndsAt: string | null;
+  questionPausedAt?: string | null;
   finalRevealStartedAt: string | null;
   playerCount: number;
   answerCount: number;

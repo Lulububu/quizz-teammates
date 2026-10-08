@@ -86,20 +86,26 @@
           <div class="lobby-launch-footer">
             <div><span class="eyebrow">Code de la partie</span><strong class="lobby-code">{{ room()?.code }}</strong></div>
             <span class="lobby-player-count">{{ state.playerCount }} {{ state.playerCount > 1 ? 'joueurs connectés' : 'joueur connecté' }}</span>
+            <app-copy-join-link [code]="room()?.code || ''" />
             <button type="button" (click)="startGame()" [disabled]="commandPending()" [class.is-loading]="commandPending()">
               <app-icon name="play" /> {{ commandPending() ? 'Lancement…' : 'Lancer le quiz' }}
             </button>
           </div>
         </section>
       } @else if (state.status === 'question' && state.activeQuestion) {
-        <section class="live-question">
+        <section class="live-question" [class.is-paused]="state.questionPausedAt">
           <header class="live-heading">
             <div><p class="eyebrow">Question {{ state.currentQuestionIndex + 1 }} / {{ state.totalQuestions }}</p><h1>{{ state.activeQuestion.prompt }}</h1></div>
-            <div class="live-timer" [class.urgent]="remainingSeconds() <= 5" role="timer" [attr.aria-label]="remainingSeconds() + ' secondes restantes'">
-              <strong>{{ remainingSeconds() }}</strong><span>secondes</span>
+            <div class="live-question-controls">
+              <button type="button" class="secondary pause-control" (click)="togglePause()" [disabled]="pausePending() || !api.connected() || (!state.questionPausedAt && remainingSeconds() === 0)" [class.is-loading]="pausePending()">
+                <app-icon [name]="state.questionPausedAt ? 'play' : 'pause'" /> {{ pausePending() ? 'Mise à jour…' : state.questionPausedAt ? 'Reprendre' : 'Pause' }}
+              </button>
+              <div class="live-timer" [class.urgent]="!state.questionPausedAt && remainingSeconds() <= 5" role="timer" [attr.aria-label]="remainingSeconds() + ' secondes restantes'">
+                <strong>{{ remainingSeconds() }}</strong><span>{{ state.questionPausedAt ? 'En pause' : 'secondes' }}</span>
+              </div>
             </div>
           </header>
-          <div class="live-timer-track" [class.urgent]="remainingSeconds() <= 5"><i [style.width.%]="timerProgress()"></i></div>
+          <div class="live-timer-track" [class.urgent]="!state.questionPausedAt && remainingSeconds() <= 5"><i [style.width.%]="timerProgress()"></i></div>
           @if (state.activeQuestion.targetType === 'person') {
             <div class="work-name-recap live-work-recap" aria-label="Œuvres de la manche">
               @for (work of state.activeQuestion.works; track $index; let index = $index) {
@@ -183,12 +189,12 @@
   } @else if (clue.kind === 'audio') {
     <div class="clue-media audio-clue">
       <app-icon name="music" [size]="56" /><span>Indice sonore</span>
-      <audio #hostMedia [src]="clue.content" [autoplay]="autoplay" [attr.data-autoplay]="autoplay ? 'true' : null" controls preload="auto"></audio>
+      <audio #hostMedia [src]="clue.content" [autoplay]="autoplay && !api.gameState()?.questionPausedAt" [attr.data-autoplay]="autoplay ? 'true' : null" controls preload="auto"></audio>
       @if (autoplay && autoplayBlocked()) { <button type="button" (click)="retryMediaPlayback()"><app-icon name="play" /> Écouter l'indice</button> }
     </div>
   } @else if (clue.kind === 'video') {
     <div class="clue-media">
-      <video #hostMedia [src]="clue.content" [autoplay]="autoplay" [attr.data-autoplay]="autoplay ? 'true' : null" controls preload="auto" playsinline></video>
+      <video #hostMedia [src]="clue.content" [autoplay]="autoplay && !api.gameState()?.questionPausedAt" [attr.data-autoplay]="autoplay ? 'true' : null" controls preload="auto" playsinline></video>
       @if (autoplay && autoplayBlocked()) { <button type="button" (click)="retryMediaPlayback()"><app-icon name="play" /> Lancer la vidéo</button> }
     </div>
   } @else { <p class="text-clue">{{ clue.content }}</p> }

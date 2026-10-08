@@ -17,15 +17,16 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ApiService } from './api.service';
-import { visibleClueCount } from './clue-timing';
+import { questionProgress, remainingQuestionSeconds, visibleClueCount } from './clue-timing';
 import { finalPlayerName, getFinalRevealState } from './final-reveal';
 import { Clue, GameState, Room } from './types';
 import { IconComponent } from './icon.component';
+import { CopyJoinLinkComponent } from './copy-join-link.component';
 
 @Component({
   selector: 'app-room',
   standalone: true,
-  imports: [NgTemplateOutlet, DecimalPipe, IconComponent, RouterLink],
+  imports: [NgTemplateOutlet, DecimalPipe, IconComponent, RouterLink, CopyJoinLinkComponent],
   templateUrl: './room.component.html',
 })
 export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
@@ -36,6 +37,7 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
   message = signal('');
   messageIsError = signal(false);
   commandPending = signal(false);
+  pausePending = signal(false);
   autoplayBlocked = signal(false);
   now = signal(Date.now());
   selectedClueIndex = signal<number | null>(null);
@@ -49,18 +51,8 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
   answerMarkers = computed(() => Array.from({ length: this.api.gameState()?.playerCount ?? 0 }, (_, i) => i < (this.api.gameState()?.answerCount ?? 0)));
   finalReveal = computed(() => getFinalRevealState(this.api.gameState(), this.now()));
   finalRevealMessage = computed(() => this.finalReveal().message);
-  remainingSeconds = computed(() => {
-    const endsAt = this.api.gameState()?.questionEndsAt;
-    if (!endsAt) return 0;
-    return Math.max(0, Math.ceil((new Date(endsAt).getTime() - this.now()) / 1000));
-  });
-  timerProgress = computed(() => {
-    const state = this.api.gameState();
-    if (!state?.questionStartedAt || !state.questionEndsAt) return 0;
-    const start = new Date(state.questionStartedAt).getTime();
-    const end = new Date(state.questionEndsAt).getTime();
-    return Math.max(0, Math.min(100, ((end - this.now()) / Math.max(1, end - start)) * 100));
-  });
+  remainingSeconds = computed(() => remainingQuestionSeconds(this.api.gameState(), this.now()));
+  timerProgress = computed(() => questionProgress(this.api.gameState(), this.now()));
   podiumPlayers = computed(() => this.api.gameState()?.leaderboard.slice(0, 3) ?? []);
   leftLobbyPlayers = computed(() => (this.api.gameState()?.players ?? []).filter((_, index) => index % 2 === 0));
   rightLobbyPlayers = computed(() => (this.api.gameState()?.players ?? []).filter((_, index) => index % 2 === 1));
@@ -72,11 +64,16 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
   private hostRequest = 0;
   private hostAbort?: AbortController;
   private destroyed = false;
+  private pausedMedia = new Set<HTMLMediaElement>();
 
   constructor(
     public api: ApiService,
     private route: ActivatedRoute,
   ) {
+    effect(() => {
+      const paused = !!this.api.gameState()?.questionPausedAt;
+      untracked(() => this.syncMediaPause(paused));
+    });
     effect(() => {
       const state = this.api.gameState();
       if (!state) return;
@@ -187,6 +184,20 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!response.ok) this.showMessage(response.error ?? 'Impossible de passer à la question suivante.', true);
   }
 
+  async togglePause(): Promise<void> {
+    const code = this.room()?.code;
+    const state = this.api.gameState();
+    if (!code || state?.status !== 'question' || this.pausePending() || !this.api.connected()) return;
+    this.pausePending.set(true);
+    try {
+      const result = await this.api.setQuestionPaused(code, state.currentQuestionIndex, !state.questionPausedAt);
+      if (!result.ok) this.showMessage(result.error ?? 'Impossible de modifier la pause.', true);
+      else this.showMessage('');
+    } catch {
+      this.showMessage("Le serveur n'a pas confirmé la commande. Vérifiez l'état de la partie avant de réessayer.", true);
+    } finally { this.pausePending.set(false); }
+  }
+
   async retryMediaPlayback(): Promise<void> {
     await this.playCurrentMedia();
   }
@@ -252,6 +263,12 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
     for (const element of this.hostMediaElements.toArray()) {
       if (element.nativeElement !== media) element.nativeElement.pause();
     }
+    this.pausedMedia.clear();
+    if (this.api.gameState()?.questionPausedAt) {
+      media.pause();
+      this.pausedMedia.add(media);
+      return;
+    }
     try {
       media.currentTime = 0;
       await media.play();
@@ -259,6 +276,20 @@ export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
     } catch {
       this.autoplayBlocked.set(true);
       this.showMessage('Le navigateur a bloqué la lecture automatique. Appuyez sur Lecture pour lancer l’indice.', true);
+    }
+  }
+
+  private syncMediaPause(paused: boolean): void {
+    if (paused) {
+      for (const element of this.hostMediaElements?.toArray() ?? []) {
+        const media = element.nativeElement;
+        if (!media.paused && !media.ended) { this.pausedMedia.add(media); media.pause(); }
+      }
+    } else {
+      for (const media of this.pausedMedia) {
+        if (media.isConnected) void media.play().catch(() => this.autoplayBlocked.set(true));
+      }
+      this.pausedMedia.clear();
     }
   }
 
