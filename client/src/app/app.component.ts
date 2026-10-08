@@ -14,7 +14,7 @@ import { DismissPopoverDirective } from './dismiss-popover.directive';
     <div class="app-shell" [class.game-shell]="gameView()" [class.player-shell-layout]="playerView()">
       @if (!playerView()) {
         <header class="topbar">
-          <a routerLink="/" class="brand"><app-icon name="copy" [size]="26" /> Quiz Teammates</a>
+          <a routerLink="/" class="brand"><img class="brand-logo" src="logo-buzzer.png" width="32" height="32" alt="" aria-hidden="true"> Quiz Teammates</a>
           @if (api.hostRoomMeta(); as room) {
             @if (api.gameState()?.status !== 'finished') {
               <div class="topbar-room">

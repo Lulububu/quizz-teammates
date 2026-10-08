@@ -70,8 +70,7 @@ p, label { color: var(--muted); }
 .game-shell { color: var(--ink); background: var(--paper); }
 .topbar { height: 64px; min-height: 64px; padding: 0 32px; background: var(--topbar-surface); border-color: var(--line); backdrop-filter: none; flex-direction: row; align-items: center; }
 .brand { display: inline-flex; align-items: center; gap: 12px; font-size: 1.1rem; font-weight: 700; white-space: nowrap; }
-.brand app-icon { color: var(--blue); }
-.game-shell .brand app-icon { color: var(--primary); }
+.brand-logo { display: block; width: 32px; height: 32px; flex: 0 0 32px; object-fit: contain; }
 .topbar-room { gap: 18px; width: auto; }
 .topbar-room-code { display: flex; align-items: baseline; gap: 8px; border: 0; padding: 0; }
 .topbar-room-code span { font-size: .8rem; text-transform: none; font-weight: 400; }

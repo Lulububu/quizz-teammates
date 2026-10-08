@@ -1,0 +1,11 @@
+{
+  "checks": [
+    "Build assets, transparency, ICO sizes, HTTP responses and browser decoding",
+    "Header logo, accessible link and mobile layout: studio",
+    "Header logo, accessible link and mobile layout: cosmic",
+    "Header logo, accessible link and mobile layout: academy",
+    "Header logo, accessible link and mobile layout: orbit",
+    "Header logo, accessible link and mobile layout: arcade",
+    "Dark host header with live controls, cache-versioned favicon links"
+  ]
+}

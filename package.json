@@ -13,6 +13,7 @@
     "build": "npm run build:client && npm run build:server",
     "build:client": "npx --no-install ng build",
     "build:server": "tsc -p server/tsconfig.json",
+    "favicon:generate": "node scripts/generate-favicons.mjs",
     "start": "node dist/server/index.js",
     "dictionary:generate": "node scripts/generate-work-dictionary.mjs",
     "survey:generate": "node scripts/generate-survey-quiz.mjs",

@@ -190,6 +190,15 @@ Scénario, mesures et captures : `output/playwright/spacing/`. Services simulés
 
 Compilation client/serveur réussie ; avertissement de taille du paquet initial toujours présent (693,88 ko pour un seuil de 614,40 ko). Redéployer client et serveur ensemble pour activer la pause sur Render.
 
+## Logo et favicon, 8 octobre 2026
+
+- [x] Proposition 5 « Buzzer » choisie par l'utilisateur : bouton jaune, socle vert sombre et trois traits corail. Elle remplace la première favicon à deux cartes et l'icône du bandeau sur tous les thèmes.
+- [x] Source transparente préparée avec l'outil de génération d'images intégré : `output/branding/buzzer/logo-source.png`. Consignes conservées à côté du fichier. Logo PNG 128 px affiché en 32 px, favicon PNG 32 px et ICO 16/32/48 px, icône de favori mobile opaque 180 px.
+- [x] Déclaration dans `client/src/index.html` ; les fichiers sont copiés dans la compilation et servis par Express, sans configuration supplémentaire sur Render.
+- [x] Liens de favicon versionnés pour renouveler le cache navigateur ; ancien SVG retiré pour éviter l'affichage de la première proposition.
+- [x] Compilation client réussie (avertissement de taille préexistant). Contrôles Chrome des cinq thèmes à 1440/390 px et du bandeau animateur sombre, transparence, dimensions ICO, fichiers compilés et chargement HTTP : `output/playwright/buzzer/verify.mjs`, rapport et captures dans le même dossier. Aucune donnée Firebase modifiée.
+- Régénération depuis le PNG source : `npm run favicon:generate` (Chrome installé et dépendances Playwright de `performance/`, disponibles via `npm run perf:setup`). Les fichiers générés sont versionnés ; aucune génération nécessaire au déploiement.
+
 ## Validation technique
 
 - `npm run typecheck` passe.
