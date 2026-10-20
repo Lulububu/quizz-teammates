@@ -95,7 +95,13 @@
       } @else if (state.status === 'question' && state.activeQuestion) {
         <section class="live-question" [class.is-paused]="state.questionPausedAt">
           <header class="live-heading">
-            <div><p class="eyebrow">Question {{ state.currentQuestionIndex + 1 }} / {{ state.totalQuestions }}</p><h1>{{ state.activeQuestion.prompt }}</h1></div>
+            <div>
+              <p class="eyebrow">Question {{ state.currentQuestionIndex + 1 }} / {{ state.totalQuestions }}</p>
+              @if (state.activeQuestion.targetType === 'work') {
+                <span class="work-kind-badge" [attr.aria-label]="'Type d’œuvre : ' + workKindLabel(state.activeQuestion.workKind)">{{ workKindLabel(state.activeQuestion.workKind) }}</span>
+              }
+              <h1>{{ state.activeQuestion.prompt }}</h1>
+            </div>
             <div class="live-question-controls">
               <button type="button" class="secondary pause-control" (click)="togglePause()" [disabled]="pausePending() || !api.connected() || (!state.questionPausedAt && remainingSeconds() === 0)" [class.is-loading]="pausePending()">
                 <app-icon [name]="state.questionPausedAt ? 'play' : 'pause'" /> {{ pausePending() ? 'Mise à jour…' : state.questionPausedAt ? 'Reprendre' : 'Pause' }}

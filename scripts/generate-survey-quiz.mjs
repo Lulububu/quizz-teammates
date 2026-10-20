@@ -60,7 +60,7 @@ function buildQuiz(rows, dictionary) {
         });
         return {
           title: normalized.title,
-          kind: 'other',
+          kind: normalized.type,
           answerMode: config.answerMode,
           ...(config.answerMode === 'autocomplete'
             ? {

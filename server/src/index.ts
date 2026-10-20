@@ -955,6 +955,7 @@ async function getActiveQuestion(
     roundTitle: round.title,
     targetType,
     targetId: target.id,
+    workKind: workTarget?.kind,
     prompt:
       targetType === 'work'
         ? `Quelle est cette œuvre ?`
@@ -1205,6 +1206,7 @@ type QuizWithRounds = {
     works: Array<{
       id: string;
       title: string;
+      kind?: string;
       answer_mode?: AnswerMode;
       dictionary_id?: string;
       clues: Array<{ id?: string; kind: string; content: string }>;

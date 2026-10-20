@@ -42,6 +42,9 @@
           @if (state.questionPausedAt) {
             <p class="pause-notice" role="status"><app-icon name="pause" /> Partie en pause. L'animateur reprend bientôt.</p>
           }
+          @if (state.activeQuestion.targetType === 'work') {
+            <span class="work-kind-badge" [attr.aria-label]="'Type d’œuvre : ' + workKindLabel(state.activeQuestion.workKind)">{{ workKindLabel(state.activeQuestion.workKind) }}</span>
+          }
           <h1>{{ state.activeQuestion.prompt }}</h1>
           @if (state.activeQuestion.targetType === 'person') {
             <div class="work-name-recap" aria-label="Œuvres de la manche">

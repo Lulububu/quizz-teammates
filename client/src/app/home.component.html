@@ -376,6 +376,14 @@
                 }
               </section>
               <aside class="editor-properties">
+                @if (activeWork(); as work) {
+                  <label>Type d’œuvre
+                    <select [(ngModel)]="work.kind">
+                      @if (!isKnownWorkKind(work.kind)) { <option [value]="work.kind">{{ workKindLabel(work.kind) }}</option> }
+                      @for (option of workKindOptions; track option.value) { <option [value]="option.value">{{ option.label }}</option> }
+                    </select>
+                  </label>
+                }
                 <h3>Réponse</h3>
                 <div class="answer-mode-control" aria-label="Mode de réponse">
                   <button type="button" [class.active]="activeTarget().answerMode === 'choices'" [attr.aria-pressed]="activeTarget().answerMode === 'choices'" (click)="changeAnswerMode('choices')"><app-icon name="list" [size]="17" /> 4 propositions</button>
@@ -398,6 +406,7 @@
         <section class="modal-panel question-preview-modal" role="dialog" aria-modal="true" aria-labelledby="preview-title" (click)="$event.stopPropagation()">
           <header class="modal-header"><div><p class="eyebrow">Aperçu de la question</p><h2 id="preview-title">{{ editingPerson() ? 'À qui appartiennent ces œuvres ?' : 'Quelle est cette œuvre ?' }}</h2></div><button type="button" class="icon-button" title="Fermer l'aperçu" aria-label="Fermer l'aperçu" (click)="closePreview()"><app-icon name="x" /></button></header>
           @if (activeWork(); as work) {
+            <span class="work-kind-badge" [attr.aria-label]="'Type d’œuvre : ' + workKindLabel(work.kind)">{{ workKindLabel(work.kind) }}</span>
             @for (clue of work.clues; track $index; let clueIndex = $index) {
               @if (clueIndex === activeClueIndex()) {
                 <div class="preview-clue">

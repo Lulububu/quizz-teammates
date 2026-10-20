@@ -8,6 +8,7 @@ import { finalPlayerName, getFinalRevealState } from './final-reveal';
 import { questionProgress, remainingQuestionSeconds, visibleClueCount } from './clue-timing';
 import { Clue, GameState, Room } from './types';
 import { IconComponent } from './icon.component';
+import { workKindLabel } from './work-kind';
 
 @Component({
   selector: 'app-join',
@@ -16,6 +17,7 @@ import { IconComponent } from './icon.component';
   templateUrl: './join.component.html',
 })
 export class JoinComponent implements OnInit, OnDestroy {
+  readonly workKindLabel = workKindLabel;
   code = signal('');
   room = signal<Room | undefined>(undefined);
   playerId = signal('');

@@ -102,6 +102,7 @@ export type ActiveQuestion = {
   roundTitle: string;
   targetType: 'work' | 'person';
   targetId: string;
+  workKind?: string;
   prompt: string;
   answerMode: 'choices' | 'autocomplete';
   clues: Clue[];

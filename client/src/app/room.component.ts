@@ -22,6 +22,7 @@ import { finalPlayerName, getFinalRevealState } from './final-reveal';
 import { Clue, GameState, Room } from './types';
 import { IconComponent } from './icon.component';
 import { CopyJoinLinkComponent } from './copy-join-link.component';
+import { workKindLabel } from './work-kind';
 
 @Component({
   selector: 'app-room',
@@ -30,6 +31,7 @@ import { CopyJoinLinkComponent } from './copy-join-link.component';
   templateUrl: './room.component.html',
 })
 export class RoomComponent implements OnInit, OnDestroy, AfterViewInit {
+  readonly workKindLabel = workKindLabel;
   @ViewChildren('hostMedia') hostMediaElements!: QueryList<ElementRef<HTMLMediaElement>>;
   room = signal<Room | undefined>(undefined);
   loading = signal(true);

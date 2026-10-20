@@ -118,7 +118,7 @@ test('real sockets: owner-only pause, players frozen, reconnection, then reveal 
   const option = { id: 'o1', label: 'Fondation', isCorrect: 1, position: 0 };
   documents.set('answerDictionaries/d1', { id: 'd1', owner_user_id: 'owner', name: 'Œuvres', values: ['Fondation', 'Interstellar'] });
   documents.set('quizzes/q', { id: 'q', owner_user_id: 'owner', title: 'Test', answer_mode: 'autocomplete', rounds: [{ id: 'r1', title: 'Manche',
-    person: { id: 'person', name: 'Camille', options: [option] }, works: [{ id: 'w1', title: 'Fondation', dictionary_id: 'd1', options: [option], clues: [{ kind: 'text', content: 'Indice' }] }] }] });
+    person: { id: 'person', name: 'Camille', options: [option] }, works: [{ id: 'w1', title: 'Fondation', kind: 'livre', dictionary_id: 'd1', options: [option], clues: [{ kind: 'text', content: 'Indice' }] }] }] });
   documents.set('rooms/PAUSE1', { ...timedRoom(Date.now() - 39_000) });
   for (const id of ['p1', 'p2']) documents.set('rooms/PAUSE1/players/' + id, { id, nickname: id, score: 0 });
   const { server, io } = await import('../server/src/index');
@@ -139,10 +139,13 @@ test('real sockets: owner-only pause, players frozen, reconnection, then reveal 
   let hostState: any, playerState: any;
   host.on('host-game-state', state => { hostState = state; });
   player.on('game-state', state => { playerState = state; });
-  assert.equal((await emit(host, 'host-room', { code: 'PAUSE1', idToken: 'owner' })).ok, true);
+  const hosted = await emit(host, 'host-room', { code: 'PAUSE1', idToken: 'owner' });
+  assert.equal(hosted.ok, true);
   const joined = await emit(player, 'resume-player', { code: 'PAUSE1', playerId: 'p1' });
   assert.equal(joined.ok, true);
   assert(joined.gameState.activeQuestion.suggestions.includes('Fondation'));
+  assert.equal(joined.gameState.activeQuestion.workKind, 'livre');
+  assert.equal(hosted.gameState.activeQuestion.workKind, 'livre');
   const command = { code: 'PAUSE1', questionIndex: 0, paused: true };
   assert.equal((await emit(player, 'set-question-paused', command)).ok, false);
   assert.equal((await emit(player, 'set-question-paused', { ...command, idToken: 'other' })).ok, false);

@@ -106,6 +106,10 @@ Les joueurs continuent à participer sans compte. La liste des parties et leur p
 
 Vérifications locales : `npm run test:rooms` (isolation des comptes et échéances), `npm run test:timing` (indices et révélation). Le scénario navigateur `node output/playwright/resume-rooms/verify.mjs` utilise Chrome, le serveur local sur le port 4200 et des données fictives ; il ne touche pas aux données Firebase.
 
+## Type d’œuvre pendant une question
+
+Dans l'éditeur, choisissez le type de chaque œuvre : film, livre, musique, jeu vidéo ou autre œuvre. Ce type apparaît dès le début de la question sur les écrans du joueur et de l'animateur, avant les indices. Il est conservé lors de la modification et de la duplication du quiz. Les quiz plus anciens enregistrés avec `other` affichent simplement « Œuvre » ; leur type peut être renseigné en les modifiant. Les nouveaux quiz générés depuis le sondage renseignent directement ce champ.
+
 ## Partage et pause
 
 L'écran de démarrage affiche le QR code centré entre les participants et un bouton **Copier le lien**. Pendant la partie, le partage reste accessible dans le bandeau ; le popover se ferme par un clic extérieur ou Échap.
@@ -172,6 +176,32 @@ Pour importer dans l'interface admin :
 3. Cliquer sur `Importer JSON` et choisir le fichier `*-preview.json`.
 
 ## Preparation des indices
+
+### Extraire un court indice audio
+
+Avec `yt-dlp` et `ffmpeg` installes localement, cette commande telecharge la piste audio puis cree un MP3 de sept secondes. Le decoupage se fait sur le fichier local pour eviter les erreurs `403` que peut provoquer `--download-sections` lorsque `ffmpeg` ouvre directement le flux YouTube.
+
+```bash
+npm run audio:extract -- 'https://www.youtube.com/watch?v=2HJCN3upMHE'
+```
+
+Le fichier est cree dans `output/extraits/`. Pour choisir un autre passage et son nom :
+
+```bash
+npm run audio:extract -- 'https://www.youtube.com/watch?v=2HJCN3upMHE' --start 30 --duration 5 --output output/extraits/summertime-30s.mp3
+```
+
+`--overwrite` permet de remplacer un extrait existant. `--input chemin/vers/audio` permet de decouper une piste deja telechargee, sans nouvel acces a YouTube. Si votre `yt-dlp` est ancien, utilisez une version recente via `--yt-dlp chemin/vers/yt-dlp` ; Deno peut etre necessaire pour certains flux YouTube. Utilisez uniquement des sources dont vous avez le droit de faire cet usage.
+
+Pour installer une version recente sans modifier celle du systeme :
+
+```bash
+python3 -m venv .venv-yt-dlp
+.venv-yt-dlp/bin/python -m pip install -U --pre 'yt-dlp[default]'
+npm run audio:extract -- 'https://www.youtube.com/watch?v=2HJCN3upMHE' --yt-dlp .venv-yt-dlp/bin/yt-dlp
+```
+
+Le dossier `.venv-yt-dlp` est ignore par Git. Si la connexion HTTPS de ce nouvel environnement echoue sur votre reseau, configurez son certificat de confiance plutot que de desactiver la verification TLS.
 
 Pour creer un espace de travail avec un dossier par oeuvre depuis un JSON d'import :
 

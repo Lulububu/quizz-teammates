@@ -7,6 +7,7 @@ import { AnswerSearchComponent } from './answer-search.component';
 import { FieldErrorComponent } from './field-error.component';
 import { ActiveRoomSummary, AnswerDictionary, Quiz } from './types';
 import { IconComponent } from './icon.component';
+import { workKindOptions, workKindLabel } from './work-kind';
 
 type AdminView = 'quizzes' | 'active-rooms' | 'editor' | 'dictionaries';
 type DraftClueKind = 'text' | 'image' | 'audio' | 'video';
@@ -18,6 +19,7 @@ type DraftAnswerTarget = {
   correctAnswer: string;
 };
 type DraftWork = DraftAnswerTarget & {
+  kind: string;
   clues: Array<{ kind: DraftClueKind; content: string }>;
 };
 type DraftRound = {
@@ -40,6 +42,8 @@ type DraftQuiz = {
   templateUrl: './home.component.html',
 })
 export class HomeComponent implements OnInit {
+  readonly workKindOptions = workKindOptions;
+  readonly workKindLabel = workKindLabel;
   @ViewChild('questionList') private questionList?: ElementRef<HTMLElement>;
   @ViewChild('editorContent') private editorContent?: ElementRef<HTMLElement>;
   @ViewChild('editorToolbar') private editorToolbar?: ElementRef<HTMLElement>;
@@ -227,6 +231,10 @@ export class HomeComponent implements OnInit {
 
   activeTarget(): DraftAnswerTarget {
     return this.activeWork() ?? this.activeRound().person;
+  }
+
+  isKnownWorkKind(kind: string): boolean {
+    return this.workKindOptions.some((option) => option.value === kind);
   }
 
   activePrefix(): string {
@@ -882,6 +890,7 @@ export class HomeComponent implements OnInit {
           correctAnswer: this.correctAnswer(round.person.options),
         },
         works: round.works.map((work) => ({
+          kind: work.kind ?? 'other',
           clues: work.clues.length > 0
             ? work.clues.map((clue) => ({
                 kind: this.toDraftClueKind(clue.kind),
@@ -914,7 +923,7 @@ export class HomeComponent implements OnInit {
           title: work.answerMode === 'autocomplete'
             ? work.correctAnswer.trim() || `Œuvre ${workIndex + 1}`
             : work.options[work.correctOptionIndex]?.trim() || `Œuvre ${workIndex + 1}`,
-          kind: 'other',
+          kind: work.kind,
           clues: work.clues.filter((clue) => clue.content.trim().length > 0),
           ...this.answerPayload(work, work.correctAnswer),
         })),
@@ -1020,6 +1029,7 @@ export class HomeComponent implements OnInit {
 
   private newWork(): DraftWork {
     return {
+      kind: 'other',
       clues: [{ kind: 'text', content: '' }],
       answerMode: 'choices',
       dictionaryId: '',
